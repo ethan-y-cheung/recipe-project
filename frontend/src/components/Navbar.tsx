@@ -4,7 +4,7 @@ export default function Navbar() {
   return (
     <nav className="navbar">
       <div className="navbar-brand">
-        <div className="navbar-logo-circle">🌿</div>
+        <div className="navbar-logo-circle">♥</div>
         <span className="navbar-title">Recipe</span>
       </div>
       <ul className="navbar-links">
