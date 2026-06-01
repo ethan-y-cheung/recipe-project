@@ -12,4 +12,6 @@ export default [
         },
         ...js.configs.recommended,
     },
+    ...js.configs.recommended,
+  },
 ];
