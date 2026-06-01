@@ -14,6 +14,7 @@
   height: 60px;
   width: 100%;
   box-sizing: border-box;
+  font-family: 'Geist', sans-serif;
 }
 
 .navbar-brand {
@@ -21,24 +22,22 @@
   align-items: center;
   gap: 8px;
   flex: 1;
+  text-decoration: none;
 }
 
-.navbar-logo-circle {
-  width: 36px;
-  height: 36px;
-  background-color: rgba(255, 255, 255, 0.4);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  color: #DC9B9B;
+.navbar-logo-heart {
+  width: 22px;
+  height: 22px;
+  fill: #DC9B9B;
+  flex-shrink: 0;
+  transform: translateY(-2px);
 }
 
 .navbar-title {
-  font-size: 17px;
-  font-weight: 600;
+  font-size: 22px;
+  font-weight: 400;
   color: #3F4A45;
+  font-family: 'Gelasio', serif;
 }
 
 .navbar-links {
@@ -53,10 +52,23 @@
   text-decoration: none;
   color: #3F4A45;
   font-size: 15px;
+  position: relative;
 }
 
-.navbar-links a:hover {
-  text-decoration: underline;
+.navbar-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: -4px;
+  right: -4px;
+  height: 2px;
+  background-color: #DC9B9B;
+  display: none;
+}
+
+.navbar-links a:hover::after,
+.navbar-links a.active::after {
+  display: block;
 }
 
 .navbar-auth {
