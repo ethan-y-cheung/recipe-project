@@ -1,6 +1,6 @@
 export interface UserRecipeNotes
 {
-    recipe_id: string;
+    id: string;
     user_tags: string[];
     notes:string;
 }
