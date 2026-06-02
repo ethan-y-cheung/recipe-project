@@ -2,7 +2,7 @@ import { useParams } from 'react-router-dom'
 import { Star, Bookmark, ThumbsUp, Reply, MessageCircle} from 'lucide-react';
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import type { Recipe, Comments, User } from "../../../shared/types/index.ts";
+import type { Recipe, Comments, User, Rating } from "../../../shared/types/index.ts";
 import Chatbot from '../components/Chatbot.tsx';
 import CommentForm from '../components/CommentForm.tsx';
 import "../styles/RecipeDetail.css";
@@ -60,15 +60,22 @@ export default function RecipeDetail() {
 
   
   const [showChat, setShowChat] = useState<boolean>(false);
-  const [rating, setRating] = useState<number>(0);
-  const [hasRated, setHasRated] = useState<boolean>(recipe.rating.some(rating => rating.user_ID === 'Charlie'));
+  const [rating, setRating] = useState<0 | 1 | 2 | 3 | 4 | 5>(0);
 
   const handleRating = () => {
-    // if you have already rated it, remove that value
-    setAverageRating(((avgRating*recipe.rating.length) - rating) / recipe.rating.length-1)
+    let newRatings: Rating[];
 
-    // if you have not rated it, add that value
-    setAverageRating(((avgRating*recipe.rating.length) + rating) / recipe.rating.length+1);
+    // if you have already rated it, remove that value
+    if (recipe.rating.some(rating => rating.user_ID === user.username)) {
+      newRatings = recipe.rating.filter(rating => rating.user_ID !== user.username);
+    // otherwise add in the new rating
+    } else {
+      newRatings = [...recipe.rating, {user_ID: user.username, value: rating}]; 
+    }
+   
+    setAverageRating(newRatings.length > 0 
+    ? newRatings.reduce((score, rating) => score + rating.value, 0) / newRatings.length 
+    : 0)
   }
 
   // const { recipeType, recipeId } = useParams()
