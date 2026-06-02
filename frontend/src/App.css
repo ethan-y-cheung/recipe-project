@@ -9,7 +9,7 @@
 .navbar {
   display: flex;
   align-items: center;
-  background-color: #C0E1D2;
+  background-color: #c0e1d2;
   padding: 0 32px;
   height: 60px;
   width: 100%;
@@ -37,7 +37,7 @@
 .navbar-title {
   font-size: 17px;
   font-weight: 600;
-  color: #3F4A45;
+  color: #3f4a45;
 }
 
 .navbar-links {
@@ -50,7 +50,7 @@
 
 .navbar-links a {
   text-decoration: none;
-  color: #3F4A45;
+  color: #3f4a45;
   font-size: 15px;
 }
 
@@ -68,10 +68,10 @@
 
 .nav-btn-login {
   background: transparent;
-  border: 1.5px solid #3F4A45;
+  border: 1.5px solid #3f4a45;
   border-radius: 6px;
   padding: 6px 18px;
-  color: #3F4A45;
+  color: #3f4a45;
   font-size: 14px;
   cursor: pointer;
   font-family: inherit;
@@ -82,7 +82,7 @@
 }
 
 .nav-btn-signup {
-  background: #DC9B9B;
+  background: #dc9b9b;
   border: none;
   border-radius: 6px;
   padding: 6px 18px;
@@ -99,7 +99,7 @@
 /* ── Home: Hero ─────────────────────────────────────── */
 
 .hero {
-  background-color: #F6F4E8;
+  background-color: #f6f4e8;
   width: 100%;
   position: relative;
   z-index: 1;
@@ -121,29 +121,29 @@
 }
 
 .hero-eyebrow {
-  font-family: 'Gelasio', serif;
+  font-family: "Gelasio", serif;
   font-size: 20px;
-  color: #3F4A45;
+  color: #3f4a45;
   margin: 0 0 2px 0;
   font-weight: 400;
 }
 
 .hero-heading {
-  font-family: 'Gelasio', serif;
+  font-family: "Gelasio", serif;
   font-size: 52px;
   font-weight: 700;
-  color: #3F4A45;
+  color: #3f4a45;
   margin: 0 0 18px 0;
   line-height: 1.1;
   letter-spacing: -0.5px;
 }
 
 .hero-pink {
-  color: #DC9B9B;
+  color: #dc9b9b;
 }
 
 .hero-desc {
-  color: #3F4A45;
+  color: #3f4a45;
   font-size: 15px;
   line-height: 1.65;
   margin: 0 0 30px 0;
@@ -156,7 +156,7 @@
 }
 
 .hero-btn-primary {
-  background-color: #DC9B9B;
+  background-color: #dc9b9b;
   color: #fff;
   padding: 10px 22px;
   border-radius: 6px;
@@ -170,10 +170,10 @@
 }
 
 .hero-btn-secondary {
-  color: #3F4A45;
+  color: #3f4a45;
   padding: 10px 22px;
   border-radius: 6px;
-  border: 1.5px solid #3F4A45;
+  border: 1.5px solid #3f4a45;
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
@@ -199,7 +199,7 @@
   width: 260px;
   height: 420px;
   object-fit: contain;
-  transform: translate(-50%, -50%) rotate(90deg);
+  transform: translate(-50%, -50%) rotate(-90deg);
 }
 
 /* ── Home: Wave Divider ─────────────────────────────── */
@@ -225,49 +225,55 @@
 }
 
 .cards-heading {
-  font-family: 'Gelasio', serif;
+  font-family: "Gelasio", serif;
   text-align: center;
   font-size: 22px;
   font-weight: 500;
-  color: #3F4A45;
+  color: #3f4a45;
   margin: 0 0 36px 0;
 }
 
 .cards {
   display: flex;
-  gap: 20px;
+  gap: 80px;
   justify-content: center;
-  max-width: 860px;
+  max-width: 850px;
   margin: 0 auto;
 }
 
 .card {
   flex: 1;
-  background-color: #E5EEE4;
+  background-color: #e5eee4;
   border-radius: 12px;
-  padding: 20px 16px 36px;
+  padding: 20px 16px;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
   text-decoration: none;
-  color: #3F4A45;
+  color: #3f4a45;
   position: relative;
   box-sizing: border-box;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
 }
 
 .card:hover {
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.24);
 }
 
+.card-green {
+  background-color: #e5eee4;
+}
 .card-rose {
-  background-color: #f5e0e0;
+  background-color: #f4dede;
+}
+.card-cream {
+  background-color: #f6f4e8;
 }
 
 .card-icon {
-  width: 34px;
-  height: 34px;
+  width: 40px;
+  height: 40px;
   min-width: 34px;
-  background-color: rgba(255, 255, 255, 0.6);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -276,15 +282,27 @@
   line-height: 1;
 }
 
+.card-green .card-icon {
+  background-color: #c6e1c3;
+}
+.card-rose .card-icon {
+  background-color: #edbfbf;
+}
+.card-cream .card-icon {
+  background-color: #dcd7bd;
+}
+
 .card-body {
   flex: 1;
+  padding-left: 5px;
+  padding-right: 20px;
 }
 
 .card-name {
   font-weight: 600;
   font-size: 13px;
   margin: 0 0 4px 0;
-  color: #3F4A45;
+  color: #3f4a45;
 }
 
 .card-desc {
@@ -296,8 +314,8 @@
 
 .card-arrow {
   position: absolute;
-  bottom: 12px;
+  bottom: 7px;
   right: 14px;
-  font-size: 14px;
-  color: #3F4A45;
+  font-size: 28px;
+  color: #3f4a45;
 }

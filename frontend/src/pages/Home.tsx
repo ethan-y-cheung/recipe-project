@@ -55,7 +55,7 @@ export default function Home() {
       <section className="cards-section">
         <h2 className="cards-heading">What would you like to do?</h2>
         <div className="cards">
-          <Link to="/recipes" className="card">
+          <Link to="/recipes" className="card card-green">
             <div className="card-icon">🔍</div>
             <div className="card-body">
               <p className="card-name">Browse Recipes</p>
@@ -73,7 +73,7 @@ export default function Home() {
             </div>
             <span className="card-arrow">→</span>
           </Link>
-          <Link to="/my-recipes" className="card">
+          <Link to="/my-recipes" className="card card-cream">
             <div className="card-icon">♡</div>
             <div className="card-body">
               <p className="card-name">My Recipes</p>
