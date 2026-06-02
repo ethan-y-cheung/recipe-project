@@ -37,6 +37,7 @@ type RecipeFilter = (typeof FILTER_OPTIONS)[number]
 
 export default function Recipes() {
 
+<<<<<<< HEAD
   // Recipe type (all, official, user generated)
   const [activeFilter, setActiveFilter] = useState<RecipeFilter>('All Recipes');
 
@@ -67,6 +68,9 @@ export default function Recipes() {
   ] as const
 
   const anchor = useComboboxAnchor()
+=======
+  const [activeFilter, setActiveFilter] = useState<RecipeFilter>('All Recipes')
+>>>>>>> 54a3caf (style: minor padding, hover styling tweaks)
 
   return (
     <main className="recipes-page-main">
@@ -106,6 +110,7 @@ export default function Recipes() {
         ))}
       </div>
 
+<<<<<<< HEAD
 
       {/* Search + filtering */}
       <div className="recipe-search-row">
@@ -167,6 +172,19 @@ export default function Recipes() {
         </div>
       ))}
     </section>
+=======
+      
+      {/* search bar */}
+      {/* filter */}
+      {/* pagination */}
+      <section className="recipe-catalog">
+        {recipes.map(recipeData => (
+          <div id={recipeData.id}>
+            <RecipeCard recipeData={recipeData}/>
+          </div>
+        ))}
+      </section>
+>>>>>>> 54a3caf (style: minor padding, hover styling tweaks)
 
     </main>
   )
