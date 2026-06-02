@@ -20,8 +20,13 @@ export interface Recipe{
         name: string;
         quantity: string;
     }[];
+    instructions: string[];
     images: string[]; //first index is always thumbnail
-    rating: (1 | 2 | 3 | 4 | 5)[];
+    rating: Rating[];
+}
+export interface Rating{
+    user_ID: string;
+    value : (1 | 2 | 3 | 4 | 5);
 }
 export interface Tag{
     name: string;
@@ -29,4 +34,9 @@ export interface Tag{
 }
 export interface Comments{
     recipe_ID: string;
+    creator_ID: string
+    content: string;
+    likes: string[]; //array of user_IDs who liked the comment
+    created_at: Date;
+    replies: Comments[]; //array of replies to the comment, which are also of type Comments
 }
