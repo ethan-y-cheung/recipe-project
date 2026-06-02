@@ -88,6 +88,12 @@ function ComboBox({
   )
 }
 
+type Ingredient = {
+  id: number
+  name: string
+  qty: string
+  units: string
+}
 
 type Direction = {
   id: number
@@ -96,7 +102,10 @@ type Direction = {
   imageUrl: string | null
 }
 
-let directionId = 1
+// Monotonic id generators for list rows. Kept at module scope so ids stay
+// unique across re-renders without needing to track a counter in state.
+let nextIngredientId = 1
+let nextDirectionId = 1
 
 export default function CreateRecipe() {
   const [availableTags, setAvailableTags] = useState<string[]>(DEFAULT_TAGS)
@@ -106,18 +115,24 @@ export default function CreateRecipe() {
   const tagPickerRef = useRef<HTMLDivElement>(null)
   const [servings, setServings] = useState('')
   const [totalTime, setTotalTime] = useState('')
-  const [qty, setQty] = useState('')
-  const [units, setUnits] = useState('')
 
   // Cover image (local preview only — uploaded when the save flow exists)
   const [coverUrl, setCoverUrl] = useState<string | null>(null)
   const coverInputRef = useRef<HTMLInputElement>(null)
 
+  const [ingredients, setIngredients] = useState<Ingredient[]>([
+    { id: nextIngredientId, name: '', qty: '', units: '' },
+  ])
+
   const [directions, setDirections] = useState<Direction[]>([
-    { id: directionId, text: '', imageUrl: null },
+    { id: nextDirectionId, text: '', imageUrl: null },
   ])
   // One hidden file input per direction, keyed by direction id
   const directionInputRefs = useRef<Record<number, HTMLInputElement | null>>({})
+
+  const [confirmOpen, setConfirmOpen] = useState(false)
+
+  // --- Cover image -----------------------------------------------------------
 
   const setCoverImage = (file: File | undefined) => {
     if (!file) return
@@ -135,18 +150,35 @@ export default function CreateRecipe() {
     if (coverInputRef.current) coverInputRef.current.value = ''
   }
 
-  // TODO: re-wire to the "+ Add Direction" button once each direction has its
-  // own per-entry state (today the qty/units ComboBoxes share single state, so
-  // added rows would mirror the same values). Prefixed with _ to keep it from
-  // tripping noUnusedLocals while intentionally unwired.
-  const _addDirection = () => {
-    directionId += 1
-    setDirections((prev) => [
+  // --- Ingredients -----------------------------------------------------------
+
+  const addIngredient = () => {
+    nextIngredientId += 1
+    setIngredients((prev) => [
       ...prev,
-      { id: directionId, text: '', imageUrl: null },
+      { id: nextIngredientId, name: '', qty: '', units: '' },
     ])
   }
-  void _addDirection
+
+  const updateIngredient = (id: number, patch: Partial<Ingredient>) => {
+    setIngredients((prev) =>
+      prev.map((ing) => (ing.id === id ? { ...ing, ...patch } : ing))
+    )
+  }
+
+  const removeIngredient = (id: number) => {
+    setIngredients((prev) => prev.filter((ing) => ing.id !== id))
+  }
+
+  // --- Directions ------------------------------------------------------------
+
+  const addDirection = () => {
+    nextDirectionId += 1
+    setDirections((prev) => [
+      ...prev,
+      { id: nextDirectionId, text: '', imageUrl: null },
+    ])
+  }
 
   const updateDirectionText = (id: number, text: string) => {
     setDirections((prev) =>
@@ -197,6 +229,8 @@ export default function CreateRecipe() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // --- Tags ------------------------------------------------------------------
+
   const toggleTag = (tag: string) => {
     setSelectedTags((prev) =>
       prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
@@ -237,6 +271,25 @@ export default function CreateRecipe() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [tagPickerOpen])
 
+  // --- Create / confirm ------------------------------------------------------
+
+  const handleConfirmCreate = () => {
+    // TODO: persist the recipe once Firebase is configured. The form state
+    // (title, cover image, meta, ingredients, directions + their images) is
+    // ready to be assembled and uploaded here.
+    setConfirmOpen(false)
+  }
+
+  // Close the confirm dialog on Escape while it's open
+  useEffect(() => {
+    if (!confirmOpen) return
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setConfirmOpen(false)
+    }
+    document.addEventListener('keydown', handleKey)
+    return () => document.removeEventListener('keydown', handleKey)
+  }, [confirmOpen])
+
   return (
     <div className="create-recipe">
       <h1 className="create-recipe__title">Create Recipe</h1>
@@ -269,7 +322,11 @@ export default function CreateRecipe() {
               ×
             </button>
           )}
-          <button type="button" className="create-button">
+          <button
+            type="button"
+            className="create-button"
+            onClick={() => setConfirmOpen(true)}
+          >
             Create
           </button>
           <input
@@ -396,29 +453,52 @@ export default function CreateRecipe() {
           <section className="section-card">
             <h2 className="section-card__heading">Ingredients</h2>
             <div className="section-card__list">
-              <div className="ingredient-entry">
-                <input
-                  type="text"
-                  className="ingredient-entry__name"
-                  placeholder="Ingredient name"
-                />
-                <ComboBox
-                  className="combo--compact"
-                  value={qty}
-                  onChange={setQty}
-                  options={QTY_PRESETS}
-                  placeholder="Qty"
-                />
-                <ComboBox
-                  className="combo--compact"
-                  value={units}
-                  onChange={setUnits}
-                  options={UNIT_PRESETS}
-                  placeholder="Units"
-                />
-              </div>
+              {ingredients.map((ingredient) => (
+                <div key={ingredient.id} className="ingredient-entry">
+                  <input
+                    type="text"
+                    className="ingredient-entry__name"
+                    placeholder="Ingredient name"
+                    value={ingredient.name}
+                    onChange={(e) =>
+                      updateIngredient(ingredient.id, { name: e.target.value })
+                    }
+                  />
+                  <ComboBox
+                    className="combo--compact"
+                    value={ingredient.qty}
+                    onChange={(qty) => updateIngredient(ingredient.id, { qty })}
+                    options={QTY_PRESETS}
+                    placeholder="Qty"
+                  />
+                  <ComboBox
+                    className="combo--compact"
+                    value={ingredient.units}
+                    onChange={(units) =>
+                      updateIngredient(ingredient.id, { units })
+                    }
+                    options={UNIT_PRESETS}
+                    placeholder="Units"
+                  />
+                  {ingredients.length > 1 && (
+                    <button
+                      type="button"
+                      className="entry-remove-button"
+                      aria-label="Remove ingredient"
+                      title="Remove ingredient"
+                      onClick={() => removeIngredient(ingredient.id)}
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
-            <button type="button" className="add-button">
+            <button
+              type="button"
+              className="add-button"
+              onClick={addIngredient}
+            >
               + Add Ingredient
             </button>
           </section>
@@ -429,89 +509,114 @@ export default function CreateRecipe() {
             <div className="section-card__list">
               {directions.map((direction, index) => (
                 <div key={direction.id} className="direction-entry">
-                  <div className="direction-entry__row">
-                    <span className="direction-entry__number">
-                      {index + 1}
-                    </span>
-                    <input
-                      type="text"
-                      className="direction-entry__input"
-                      placeholder="Start typing..."
-                      value={direction.text}
-                      onChange={(e) =>
-                        updateDirectionText(direction.id, e.target.value)
-                      }
-                    />
+                  <span className="direction-entry__number">{index + 1}</span>
+                  <input
+                    type="text"
+                    className="direction-entry__input"
+                    placeholder="Start typing..."
+                    value={direction.text}
+                    onChange={(e) =>
+                      updateDirectionText(direction.id, e.target.value)
+                    }
+                  />
+                  <button
+                    type="button"
+                    className={`direction-image-button${
+                      direction.imageUrl ? ' direction-image-button--set' : ''
+                    }`}
+                    title={
+                      direction.imageUrl
+                        ? 'Change step image'
+                        : 'Add a step image'
+                    }
+                    onClick={() =>
+                      direction.imageUrl
+                        ? removeDirectionImage(direction.id)
+                        : directionInputRefs.current[direction.id]?.click()
+                    }
+                    aria-label={
+                      direction.imageUrl
+                        ? `Remove image from step ${index + 1}`
+                        : `Add image to step ${index + 1}`
+                    }
+                  >
+                    {direction.imageUrl ? '× Image' : '+ Image'}
+                  </button>
+                  {directions.length > 1 && (
                     <button
                       type="button"
-                      className="direction-image-button"
-                      aria-label={`Attach image to step ${index + 1}`}
-                      title="Attach image"
-                      onClick={() =>
-                        directionInputRefs.current[direction.id]?.click()
-                      }
+                      className="entry-remove-button"
+                      aria-label={`Remove step ${index + 1}`}
+                      title="Remove step"
+                      onClick={() => removeDirection(direction.id)}
                     >
-                      ＋
+                      ×
                     </button>
-                    {directions.length > 1 && (
-                      <button
-                        type="button"
-                        className="direction-remove-button"
-                        aria-label={`Remove step ${index + 1}`}
-                        title="Remove step"
-                        onClick={() => removeDirection(direction.id)}
-                      >
-                        ×
-                      </button>
-                    )}
-                    <input
-                      ref={(el) => {
-                        directionInputRefs.current[direction.id] = el
-                      }}
-                      type="file"
-                      accept="image/*"
-                      className="visually-hidden"
-                      onChange={(e) =>
-                        setDirectionImage(direction.id, e.target.files?.[0])
-                      }
-                    />
-                  </div>
-
-                  {direction.imageUrl && (
-                    <div className="direction-image">
-                      <img
-                        className="direction-image__img"
-                        src={direction.imageUrl}
-                        alt={`Step ${index + 1}`}
-                      />
-                      <button
-                        type="button"
-                        className="direction-image__remove"
-                        aria-label={`Remove image from step ${index + 1}`}
-                        onClick={() => removeDirectionImage(direction.id)}
-                      >
-                        ×
-                      </button>
-                    </div>
                   )}
+                  <input
+                    ref={(el) => {
+                      directionInputRefs.current[direction.id] = el
+                    }}
+                    type="file"
+                    accept="image/*"
+                    className="visually-hidden"
+                    onChange={(e) =>
+                      setDirectionImage(direction.id, e.target.files?.[0])
+                    }
+                  />
                 </div>
               ))}
             </div>
-            {/* TODO: Add Direction is unwired. Re-enable onClick={_addDirection}
-                once the shared-state bug is fixed — multiple direction entries
-                currently collide on the same combo/input state (e.g. the qty and
-                units ComboBoxes are driven by single shared `qty`/`units` state,
-                so every row would mirror the same value). Each direction needs
-                its own per-entry state before adding more rows is safe. */}
             <button
               type="button"
               className="add-button"
+              onClick={addDirection}
             >
               + Add Direction
             </button>
           </section>
         </div>
       </div>
+
+      {/* Create confirmation dialog */}
+      {confirmOpen && (
+        <div
+          className="modal-overlay"
+          onClick={() => setConfirmOpen(false)}
+        >
+          <div
+            className="modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="confirm-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 id="confirm-title" className="modal__title">
+              Create this recipe?
+            </h2>
+            <p className="modal__body">
+              Once created, your recipe will be saved. You can keep editing if
+              you’re not ready yet.
+            </p>
+            <div className="modal__actions">
+              <button
+                type="button"
+                className="modal__button modal__button--secondary"
+                onClick={() => setConfirmOpen(false)}
+              >
+                Keep editing
+              </button>
+              <button
+                type="button"
+                className="modal__button modal__button--primary"
+                onClick={handleConfirmCreate}
+              >
+                Create recipe
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

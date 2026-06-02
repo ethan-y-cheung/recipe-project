@@ -484,30 +484,51 @@
 /* Direction entry */
 .direction-entry {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 12px;
   background-color: #E1EBE1;
   border-radius: 16px;
   padding: 12px 16px;
 }
 
-.direction-entry__row {
-  display: flex;
+/* Inline pill toggle for attaching a step image (mirrors the cover button) */
+.direction-image-button {
+  flex-shrink: 0;
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: 6px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--text);
+  background-color: #fff;
+  border: 1px solid var(--muted-text);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
-/* Square icon-buttons sitting at the right of a direction row */
-.direction-image-button,
-.direction-remove-button {
+.direction-image-button:hover {
+  border-color: var(--text);
+  background-color: rgba(255, 255, 255, 0.7);
+}
+
+.direction-image-button--set {
+  border-color: var(--Header);
+  background-color: var(--Header);
+}
+
+/* Round × control shared by ingredient and direction rows */
+.entry-remove-button {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   padding: 0;
-  font-size: 16px;
+  font-size: 20px;
   line-height: 1;
   color: var(--text);
   background-color: #fff;
@@ -517,50 +538,8 @@
   transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
-.direction-image-button:hover,
-.direction-remove-button:hover {
+.entry-remove-button:hover {
   border-color: var(--text);
-  background-color: rgba(255, 255, 255, 0.7);
-}
-
-.direction-remove-button {
-  font-size: 20px;
-}
-
-/* Per-step image thumbnail with a remove control */
-.direction-image {
-  position: relative;
-  align-self: flex-start;
-  margin-left: 40px;
-}
-
-.direction-image__img {
-  display: block;
-  max-width: 220px;
-  max-height: 160px;
-  border-radius: 12px;
-  object-fit: cover;
-}
-
-.direction-image__remove {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  width: 24px;
-  height: 24px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  line-height: 1;
-  color: var(--text);
-  background-color: #fff;
-  border: 1px solid var(--muted-text);
-  border-radius: 50%;
-  cursor: pointer;
-}
-
-.direction-image__remove:hover {
   background-color: rgba(63, 74, 69, 0.12);
 }
 
@@ -605,6 +584,76 @@
 }
 
 .add-button:hover {
+  filter: brightness(0.96);
+}
+
+/* Create confirmation dialog */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background-color: rgba(63, 74, 69, 0.45);
+}
+
+.modal {
+  width: 100%;
+  max-width: 420px;
+  background-color: #fff;
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: 0 16px 48px rgba(63, 74, 69, 0.28);
+}
+
+.modal__title {
+  margin: 0 0 12px;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.modal__body {
+  margin: 0 0 24px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--muted-text);
+}
+
+.modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.modal__button {
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: filter 0.15s ease, background-color 0.15s ease;
+}
+
+.modal__button--secondary {
+  color: var(--text);
+  background-color: #fff;
+  border: 1px solid var(--muted-text);
+}
+
+.modal__button--secondary:hover {
+  background-color: var(--Background);
+}
+
+.modal__button--primary {
+  color: var(--text);
+  background-color: var(--Button);
+  border: none;
+}
+
+.modal__button--primary:hover {
   filter: brightness(0.96);
 }
 
