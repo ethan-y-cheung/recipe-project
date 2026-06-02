@@ -15,7 +15,7 @@ export interface Recipe{
     recipe_ID: string;
     user_generated: boolean;
     title : string;
-    tags_ids: string[];
+    tags: Tag[];
     ingredients: {
         name: string;
         quantity: string;
