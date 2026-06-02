@@ -46,6 +46,7 @@ export default function Recipes() {
 
 
   // will fetch from backend instead once connected to firebase
+  // are technically tags... will rename
   const recipeFilters = [
     {
       value: "Meal Type",
