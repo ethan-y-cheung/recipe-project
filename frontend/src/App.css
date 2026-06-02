@@ -101,6 +101,8 @@
 .hero {
   background-color: #F6F4E8;
   width: 100%;
+  position: relative;
+  z-index: 1;
 }
 
 .hero-inner {
@@ -119,6 +121,7 @@
 }
 
 .hero-eyebrow {
+  font-family: 'Gelasio', serif;
   font-size: 20px;
   color: #3F4A45;
   margin: 0 0 2px 0;
@@ -126,6 +129,7 @@
 }
 
 .hero-heading {
+  font-family: 'Gelasio', serif;
   font-size: 52px;
   font-weight: 700;
   color: #3F4A45;
@@ -181,20 +185,21 @@
 
 .hero-img-wrap {
   flex-shrink: 0;
-  width: 280px;
-  height: 320px;
-  overflow: hidden;
+  width: 420px;
+  height: 260px;
   border-radius: 16px;
+  overflow: hidden;
+  position: relative;
 }
 
 .hero-img {
-  width: 320px;
-  height: 280px;
-  object-fit: cover;
-  border-radius: 16px;
-  transform: rotate(90deg);
-  transform-origin: center center;
-  margin: 20px 0 0 -20px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 260px;
+  height: 420px;
+  object-fit: contain;
+  transform: translate(-50%, -50%) rotate(90deg);
 }
 
 /* ── Home: Wave Divider ─────────────────────────────── */
@@ -209,6 +214,7 @@
   display: block;
   width: 100%;
   height: 90px;
+  filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.15));
 }
 
 /* ── Home: Cards ────────────────────────────────────── */
