@@ -30,7 +30,7 @@ export interface Recipe{
 }
 export interface Rating{
     user_ID: string;
-    value : (1 | 2 | 3 | 4 | 5);
+    value : (0 | 1 | 2 | 3 | 4 | 5);
 }
 export interface Tag{
     name: string;
