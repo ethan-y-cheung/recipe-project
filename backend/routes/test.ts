@@ -64,8 +64,7 @@ router.get('/recipes', (req : express.Request, res : express.Response) => {
             instructions: [
                 'Instruction 1',
                 'Instruction 2',
-                'Instruction 3',
-                'Instruction 4'
+                'Instruction 3'
             ],
             images: [
             ],
@@ -100,8 +99,7 @@ router.get('/recipes', (req : express.Request, res : express.Response) => {
             instructions: [
                 'Instruction 1',
                 'Instruction 2',
-                'Instruction 3',
-                'Instruction 4'
+                'Instruction 3'
             ],
             images: [
                 "https://www.themealdb.com/images/media/meals/ustsqw1468250014.jpg"
@@ -137,8 +135,7 @@ router.get('/recipes', (req : express.Request, res : express.Response) => {
             instructions: [
                 'Instruction 1',
                 'Instruction 2',
-                'Instruction 3',
-                'Instruction 4'
+                'Instruction 3'
             ],
             images: [
                 "https://www.themealdb.com/images/media/meals/ustsqw1468250014.jpg"
