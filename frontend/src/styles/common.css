@@ -13,3 +13,9 @@
   width: 100%;
 }
 
+* {
+  --accent-green: #C0E1D2;
+  --accent-red: #DC9B9B;
+  --base-yellow: #F6F4E8;
+  --base-green: #E5EEE4;
+}
