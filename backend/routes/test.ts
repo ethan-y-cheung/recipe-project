@@ -8,6 +8,7 @@ router.get('/recipes', (req : express.Request, res : express.Response) => {
     const sampleRecipes: Recipe[] = [
         {   //base sample recipe
             recipe_ID: '1', //id should key into database, maybe we append source or recipe to front
+            creator_ID: "Janet",
             user_generated: true,
             title: 'Sample Recipe 1',
             created_at: new Date("2026-06-02"),
@@ -44,6 +45,7 @@ router.get('/recipes', (req : express.Request, res : express.Response) => {
         },
         {   //sample without image
             recipe_ID: '2', 
+            creator_ID: "Mark",
             user_generated: true,
             title: 'Sample Recipe 2',
             created_at: new Date("2026-06-02"),
@@ -79,6 +81,7 @@ router.get('/recipes', (req : express.Request, res : express.Response) => {
         },
         {   //sample no tags
             recipe_ID: '3', 
+            creator_ID: "michael",
             user_generated: true,
             title: 'Sample Recipe 2',
             created_at: new Date("2026-06-02"),
@@ -115,6 +118,7 @@ router.get('/recipes', (req : express.Request, res : express.Response) => {
         },
         {   //sample no rating
             recipe_ID: '4', 
+            creator_ID: "michael",
             user_generated: true,
             title: 'Sample Recipe 2',
             created_at: new Date("2026-06-02"),
@@ -144,6 +148,7 @@ router.get('/recipes', (req : express.Request, res : express.Response) => {
         },
         {   //sample no ingredients
             recipe_ID: '5',
+            creator_ID: "Janet",
             user_generated: true,
             title: 'Sample Recipe 1',
             created_at: new Date("2026-06-02"),
@@ -180,6 +185,7 @@ router.get('/recipes', (req : express.Request, res : express.Response) => {
         },
         {   //sample many ingredients
             recipe_ID: '6',
+            creator_ID: "Mia",
             user_generated: true,
             title: 'Sample Recipe 1',
             created_at: new Date("2026-06-02"),
@@ -240,6 +246,7 @@ router.get('/recipes', (req : express.Request, res : express.Response) => {
         },
         {   //sample no instructions (maybe invalid)
             recipe_ID: '7',
+            creator_ID: "Lucinda",
             user_generated: true,
             title: 'Sample Recipe 1',
             created_at: new Date("2026-06-02"),
@@ -273,6 +280,7 @@ router.get('/recipes', (req : express.Request, res : express.Response) => {
         },
         {   //sample many instructions
             recipe_ID: '8',
+            creator_ID: "Jane_Doe",
             user_generated: true,
             title: 'Sample Recipe 1',
             created_at: new Date("2026-06-02"),
@@ -312,6 +320,7 @@ router.get('/recipes', (req : express.Request, res : express.Response) => {
         },        
         {   //sample with user_generated false (shouldn't change much just to test)
             recipe_ID: '9',
+            creator_ID: "Molly",
             user_generated: false,
             title: 'Sample Recipe 1',
             created_at: new Date("2026-06-02"),
