@@ -9,7 +9,7 @@ export type Recipe = {
   tags: string[]
 }
 
-export const recipes: Recipe[] = [
+const recipes: Recipe[] = [
   {
     id: '1',
     recipeImage: 'https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=800&q=80',
@@ -91,3 +91,5 @@ export const recipes: Recipe[] = [
     tags: ['Italian', 'Vegetarian', 'Pizza'],
   },
 ]
+
+export default recipes;
