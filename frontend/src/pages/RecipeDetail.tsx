@@ -1,11 +1,202 @@
 import { useParams } from 'react-router-dom'
+import { Star, Bookmark, ThumbsUp, Reply, MessageCircle} from 'lucide-react';
+import { useState } from 'react';
+import { formatDistanceToNow } from 'date-fns';
+import type { Recipe, Comments, User } from "../../../shared/types/index.ts";
+import Chatbot from '../components/Chatbot.tsx';
+import CommentForm from '../components/CommentForm.tsx';
+import "../styles/RecipeDetail.css";
+
+const recipe: Recipe = {
+  recipe_ID: "123",
+  user_generated: false,
+  creator_ID: "Allison",
+  title : "ramen",
+  created_at: new Date(),
+  tags: [{name: "quick", type: "difficulty"}],
+  ingredients: [
+    {name: "ramen", quantity: "one package"}, 
+    {name: "water", quantity: "2 cups"},
+    {name: "salt", quantity: "1 teaspoon"},
+    {name: "siracha", quantity: "1 lb"}],
+  instructions: ["cook ramen", "eat ramen", "clean kitchen"],
+  images: [""],
+  rating: [{user_ID: "Kaitlyn", value: 5}, {user_ID: "Leo", value: 2}]
+};
+
+const user: User = {
+  username: "example",
+  password: "password123",
+  admin: false,
+  my_recipes: [],
+  saved_recipes: [],
+}
+
+const comments: Comments[] = [
+    {recipe_ID: "123",
+    creator_ID: "Lucinda",
+    content: "needs butter",
+    likes: [], //array of user_IDs who liked the comment
+    created_at: new Date(2026, 6, 1),
+    replies: []},
+    {recipe_ID: "123",
+    creator_ID: "Michael",
+    content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam facilisis, nunc sed feugiat euismod, mi ante pulvinar velit, facilisis commodo massa massa egestas nulla. Donec id leo sed turpis mollis malesuada. Phasellus posuere semper molestie. Praesent quis tincidunt nisl. Duis fringilla metus risus, ac tempor nunc dignissim a. Nulla vitae ornare ligula. Morbi facilisis facilisis nulla, in rutrum odio maximus at.",
+    likes: ["rachel"], //array of user_IDs who liked the comment
+    created_at: new Date(2024, 1, 1),
+    replies: []}
+]
 
 export default function RecipeDetail() {
-  const { recipeType, recipeId } = useParams()
+  const { recipeId } = useParams<{recipeId: string}>();
+
+  const [done, setDone] = useState<boolean[] | null>(new Array(recipe.ingredients.length).fill(false));
+  const [bookmarked, setBookmarked] = useState<boolean>(false); // idk how to do this :(
+  
+
+  const [avgRating, setAverageRating] = useState<number>(recipe.rating.length > 0 
+  ? recipe.rating.reduce((score, rating) => score + rating.value, 0) / recipe.rating.length 
+  : 0);
+
+  
+  const [showChat, setShowChat] = useState<boolean>(false);
+  const [rating, setRating] = useState<number>(0);
+  const [hasRated, setHasRated] = useState<boolean>(recipe.rating.some(rating => rating.user_ID === 'Charlie'));
+
+  const handleRating = () => {
+    // if you have already rated it, remove that value
+    setAverageRating(((avgRating*recipe.rating.length) - rating) / recipe.rating.length-1)
+
+    // if you have not rated it, add that value
+    setAverageRating(((avgRating*recipe.rating.length) + rating) / recipe.rating.length+1);
+  }
+
+  // const { recipeType, recipeId } = useParams()
   return (
-    <div>
-      <h1>Recipe Detail Page</h1>
-      <p>Type: {recipeType} | ID: {recipeId}</p>
-    </div>
+    <>
+      <article className="page-content">
+        <header className="recipe-header">
+          <div className="recipe-header-row">
+            <h1>{recipe.title}</h1>
+            <div className="star-container">
+              <Star fill={avgRating >= 1 ? "#FFDF00" : "transparent"} className="header-icon"/>
+              <Star fill={avgRating >= 2 ? "#FFDF00" : "transparent"} className="header-icon"/>
+              <Star fill={avgRating >= 3 ? "#FFDF00" : "transparent"} className="header-icon"/>
+              <Star fill={avgRating >= 4 ? "#FFDF00" : "transparent"} className="header-icon"/>
+              <Star fill={avgRating >= 5 ? "#FFDF00" : "transparent"} className="header-icon"/>
+            </div>
+          </div>
+
+          <div className="recipe-header-row">
+            <p>author: {recipe.creator_ID ? recipe.creator_ID : "Unknown"}</p>
+            <p>created: {recipe.created_at ? formatDistanceToNow(recipe.created_at, { addSuffix: true }) : "Unknown"}</p>
+          </div>
+          
+          <div className="recipe-header-row">
+            <Bookmark fill={bookmarked ? "#FFDF00" : "transparent"} className="header-icon" onClick={() => setBookmarked(prevState => !prevState)}/> 
+            <div className="star-container">
+              {recipe.tags.map((tag, index) => (
+                <div key={index} className="tag"> {`${tag.type} : ${tag.name}`}</div>
+              ))}
+            </div>
+          </div>
+        </header>
+          
+        <section className="detail-page">
+
+          <div className="scroll-info">
+            {/* Ingredients / Ingredients section */}
+            <section className="grid-square">
+              <h2 className="section-title">Ingredients</h2>
+              <div className="ingredients-container">
+                {recipe.ingredients.map((ingredient, index) => (
+                  <label 
+                  key={index}
+                  className={`ingredient ${done[index] ? "crossed-out": ""}`}>
+                    <input
+                      type="checkbox"
+                      style={{width:"1rem", height:"1rem"}}
+                      checked={done[index]} 
+                      onChange={() => {
+                        const newDone = [...done];
+                        newDone[index] = !done[index]; // flip state
+                        setDone(newDone);
+                      }} 
+                    />
+                    <span>{ingredient.name} - {ingredient.quantity} </span>
+                  </label>
+                ))}
+              </div>
+
+              {/* instructions section */}
+              <h2 className="section-title">Instructions</h2>
+              <ol className="ingredients-container">
+                {recipe.instructions.map((step, index) => (
+                  <li className="step" key={index}>{step}</li>
+                ))}
+              </ol>
+            </section>
+
+            {/* Discussion Section */}
+            <section>
+              <h2 className="section-title">Discussion</h2>
+              <div className="discussion-container">
+                  {comments.map((comment, index) => (
+                    <div className="comment" key={index}> 
+                      <p style={{color: "black"}}><strong>{comment.creator_ID}</strong></p>
+                      <p>{formatDistanceToNow(comment.created_at, { addSuffix: true })}</p>
+                      <p>{comment.content}</p>
+                      <div className="comment-footer"> 
+                        <p>{comment.likes.length}</p>
+                        <ThumbsUp />
+                        <button className="reply-button"> <Reply/>reply </button>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </section>
+
+            <h2 className="section-title">Leave Feedback </h2>
+            <section className="feedback-container">
+                {/* rate and leave a comment */}
+              <div className="rating-container">
+                <h2>Rating</h2> 
+                <div className="star-container">
+                  <Star fill={rating >= 1 ? "#FFDF00" : "transparent"} onClick={() => setRating(1)} className="header-icon"/>
+                  <Star fill={rating >= 2 ? "#FFDF00" : "transparent"} onClick={() => setRating(2)} className="header-icon"/>
+                  <Star fill={rating >= 3 ? "#FFDF00" : "transparent"} onClick={() => setRating(3)} className="header-icon"/>
+                  <Star fill={rating >= 4 ? "#FFDF00" : "transparent"} onClick={() => setRating(4)} className="header-icon"/>
+                  <Star fill={rating >= 5 ? "#FFDF00" : "transparent"} onClick={() => setRating(5)} className="header-icon"/>
+                </div>
+              </div>
+              <CommentForm username={user.username}/>
+            </section>
+          </div>
+      
+          {/* similar recipe section */}
+          <aside className="recipe-sidebar">
+            <h2 className="section-title">Similar Recipes</h2>
+            <div className="similar-recipe-container">
+              {/* Insert similar cards here */}
+              
+            </div>
+          </aside>
+          
+        </section>
+      </article>
+
+      <button 
+      className="ai-button"
+      onClick={() => setShowChat(prevState=>!prevState)}
+      >
+        <MessageCircle />
+        Let's chat!
+      </button>
+
+      {showChat ? <Chatbot setClose={setShowChat}/> : null }
+  
+      
+    
+    </>
   )
 }
