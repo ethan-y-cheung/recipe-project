@@ -1,6 +1,6 @@
 import './RecipeCard.css'
 
-import type { Recipe } from '../pages/recipes'
+import type { Recipe } from '../pages/recipeData'
 
 const RecipeCard = ({ recipeData }: { recipeData: Recipe }) => {
   return (
