@@ -193,6 +193,56 @@
   filter: brightness(0.96);
 }
 
+/* Visually hide native file inputs while keeping them accessible */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Inline cover-image button, sits between the title input and Create button */
+.cover-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 14px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  background-color: #fff;
+  border: 1px solid var(--muted-text);
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.cover-button:hover {
+  border-color: var(--text);
+  background-color: rgba(255, 255, 255, 0.7);
+}
+
+.cover-button--set {
+  border-color: var(--Header);
+  background-color: var(--Header);
+}
+
+.cover-button--remove {
+  gap: 0;
+  padding: 0;
+  width: 44px;
+  justify-content: center;
+  font-size: 22px;
+  line-height: 1;
+}
+
 /* Meta dropdowns: servings, total time, tags */
 .create-meta {
   display: flex;
@@ -434,11 +484,84 @@
 /* Direction entry */
 .direction-entry {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 12px;
   background-color: #E1EBE1;
   border-radius: 16px;
   padding: 12px 16px;
+}
+
+.direction-entry__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Square icon-buttons sitting at the right of a direction row */
+.direction-image-button,
+.direction-remove-button {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--text);
+  background-color: #fff;
+  border: 1px solid var(--muted-text);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.direction-image-button:hover,
+.direction-remove-button:hover {
+  border-color: var(--text);
+  background-color: rgba(255, 255, 255, 0.7);
+}
+
+.direction-remove-button {
+  font-size: 20px;
+}
+
+/* Per-step image thumbnail with a remove control */
+.direction-image {
+  position: relative;
+  align-self: flex-start;
+  margin-left: 40px;
+}
+
+.direction-image__img {
+  display: block;
+  max-width: 220px;
+  max-height: 160px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.direction-image__remove {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--text);
+  background-color: #fff;
+  border: 1px solid var(--muted-text);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.direction-image__remove:hover {
+  background-color: rgba(63, 74, 69, 0.12);
 }
 
 .direction-entry__number {
@@ -467,7 +590,6 @@
   min-width: 0;
 }
 
-/* Add buttons — centered, pinned at the bottom of each card */
 .add-button {
   align-self: center;
   margin-top: 8px;

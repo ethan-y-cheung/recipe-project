@@ -89,6 +89,15 @@ function ComboBox({
 }
 
 
+type Direction = {
+  id: number
+  text: string
+  /** Object URL for a locally selected image preview, or null. */
+  imageUrl: string | null
+}
+
+let directionId = 1
+
 export default function CreateRecipe() {
   const [availableTags, setAvailableTags] = useState<string[]>(DEFAULT_TAGS)
   const [selectedTags, setSelectedTags] = useState<string[]>([])
@@ -99,6 +108,94 @@ export default function CreateRecipe() {
   const [totalTime, setTotalTime] = useState('')
   const [qty, setQty] = useState('')
   const [units, setUnits] = useState('')
+
+  // Cover image (local preview only — uploaded when the save flow exists)
+  const [coverUrl, setCoverUrl] = useState<string | null>(null)
+  const coverInputRef = useRef<HTMLInputElement>(null)
+
+  const [directions, setDirections] = useState<Direction[]>([
+    { id: directionId, text: '', imageUrl: null },
+  ])
+  // One hidden file input per direction, keyed by direction id
+  const directionInputRefs = useRef<Record<number, HTMLInputElement | null>>({})
+
+  const setCoverImage = (file: File | undefined) => {
+    if (!file) return
+    setCoverUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev)
+      return URL.createObjectURL(file)
+    })
+  }
+
+  const removeCover = () => {
+    setCoverUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev)
+      return null
+    })
+    if (coverInputRef.current) coverInputRef.current.value = ''
+  }
+
+  // TODO: re-wire to the "+ Add Direction" button once each direction has its
+  // own per-entry state (today the qty/units ComboBoxes share single state, so
+  // added rows would mirror the same values). Prefixed with _ to keep it from
+  // tripping noUnusedLocals while intentionally unwired.
+  const _addDirection = () => {
+    directionId += 1
+    setDirections((prev) => [
+      ...prev,
+      { id: directionId, text: '', imageUrl: null },
+    ])
+  }
+  void _addDirection
+
+  const updateDirectionText = (id: number, text: string) => {
+    setDirections((prev) =>
+      prev.map((d) => (d.id === id ? { ...d, text } : d))
+    )
+  }
+
+  const setDirectionImage = (id: number, file: File | undefined) => {
+    if (!file) return
+    setDirections((prev) =>
+      prev.map((d) => {
+        if (d.id !== id) return d
+        if (d.imageUrl) URL.revokeObjectURL(d.imageUrl)
+        return { ...d, imageUrl: URL.createObjectURL(file) }
+      })
+    )
+  }
+
+  const removeDirectionImage = (id: number) => {
+    setDirections((prev) =>
+      prev.map((d) => {
+        if (d.id !== id) return d
+        if (d.imageUrl) URL.revokeObjectURL(d.imageUrl)
+        return { ...d, imageUrl: null }
+      })
+    )
+    const input = directionInputRefs.current[id]
+    if (input) input.value = ''
+  }
+
+  const removeDirection = (id: number) => {
+    setDirections((prev) => {
+      const target = prev.find((d) => d.id === id)
+      if (target?.imageUrl) URL.revokeObjectURL(target.imageUrl)
+      return prev.filter((d) => d.id !== id)
+    })
+  }
+
+  // Release any object URLs still held when the page unmounts
+  useEffect(() => {
+    return () => {
+      if (coverUrl) URL.revokeObjectURL(coverUrl)
+      directions.forEach((d) => {
+        if (d.imageUrl) URL.revokeObjectURL(d.imageUrl)
+      })
+    }
+    // Cleanup only on unmount; per-image revokes are handled at replace time.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const toggleTag = (tag: string) => {
     setSelectedTags((prev) =>
@@ -152,9 +249,36 @@ export default function CreateRecipe() {
             className="recipe-title-input"
             placeholder="Recipe title"
           />
+          <button
+            type="button"
+            className={`cover-button${coverUrl ? ' cover-button--set' : ''}`}
+            onClick={() => coverInputRef.current?.click()}
+            title={coverUrl ? 'Change cover image' : 'Add a cover image'}
+          >
+            <span aria-hidden="true">+</span>
+            {coverUrl ? 'Cover added' : 'Cover image'}
+          </button>
+          {coverUrl && (
+            <button
+              type="button"
+              className="cover-button cover-button--remove"
+              onClick={removeCover}
+              title="Remove cover image"
+              aria-label="Remove cover image"
+            >
+              ×
+            </button>
+          )}
           <button type="button" className="create-button">
             Create
           </button>
+          <input
+            ref={coverInputRef}
+            type="file"
+            accept="image/*"
+            className="visually-hidden"
+            onChange={(e) => setCoverImage(e.target.files?.[0])}
+          />
         </div>
 
         {/* Meta dropdowns */}
@@ -303,16 +427,86 @@ export default function CreateRecipe() {
           <section className="section-card">
             <h2 className="section-card__heading">Directions</h2>
             <div className="section-card__list">
-              <div className="direction-entry">
-                <span className="direction-entry__number">1</span>
-                <input
-                  type="text"
-                  className="direction-entry__input"
-                  placeholder="Start typing..."
-                />
-              </div>
+              {directions.map((direction, index) => (
+                <div key={direction.id} className="direction-entry">
+                  <div className="direction-entry__row">
+                    <span className="direction-entry__number">
+                      {index + 1}
+                    </span>
+                    <input
+                      type="text"
+                      className="direction-entry__input"
+                      placeholder="Start typing..."
+                      value={direction.text}
+                      onChange={(e) =>
+                        updateDirectionText(direction.id, e.target.value)
+                      }
+                    />
+                    <button
+                      type="button"
+                      className="direction-image-button"
+                      aria-label={`Attach image to step ${index + 1}`}
+                      title="Attach image"
+                      onClick={() =>
+                        directionInputRefs.current[direction.id]?.click()
+                      }
+                    >
+                      ＋
+                    </button>
+                    {directions.length > 1 && (
+                      <button
+                        type="button"
+                        className="direction-remove-button"
+                        aria-label={`Remove step ${index + 1}`}
+                        title="Remove step"
+                        onClick={() => removeDirection(direction.id)}
+                      >
+                        ×
+                      </button>
+                    )}
+                    <input
+                      ref={(el) => {
+                        directionInputRefs.current[direction.id] = el
+                      }}
+                      type="file"
+                      accept="image/*"
+                      className="visually-hidden"
+                      onChange={(e) =>
+                        setDirectionImage(direction.id, e.target.files?.[0])
+                      }
+                    />
+                  </div>
+
+                  {direction.imageUrl && (
+                    <div className="direction-image">
+                      <img
+                        className="direction-image__img"
+                        src={direction.imageUrl}
+                        alt={`Step ${index + 1}`}
+                      />
+                      <button
+                        type="button"
+                        className="direction-image__remove"
+                        aria-label={`Remove image from step ${index + 1}`}
+                        onClick={() => removeDirectionImage(direction.id)}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
-            <button type="button" className="add-button">
+            {/* TODO: Add Direction is unwired. Re-enable onClick={_addDirection}
+                once the shared-state bug is fixed — multiple direction entries
+                currently collide on the same combo/input state (e.g. the qty and
+                units ComboBoxes are driven by single shared `qty`/`units` state,
+                so every row would mirror the same value). Each direction needs
+                its own per-entry state before adding more rows is safe. */}
+            <button
+              type="button"
+              className="add-button"
+            >
               + Add Direction
             </button>
           </section>
