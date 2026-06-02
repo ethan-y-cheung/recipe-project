@@ -14,6 +14,7 @@ export interface User{
 export interface Recipe{
     recipe_ID: string;
     user_generated: boolean;
+    creator_ID: string | null;
     title : string;
     created_at: Date | null;
     tags: Tag[];
