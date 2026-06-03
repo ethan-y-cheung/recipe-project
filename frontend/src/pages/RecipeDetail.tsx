@@ -1,10 +1,11 @@
 // import { useParams } from 'react-router-dom'
-import { Star, Bookmark, ThumbsUp, Reply, MessageCircle} from 'lucide-react';
+import { Star, Bookmark, MessageCircle} from 'lucide-react';
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import type { Recipe, Comments, User, Rating } from "../../../shared/types/index.ts";
 import Chatbot from '../components/Chatbot.tsx';
 import CommentForm from '../components/CommentForm.tsx';
+import Discussion from '../components/Discussion.tsx';
 import "../styles/RecipeDetail.css";
 
 const recipe: Recipe = {
@@ -46,7 +47,14 @@ const comments: Comments[] = [
     content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam facilisis, nunc sed feugiat euismod, mi ante pulvinar velit, facilisis commodo massa massa egestas nulla. Donec id leo sed turpis mollis malesuada. Phasellus posuere semper molestie. Praesent quis tincidunt nisl. Duis fringilla metus risus, ac tempor nunc dignissim a. Nulla vitae ornare ligula. Morbi facilisis facilisis nulla, in rutrum odio maximus at.",
     likes: ["rachel"], //array of user_IDs who liked the comment
     created_at: new Date(2024, 1, 1),
-    replies: []}
+    replies: [
+       {recipe_ID: "123",
+      creator_ID: "Lucinda",
+      content: "needs butter",
+      likes: [], //array of user_IDs who liked the comment
+      created_at: new Date(2026, 6, 1),
+      replies: []}
+    ]}
 ]
 
 export default function RecipeDetail() {
@@ -162,23 +170,7 @@ export default function RecipeDetail() {
             </section>
 
             {/* Discussion Section */}
-            <section>
-              <h2 className="section-title">Discussion</h2>
-              <div className="discussion-container">
-                  {comments.map((comment, index) => (
-                    <div className="comment" key={index}> 
-                      <p style={{color: "black"}}><strong>{comment.creator_ID}</strong></p>
-                      <p>{formatDistanceToNow(comment.created_at, { addSuffix: true })}</p>
-                      <p>{comment.content}</p>
-                      <div className="comment-footer"> 
-                        <p>{comment.likes.length}</p>
-                        <ThumbsUp />
-                        <button className="reply-button"> <Reply/>reply </button>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </section>
+            <Discussion username={user.username} comments={comments}/>
 
             <h2 className="section-title">Leave Feedback </h2>
             <section className="feedback-container">
@@ -187,10 +179,10 @@ export default function RecipeDetail() {
                 <h2>Rating</h2> 
                 <div className="star-container">
                   <Star fill={rating ?? 0 >= 1 ? "#FFDF00" : "transparent"} onClick={() => handleRating(1)} className="header-icon"/>
-                  <Star fill={rating ?? 0 >= 2 ? "#FFDF00" : "transparent"} onClick={() => setRating(2)} className="header-icon"/>
-                  <Star fill={rating ?? 0 >= 3 ? "#FFDF00" : "transparent"} onClick={() => setRating(3)} className="header-icon"/>
-                  <Star fill={rating ?? 0 >= 4 ? "#FFDF00" : "transparent"} onClick={() => setRating(4)} className="header-icon"/>
-                  <Star fill={rating ?? 0 >= 5 ? "#FFDF00" : "transparent"} onClick={() => setRating(5)} className="header-icon"/>
+                  <Star fill={rating ?? 0 >= 2 ? "#FFDF00" : "transparent"} onClick={() => handleRating(2)} className="header-icon"/>
+                  <Star fill={rating ?? 0 >= 3 ? "#FFDF00" : "transparent"} onClick={() => handleRating(3)} className="header-icon"/>
+                  <Star fill={rating ?? 0 >= 4 ? "#FFDF00" : "transparent"} onClick={() => handleRating(4)} className="header-icon"/>
+                  <Star fill={rating ?? 0 >= 5 ? "#FFDF00" : "transparent"} onClick={() => handleRating(5)} className="header-icon"/>
                 </div>
               </div>
               <CommentForm username={user.username}/>
