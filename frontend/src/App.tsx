@@ -6,7 +6,7 @@ import RecipeDetail from './pages/RecipeDetail'
 import MyRecipes from './pages/MyRecipes'
 import CreateRecipe from './pages/CreateRecipe'
 import Admin from './pages/Admin'
-import './styles/common.css'
+import './styles/common.css';
 
 function App() {
   return (
