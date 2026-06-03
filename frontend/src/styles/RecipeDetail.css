@@ -134,6 +134,15 @@
   border-radius: 30px;
 }
 
+.icon-button {
+  color: gray;
+  cursor: pointer;
+}
+
+.icon-button:hover {
+  color: black;
+}
+
 .discussion-filter {
   max-width: 10rem;
   margin: 0.5rem 0.5rem 1rem 1rem;

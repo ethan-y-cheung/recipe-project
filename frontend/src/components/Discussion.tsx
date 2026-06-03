@@ -16,9 +16,52 @@ interface FilterOption {
   label: string;
 }
 
+// mock api
+const api = {
+  toggleLike: async (): Promise<{ success: boolean }> => {
+    // Mimic network latency
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    if (Math.random() < 0.05) throw new Error('Network error'); // 5% failure chance
+    return { success: true };
+  }
+}
 
-const Discussion = ( {comments} : DiscussionProps) => {
+
+const Discussion = ( {username, comments} : DiscussionProps) => {
   // const [openReply, setOpenReply] = useState<boolean>(false);
+  const [isMutating, setIsMutating] = useState<boolean>(false);
+  const [allPosts, setAllPosts] = useState<Comments[]>(comments);
+
+  const handleLike = async (comment : Comments) => {
+    if (isMutating) return; // no double clicking
+    setIsMutating(true);
+
+    const prevComment : Comments = comment;
+    const newLikes : string[] = comment.likes.includes(username) ? comment.likes.filter(user => user !== username) : [...comment.likes, username];
+
+    const newPost : Comments = prevComment;
+    prevComment.likes = newLikes;
+
+    // update posts on the page
+
+    const updatedPosts : Comments[] = allPosts.map(post => post.id === prevComment.id ? newPost : post); // either remove or add user id for liking the post
+    setAllPosts([...updatedPosts]);
+
+    try {
+      // mocked update database
+      await api.toggleLike();
+    } catch (error) {
+      // 4. Roll back to previous state if API fails
+      console.error(`Failed to like post:`, error);
+      const updatedPosts : Comments[] = allPosts.map(post => post.id === prevComment.id ? prevComment : post); // either remove or add user id for liking the post
+      setAllPosts(updatedPosts);
+    } finally {
+      setIsMutating(false);
+    }
+  };
+
+  
+
   const options: FilterOption[] = [
     { label: "Most Likes", value: "likes" },
     { label: "Most Recent", value: "created_at" }
@@ -32,7 +75,7 @@ const Discussion = ( {comments} : DiscussionProps) => {
     setFilter(newFilter);
   }
 
-  const sortedComments = comments.toSorted((a, b) => {
+  const sortedComments = allPosts.toSorted((a, b) => {
     if (filter === 'likes') {
       // Sort descending by total number of likes
       return b.likes.length - a.likes.length;
@@ -81,7 +124,7 @@ const Discussion = ( {comments} : DiscussionProps) => {
                 <p className="comment-content">{comment.content}</p>
                 <div className="comment-footer"> 
                   <p>{comment.likes.length}</p>
-                  <ThumbsUp />
+                  <ThumbsUp onClick={() => handleLike(comment)} className="icon-button"/>
                   <button className="reply-button"> <Reply/>reply </button>
                 </div>
               </div>
@@ -92,7 +135,7 @@ const Discussion = ( {comments} : DiscussionProps) => {
                   <p className="comment-content">{reply.content}</p>
                   <div className="comment-footer"> 
                     <p>{reply.likes.length}</p>
-                    <ThumbsUp />
+                    <ThumbsUp onClick={() => handleLike(reply)} className="icon-button" />
                     <button className="reply-button"> <Reply/>reply </button>
                   </div>
                 </div>))}

@@ -37,10 +37,11 @@ export interface Tag{
     type: string;
 }
 export interface Comments{
+    id: string;
     recipe_ID: string;
     creator_ID: string
     content: string;
-    likes: string[]; //array of user_IDs who liked the comment
+    likes: string[]; // array of user_IDs who liked the comment
     created_at: Date;
     replies: Comments[]; //array of replies to the comment, which are also of type Comments
 }
