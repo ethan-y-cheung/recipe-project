@@ -1,5 +1,8 @@
 import type { Recipe } from "../../../shared/types";
 import RecipeDetail from "../pages/RecipeDetail";
+
+import "../styles/Admin.css";
+import "../styles/common.css";
 interface AdminRecipeDetailModalProps {
     recipe: Recipe;
     onClose: () => void;
@@ -17,20 +20,18 @@ export default function AdminRecipeDetailModal({
         <div className="modal-overlay">
 
             <div className="review-modal">
-
+                <button className="close-btn"
+                onClick={onClose}>
+                    ✕
+                </button>
                 <div className="review-header">
 
                     <h2>Recipe Review</h2>
-
-                    <button onClick={onClose}>
-                        ✕
-                    </button>
-
                 </div>
 
                 <div className="review-actions">
 
-                    <button
+                    <button className="approve-btn"
                         onClick={() =>
                             onApprove(recipe.recipe_ID)
                         }
@@ -38,7 +39,7 @@ export default function AdminRecipeDetailModal({
                         Approve
                     </button>
 
-                    <button
+                    <button className="deny-btn"
                         onClick={() =>
                             onDeny(recipe.recipe_ID)
                         }
@@ -48,7 +49,7 @@ export default function AdminRecipeDetailModal({
 
                 </div>
 
-                <RecipeDetail recipe={recipe} />
+                <RecipeDetail/> //need to modify this to include recipe data
 
             </div>
 
