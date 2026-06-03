@@ -1,18 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import '../styles/Login.css';
 
-export default function Login() {
+function LoginForm() {
   const location = useLocation();
   const initialMode = (location.state as { mode?: string })?.mode === 'signup' ? 'signup' : 'signin';
   const [mode, setMode] = useState<'signin' | 'signup'>(initialMode);
-
-  useEffect(() => {
-    const incoming = (location.state as { mode?: string })?.mode;
-    if (incoming === 'signup') setMode('signup');
-    else if (incoming === 'signin') setMode('signin');
-  }, [location.state]);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
@@ -105,4 +99,9 @@ export default function Login() {
       </div>
     </div>
   );
+}
+
+export default function Login() {
+  const location = useLocation();
+  return <LoginForm key={location.key} />;
 }
