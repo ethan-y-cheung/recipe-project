@@ -92,6 +92,8 @@ router.get('/recipes', (req, res) => {
             title: "Sample Recipe 2",
             created_at: new Date("2026-06-02"),
             approved: false,
+            total_time: null,
+            servings: null,
             tags: [],
             ingredients: [
                 {
