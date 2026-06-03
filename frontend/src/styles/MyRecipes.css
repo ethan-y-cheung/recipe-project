@@ -418,6 +418,8 @@
 
 .meta-label {
     font-weight: 700;
+    white-space: nowrap;
+    margin-right: 0.25rem;
 }
 
 .meta-value {

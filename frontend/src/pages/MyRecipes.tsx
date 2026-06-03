@@ -447,7 +447,7 @@ export default function MyRecipes() {
                                         <div className="recipe-meta-box">
                                             <div className="recipe-meta-item">
                                                 <span className="meta-label">
-                                                    Chef:
+                                                    Made By:{" "}
                                                 </span>
                                                 <span
                                                     className="meta-value"
