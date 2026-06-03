@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import "./Home.css";
 import { Search, ChefHat, BookHeart } from "lucide-react";
 
 export default function Home() {
