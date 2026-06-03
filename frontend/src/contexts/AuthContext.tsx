@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from "react";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -8,10 +8,10 @@ import {
   onAuthStateChanged,
   updateProfile,
   type User,
-} from 'firebase/auth';
-import { auth } from '../firebase';
+} from "firebase/auth";
+import { auth } from "../firebase";
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 interface AuthContextType {
   currentUser: User | null;
@@ -27,16 +27,16 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within AuthProvider');
+  if (!context) throw new Error("useAuth must be used within AuthProvider");
   return context;
 }
 
 async function syncUserWithBackend(user: User, username?: string) {
   const token = await user.getIdToken();
   await fetch(`${API_URL}/users/sync`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({ username: username || user.displayName }),
@@ -56,7 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const tokenResult = await user.getIdTokenResult();
           setIsAdmin(tokenResult.claims.admin === true);
         } catch (err) {
-          console.error('Failed to sync user:', err);
+          console.error("Failed to sync user:", err);
           setIsAdmin(false);
         }
       } else {
@@ -69,7 +69,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   async function signUp(email: string, password: string, username: string) {
-    const { user } = await createUserWithEmailAndPassword(auth, email, password);
+    const { user } = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password,
+    );
     await updateProfile(user, { displayName: username });
     await syncUserWithBackend(user, username);
   }
@@ -88,7 +92,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ currentUser, isAdmin, loading, signUp, signIn, signInWithGoogle, signOut }}>
+    <AuthContext.Provider
+      value={{
+        currentUser,
+        isAdmin,
+        loading,
+        signUp,
+        signIn,
+        signInWithGoogle,
+        signOut,
+      }}
+    >
       {!loading && children}
     </AuthContext.Provider>
   );
