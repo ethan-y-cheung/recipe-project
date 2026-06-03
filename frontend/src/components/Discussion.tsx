@@ -28,7 +28,7 @@ const api = {
 
 
 const Discussion = ( {username, comments} : DiscussionProps) => {
-  // const [openReply, setOpenReply] = useState<boolean>(false);
+  const [openReply, setOpenReply] = useState<string>("");
   const [isMutating, setIsMutating] = useState<boolean>(false);
   const [allPosts, setAllPosts] = useState<Comments[]>(comments);
 
@@ -87,6 +87,11 @@ const Discussion = ( {username, comments} : DiscussionProps) => {
     return 0;
   });
 
+  const handleReply = (id : string) => {
+    setOpenReply(id);
+    console.log(id);
+  }
+
   return (
     <>
       <h2 className="section-title">Discussion</h2>
@@ -125,11 +130,29 @@ const Discussion = ( {username, comments} : DiscussionProps) => {
                 <div className="comment-footer"> 
                   <p>{comment.likes.length}</p>
                   <ThumbsUp onClick={() => handleLike(comment)} className="icon-button"/>
-                  <button className="reply-button"> <Reply/>reply </button>
+                  <button onClick={() => handleReply(comment.id)} className="reply-button"> <Reply/>reply </button>
                 </div>
               </div>
-              {comment.replies[0] ? <section className="replies">
-                {comment.replies.map(reply => (<div className="comment">
+              
+            
+              <section className="replies">
+                {openReply === comment.id ? 
+                <div className="reply-container">
+                  <strong>{username}</strong>
+                  <textarea 
+                    placeholder="message..."
+                    className="reply-text">
+                  </textarea> 
+
+                  <div className="star-container">
+                    <button onClick={() => setOpenReply("")} className="cancel-button">Cancel</button>
+                    <button className="reply-button">Submit</button>
+                  </div>
+                  
+                </div> : null }
+
+                {comment.replies.map(reply => (
+                <div key={reply.id} className="comment">
                   <p style={{color: "black"}}><strong>{reply.creator_ID}</strong></p>
                   <p>{formatDistanceToNow(reply.created_at, { addSuffix: true })}</p>
                   <p className="comment-content">{reply.content}</p>
@@ -139,7 +162,7 @@ const Discussion = ( {username, comments} : DiscussionProps) => {
                     <button className="reply-button"> <Reply/>reply </button>
                   </div>
                 </div>))}
-              </section> : null }
+              </section> 
 
             </article>
             

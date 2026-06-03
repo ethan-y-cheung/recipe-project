@@ -218,6 +218,22 @@
   /* gap: 0.2rem; */
 }
 
+.reply-text {
+  border: 1px solid var(--border);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  /* min-height: 3rem; */
+  
+}
+
+.reply-container {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  margin: 1rem 2rem;
+  gap: 1rem;
+}
+
 .replies {
   margin-left: 4rem;
   position: relative;
@@ -233,7 +249,7 @@
   background-color: #757575;
 }
 
-.replies .comment::before {
+.replies .comment::before, .reply-container::before {
   content: "";
   position: absolute;
   top: 1rem;
@@ -290,6 +306,18 @@
   border: 0px solid transparent;
 }
 
+.cancel-button {
+  display: flex;
+  background-color: white;
+  font-size: 1rem;
+  align-items: center;
+  padding: 0.25rem;
+  border-radius: 1rem;
+  gap: 0.25rem;
+  border: 1px solid var(--Button);
+  cursor: pointer;
+}
+
 .submit-button {
   display: flex;
   background-color: var(--Button);
@@ -300,6 +328,7 @@
   border-radius: 1rem;
   gap: 0.25rem;
   border: 0px solid transparent;
+  cursor: pointer;
 }
 
 .exit-button {
@@ -332,6 +361,10 @@
 
 .ai-button:hover {
   box-shadow: 0 0 1rem 0.5rem rgba(168, 164, 164, 0.3);
+}
+
+.cancel-button:hover {
+  box-shadow: 0 0 1rem 0.1rem rgba(0,0,0,0.3);
 }
 
 .ingredient {
