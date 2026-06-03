@@ -7,12 +7,19 @@ router.get('/', (req : express.Request, res : express.Response) => {
 router.get('/recipes', (req : express.Request, res : express.Response) => {
     const sampleRecipes: Recipe[] = [
         {   //base sample recipe
+<<<<<<< HEAD
             id: '1', //id should key into database, maybe we append source or recipe to front
+=======
+            recipe_ID: '1', //id should key into database, maybe we append source or recipe to front
+>>>>>>> bddd9f3 (fix: readding test files, sry about that)
             creator_ID: "Janet",
             user_generated: true,
             title: 'Sample Recipe 1',
             created_at: new Date("2026-06-02"),
+<<<<<<< HEAD
             approved: false,
+=======
+>>>>>>> bddd9f3 (fix: readding test files, sry about that)
             tags: [{name :"lunch", type: "Meal Type"}, {name: "quick", type: "Difficulty"}],
             ingredients: [{
                 name: 'Ingredient 1',
@@ -45,12 +52,19 @@ router.get('/recipes', (req : express.Request, res : express.Response) => {
             },]
         },
         {   //sample without image
+<<<<<<< HEAD
             id: '2', 
+=======
+            recipe_ID: '2', 
+>>>>>>> bddd9f3 (fix: readding test files, sry about that)
             creator_ID: "Mark",
             user_generated: true,
             title: 'Sample Recipe 2',
             created_at: new Date("2026-06-02"),
+<<<<<<< HEAD
             approved: false,
+=======
+>>>>>>> bddd9f3 (fix: readding test files, sry about that)
             tags: [{name :"lunch", type: "Meal Type"}, {name: "quick", type: "Difficulty"}],
             ingredients: [{
                 name: 'Ingredient 1',
@@ -82,12 +96,19 @@ router.get('/recipes', (req : express.Request, res : express.Response) => {
             },]
         },
         {   //sample no tags
+<<<<<<< HEAD
             id: '3', 
+=======
+            recipe_ID: '3', 
+>>>>>>> bddd9f3 (fix: readding test files, sry about that)
             creator_ID: "michael",
             user_generated: true,
             title: 'Sample Recipe 2',
             created_at: new Date("2026-06-02"),
+<<<<<<< HEAD
             approved: false,
+=======
+>>>>>>> bddd9f3 (fix: readding test files, sry about that)
             tags: [],
             ingredients: [{
                 name: 'Ingredient 1',
@@ -120,12 +141,19 @@ router.get('/recipes', (req : express.Request, res : express.Response) => {
             },]
         },
         {   //sample no rating
+<<<<<<< HEAD
             id: '4', 
+=======
+            recipe_ID: '4', 
+>>>>>>> bddd9f3 (fix: readding test files, sry about that)
             creator_ID: "michael",
             user_generated: true,
             title: 'Sample Recipe 2',
             created_at: new Date("2026-06-02"),
+<<<<<<< HEAD
             approved: false,
+=======
+>>>>>>> bddd9f3 (fix: readding test files, sry about that)
             tags: [{name :"lunch", type: "Meal Type"}, {name: "quick", type: "Difficulty"}],
             ingredients: [{
                 name: 'Ingredient 1',
@@ -151,12 +179,19 @@ router.get('/recipes', (req : express.Request, res : express.Response) => {
             rating: []
         },
         {   //sample no ingredients
+<<<<<<< HEAD
             id: '5',
+=======
+            recipe_ID: '5',
+>>>>>>> bddd9f3 (fix: readding test files, sry about that)
             creator_ID: "Janet",
             user_generated: true,
             title: 'Sample Recipe 1',
             created_at: new Date("2026-06-02"),
+<<<<<<< HEAD
             approved: false,
+=======
+>>>>>>> bddd9f3 (fix: readding test files, sry about that)
             tags: [{name :"lunch", type: "Meal Type"}, {name: "quick", type: "Difficulty"}],
             ingredients: [{
                 name: 'Ingredient 1',
@@ -189,12 +224,19 @@ router.get('/recipes', (req : express.Request, res : express.Response) => {
             },]
         },
         {   //sample many ingredients
+<<<<<<< HEAD
             id: '6',
+=======
+            recipe_ID: '6',
+>>>>>>> bddd9f3 (fix: readding test files, sry about that)
             creator_ID: "Mia",
             user_generated: true,
             title: 'Sample Recipe 1',
             created_at: new Date("2026-06-02"),
+<<<<<<< HEAD
             approved: false,
+=======
+>>>>>>> bddd9f3 (fix: readding test files, sry about that)
             tags: [{name :"lunch", type: "Meal Type"}, {name: "quick", type: "Difficulty"}],
             ingredients: [{
                 name: 'Ingredient 1',
@@ -251,12 +293,19 @@ router.get('/recipes', (req : express.Request, res : express.Response) => {
             },]
         },
         {   //sample no instructions (maybe invalid)
+<<<<<<< HEAD
             id: '7',
+=======
+            recipe_ID: '7',
+>>>>>>> bddd9f3 (fix: readding test files, sry about that)
             creator_ID: "Lucinda",
             user_generated: true,
             title: 'Sample Recipe 1',
             created_at: new Date("2026-06-02"),
+<<<<<<< HEAD
             approved: false,
+=======
+>>>>>>> bddd9f3 (fix: readding test files, sry about that)
             tags: [{name :"lunch", type: "Meal Type"}, {name: "quick", type: "Difficulty"}],
             ingredients: [{
                 name: 'Ingredient 1',
@@ -286,12 +335,19 @@ router.get('/recipes', (req : express.Request, res : express.Response) => {
             },]
         },
         {   //sample many instructions
+<<<<<<< HEAD
             id: '8',
+=======
+            recipe_ID: '8',
+>>>>>>> bddd9f3 (fix: readding test files, sry about that)
             creator_ID: "Jane_Doe",
             user_generated: true,
             title: 'Sample Recipe 1',
             created_at: new Date("2026-06-02"),
+<<<<<<< HEAD
             approved: false,
+=======
+>>>>>>> bddd9f3 (fix: readding test files, sry about that)
             tags: [{name :"lunch", type: "Meal Type"}, {name: "quick", type: "Difficulty"}],
             ingredients: [{
                 name: 'Ingredient 1',
@@ -327,12 +383,19 @@ router.get('/recipes', (req : express.Request, res : express.Response) => {
             },]
         },        
         {   //sample with user_generated false (shouldn't change much just to test)
+<<<<<<< HEAD
             id: '9',
+=======
+            recipe_ID: '9',
+>>>>>>> bddd9f3 (fix: readding test files, sry about that)
             creator_ID: "Molly",
             user_generated: false,
             title: 'Sample Recipe 1',
             created_at: new Date("2026-06-02"),
+<<<<<<< HEAD
             approved: false,
+=======
+>>>>>>> bddd9f3 (fix: readding test files, sry about that)
             tags: [{name :"lunch", type: "Meal Type"}, {name: "quick", type: "Difficulty"}],
             ingredients: [{
                 name: 'Ingredient 1',
@@ -365,6 +428,10 @@ router.get('/recipes', (req : express.Request, res : express.Response) => {
             },]
         },
     ];
+<<<<<<< HEAD
     res.status(200).json(sampleRecipes);
+=======
+    res.status(200).json({ recipes: sampleRecipes });
+>>>>>>> bddd9f3 (fix: readding test files, sry about that)
 });
 export default router;
