@@ -9,7 +9,7 @@ import Discussion from '../components/Discussion.tsx';
 import "../styles/RecipeDetail.css";
 
 const recipe: Recipe = {
-  recipe_ID: "123",
+  id: "123",
   user_generated: false,
   creator_ID: "Allison",
   title : "ramen",
@@ -63,7 +63,7 @@ const comments: Comments[] = [
 export default function RecipeDetail() {
   // used later when pulling data from firebase
   // const { recipeId } = useParams<{recipeId: string}>();
-
+  const [allPosts, setAllPosts] = useState<Comments[]>(comments);
   const [done, setDone] = useState<boolean[] | null>(new Array(recipe.ingredients.length).fill(false));
   const [bookmarked, setBookmarked] = useState<boolean>(false); // idk how to do this :(
   
@@ -74,7 +74,11 @@ export default function RecipeDetail() {
   
   const [showChat, setShowChat] = useState<boolean>(false);
   const [rating, setRating] = useState<null | 1 | 2 | 3 | 4 | 5>(null);
-
+  
+  const handleComment = (newComment:Comments) => {
+    console.log(newComment);
+    setAllPosts([...allPosts, newComment]);
+  }
   const handleRating = (userRating : 1 | 2 | 3 | 4 | 5) => {
     setRating(userRating);
     let newRatings: Rating[];
@@ -173,7 +177,7 @@ export default function RecipeDetail() {
             </section>
 
             {/* Discussion Section */}
-            <Discussion username={user.username} comments={comments}/>
+            <Discussion recipe_ID = {recipe.id} username={user.username} comments={allPosts}/>
 
             <h2 className="section-title">Leave Feedback </h2>
             <section className="feedback-container">
@@ -188,7 +192,7 @@ export default function RecipeDetail() {
                   <Star fill={rating ?? 0 >= 5 ? "#FFDF00" : "transparent"} onClick={() => handleRating(5)} className="header-icon"/>
                 </div>
               </div>
-              <CommentForm username={user.username}/>
+              <CommentForm allPosts={allPosts} recipe_ID={recipe.id} username={user.username} updatePosts={handleComment}/>
             </section>
           </div>
       

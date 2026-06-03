@@ -12,7 +12,7 @@ export interface User{
     saved_recipes: UserRecipeNotes[];
 }
 export interface Recipe{
-    recipe_ID: string;
+    id: string;
     user_generated: boolean;
     creator_ID: string | null;
     title : string;

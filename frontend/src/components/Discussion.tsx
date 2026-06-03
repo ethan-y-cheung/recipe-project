@@ -2,10 +2,11 @@ import "../styles/RecipeDetail.css";
 import { ThumbsUp, Reply } from 'lucide-react';
 import type { Comments } from "../../../shared/types/index.ts";
 import {formatDistanceToNow} from 'date-fns';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface DiscussionProps {
   username: string;
+  recipe_ID: string;
   comments: Comments[];
 }
 
@@ -27,10 +28,17 @@ const api = {
 }
 
 
-const Discussion = ( {username, comments} : DiscussionProps) => {
+const Discussion = ( {recipe_ID, username, comments} : DiscussionProps) => {
   const [openReply, setOpenReply] = useState<string>("");
   const [isMutating, setIsMutating] = useState<boolean>(false);
   const [allPosts, setAllPosts] = useState<Comments[]>(comments);
+  const [replyError, setReplyError] = useState<boolean>(false);
+  const [replyText, setReplyText] = useState<string>("");
+
+  useEffect(() => {
+    setAllPosts(comments);
+  }, [comments]); // handles updates caused by submitting a new comment form in the detail page
+
 
   const handleLike = async (comment : Comments) => {
     if (isMutating) return; // no double clicking
@@ -51,7 +59,7 @@ const Discussion = ( {username, comments} : DiscussionProps) => {
       // mocked update database
       await api.toggleLike();
     } catch (error) {
-      // 4. Roll back to previous state if API fails
+      // undo change if db call fails
       console.error(`Failed to like post:`, error);
       const updatedPosts : Comments[] = allPosts.map(post => post.id === prevComment.id ? prevComment : post); // either remove or add user id for liking the post
       setAllPosts(updatedPosts);
@@ -70,11 +78,6 @@ const Discussion = ( {username, comments} : DiscussionProps) => {
   // default filtering is by popularity
   const [filter, setFilter] = useState<FilterValue>("likes");
 
-
-  const handleFiltering = (newFilter: FilterValue) => {
-    setFilter(newFilter);
-  }
-
   const sortedComments = allPosts.toSorted((a, b) => {
     if (filter === 'likes') {
       // Sort descending by total number of likes
@@ -87,10 +90,43 @@ const Discussion = ( {username, comments} : DiscussionProps) => {
     return 0;
   });
 
-  const handleReply = (id : string) => {
-    setOpenReply(id);
-    console.log(id);
+  const handleOpenReply = (id : string) => {
+    if (openReply !== "") {
+      setOpenReply("");
+    } else {
+      setOpenReply(id);
+    }
   }
+
+  const handleReply = async (originalPost: Comments, replyContent : string) => {
+    // create a reply object
+    const reply : Comments = {creator_ID: username, recipe_ID: recipe_ID, id: "", content: replyContent, likes: [], created_at: new Date(), replies: [] };
+
+    // add to the comment replies
+    originalPost.replies.push(reply);
+
+    // update posts on the page
+
+    const updatedPosts : Comments[] = allPosts.map(post => post.id === originalPost.id ? originalPost : post); 
+    setAllPosts([...updatedPosts]);
+
+    try {
+      // mocked update database
+      await api.toggleLike();
+
+      // retrieve new post doc for reply and update og comment to include that instead for unique ids
+    } catch (error) {
+      // undo change if db call fails
+      console.error(`Failed to reply to post:`, error);
+      originalPost.replies.filter(reply => reply.id !== "");
+      const updatedPosts : Comments[] = allPosts.map(post => post.id === originalPost.id ? originalPost : post); // either remove or add user id for liking the post
+      setAllPosts(updatedPosts);
+    } finally {
+      setOpenReply("");
+      setReplyText("");
+    } 
+  }
+
 
   return (
     <>
@@ -105,7 +141,7 @@ const Discussion = ( {username, comments} : DiscussionProps) => {
         id="discussion-filter"
         className="discussion-filter"
         value={filter}
-        onChange={(e) => handleFiltering(e.target.value as FilterValue)}
+        onChange={(e) => setFilter(e.target.value as FilterValue)}
       >
         {/* Recommended placeholder / default state */}
         <option value="" disabled>
@@ -130,7 +166,7 @@ const Discussion = ( {username, comments} : DiscussionProps) => {
                 <div className="comment-footer"> 
                   <p>{comment.likes.length}</p>
                   <ThumbsUp onClick={() => handleLike(comment)} className="icon-button"/>
-                  <button onClick={() => handleReply(comment.id)} className="reply-button"> <Reply/>reply </button>
+                  <button onClick={() => handleOpenReply(comment.id)} className="reply-button"> <Reply/>reply </button>
                 </div>
               </div>
               
@@ -141,12 +177,14 @@ const Discussion = ( {username, comments} : DiscussionProps) => {
                   <strong>{username}</strong>
                   <textarea 
                     placeholder="message..."
-                    className="reply-text">
+                    value={replyText}
+                    onChange={(e) => setReplyText(e.target.value)}
+                    className={`reply-text ${replyError ? "error" : ""}`}>
                   </textarea> 
 
                   <div className="star-container">
                     <button onClick={() => setOpenReply("")} className="cancel-button">Cancel</button>
-                    <button className="reply-button">Submit</button>
+                    <button onClick={() => handleReply(comment, replyText)} className="reply-button">Submit</button>
                   </div>
                   
                 </div> : null }
