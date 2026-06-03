@@ -5,7 +5,11 @@
     "main": "app.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
+<<<<<<< HEAD
         "start": "tsx watch app.js",
+=======
+        "start": "nodemon --exec tsx app.js",
+>>>>>>> 60b1eb8 (feat: add Firebase auth with admin roles and route protection)
         "lint": "eslint ."
     },
     "keywords": [],
@@ -27,6 +31,7 @@
         "@eslint/js": "^10.0.1",
         "@types/express": "^5.0.6",
         "eslint": "^10.4.0",
-        "globals": "^17.6.0"
+        "globals": "^17.6.0",
+        "tsx": "^4.22.4"
     }
 }
