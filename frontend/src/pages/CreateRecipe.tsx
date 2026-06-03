@@ -16,6 +16,8 @@ const TIME_PRESETS = ['15 min', '30 min', '45 min', '1 hour', '2+ hours']
 const QTY_PRESETS = ['1', '2', '3', '1/2', '1/3', '1/4']
 const UNIT_PRESETS = ['g', 'ml', 'cup', 'tbsp', 'oz']
 
+const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:5000'
+
 type Ingredient = { id: number; name: string; qty: string; units: string }
 type Direction = { id: number; text: string; imageUrl: string | null }
 
@@ -37,6 +39,8 @@ export default function CreateRecipe() {
     { id: newId(), text: '', imageUrl: null },
   ])
   const [confirmOpen, setConfirmOpen] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const coverInputRef = useRef<HTMLInputElement>(null)
   const dirInputRefs = useRef<Record<number, HTMLInputElement | null>>({})
@@ -121,11 +125,15 @@ export default function CreateRecipe() {
   }
 
   // Create
-  const handleConfirm = () => {
-    // TODO: persist once Firebase is configured. Assembles the document in the
-    // Firestore schema; the save flow still needs to upload images, swap in
-    // download URLs, then stamp created_at server-side.
-    const images = [coverUrl, ...directions.map((d) => d.imageUrl)]
+  // NOTE: image upload isn't wired up yet, so these are local blob: object URLs
+  // that only resolve in the current browser session. They're sent so the
+  // images array is populated end-to-end; swap for uploaded download URLs once
+  // storage exists. Cover image goes first per the "thumbnail" convention.
+  // created_at is stamped server-side; the backend normalizes tag strings.
+  const handleConfirm = async () => {
+    const images = [coverUrl, ...directions.map((d) => d.imageUrl)].filter(
+      (url): url is string => Boolean(url)
+    )
     const recipe = {
       title: title.trim(),
       ingredients: ingredients
@@ -136,12 +144,29 @@ export default function CreateRecipe() {
         })),
       instructions: directions.map((d) => d.text.trim()).filter(Boolean),
       tags,
-      user_generated: true,
-      approved: false,
-      images: images.filter((url): url is string => Boolean(url)),
+      servings: servings.trim() ? Number(servings.trim()) : undefined,
+      total_time: totalTime.trim() || undefined,
+      images,
     }
-    void recipe
-    setConfirmOpen(false)
+
+    setSubmitting(true)
+    setSubmitError(null)
+    try {
+      const res = await fetch(`${API_BASE}/recipes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(recipe),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        throw new Error(data?.error ?? `Request failed (${res.status})`)
+      }
+      setConfirmOpen(false)
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Failed to create recipe')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   useEffect(() => {
@@ -314,12 +339,23 @@ export default function CreateRecipe() {
               Once created, your recipe will be saved. You can keep editing if
               you’re not ready yet.
             </p>
+            {submitError && <p className="modal__error" role="alert">{submitError}</p>}
             <div className="modal__actions">
-              <button type="button" className="modal__button modal__button--secondary" onClick={() => setConfirmOpen(false)}>
+              <button
+                type="button"
+                className="modal__button modal__button--secondary"
+                onClick={() => setConfirmOpen(false)}
+                disabled={submitting}
+              >
                 Keep editing
               </button>
-              <button type="button" className="modal__button modal__button--primary" onClick={handleConfirm}>
-                Create recipe
+              <button
+                type="button"
+                className="modal__button modal__button--primary"
+                onClick={handleConfirm}
+                disabled={submitting}
+              >
+                {submitting ? 'Creating…' : 'Create recipe'}
               </button>
             </div>
           </div>
