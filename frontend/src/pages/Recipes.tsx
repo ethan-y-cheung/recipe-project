@@ -113,6 +113,9 @@ export default function Recipes() {
       {/* Header block */}
       <header className="recipes-heading">
         <div className="recipes-heading__text">
+          <p className="recipes-heading__subtitle">
+            Browse
+          </p>
           <h2 className="recipes-heading__title">Explore <span className="recipe-heading__title--red">Recipes</span></h2>
           <p className="recipes-heading__subtitle">
             Find your next favorite meal from our growing recipe collection.
