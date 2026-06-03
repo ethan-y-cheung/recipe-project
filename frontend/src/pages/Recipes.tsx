@@ -26,6 +26,16 @@ import {
   useComboboxAnchor
 } from "@/components/ui/combobox"
 
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
+
 import RecipeCard from '../components/RecipeCard';
 
 // mock data... I'll use the mock data from backend endpoint (or actual API) instead next work period
@@ -36,9 +46,14 @@ import type { RecipeType } from './recipeData';
 const FILTER_OPTIONS = ['All Recipes', 'Official Only', 'User-Generated'] as const
 type RecipeFilter = (typeof FILTER_OPTIONS)[number]
 
+const recipesPerPage = 8 as const; // default # recipes shown per page
+
 export default function Recipes() {
 
-  // Active.displayed recipe type(s) (all, official, user generated)
+  // Page number
+  const [page, setPage] = useState<Number>(1);
+
+  // Active displayed recipe type(s) (all, official, user generated)
   const [activeFilter, setActiveFilter] = useState<RecipeFilter>('All Recipes');
   const [searchFilter, setSearchFilter] = useState<string>("");
   const [tagFilter, setTagFilter] = useState<string[]>([]);
@@ -63,6 +78,8 @@ export default function Recipes() {
 
   // will fetch from backend instead once connected to firebase
   // are technically tags... will rename
+
+  // assign colors to tags of specific types
   const recipeFilters = [
     {
       value: "Meal Type",
@@ -179,8 +196,6 @@ export default function Recipes() {
       </Combobox>
     </div>
 
-    {/* pagination -- I'll come back if time */}
-
     {/* Recipe grid */}
     <section className="recipe-catalog">
       {filteredRecipes.map(recipeData => (
@@ -188,7 +203,39 @@ export default function Recipes() {
           <RecipeCard recipeData={recipeData}/>
         </div>
       ))}
+      {filteredRecipes.length === 0 &&
+        <div className="recipe-catalog__empty">
+          <p className="recipe-catalog__empty-text">No matching recipes found.</p>
+        </div>}
     </section>
+
+    {/* Pagination (page numbers...) */}
+    <Pagination>
+      <PaginationContent>
+        <PaginationItem> {/*previous button*/}
+          <PaginationPrevious href="#" />
+        </PaginationItem>
+
+        <PaginationItem>
+          <PaginationLink href="#">1</PaginationLink>
+        </PaginationItem>
+        <PaginationItem>
+          <PaginationLink href="#" isActive={true}>2</PaginationLink>
+        </PaginationItem>
+        <PaginationItem>
+          <PaginationLink href="#">3</PaginationLink>
+        </PaginationItem>
+        
+        <PaginationItem>
+          <PaginationEllipsis />
+        </PaginationItem>
+        
+        <PaginationItem> {/*next button*/}
+          <PaginationNext href="#" />
+        </PaginationItem>
+
+      </PaginationContent>
+    </Pagination>
 
     </main>
   )

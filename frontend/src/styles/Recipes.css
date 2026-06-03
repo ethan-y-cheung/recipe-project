@@ -56,9 +56,24 @@
   object-fit: cover;
 }
 
+.recipe-catalog {
+  width: 100%;
+  min-height: 40vh;
+}
 
-.recipe-catalog-text {
-  /* margin-bottom: 1rem; */
+.recipe-catalog__empty {
+  background-color: rgb(227, 227, 227);
+  width: 100%;
+  height: 12vh;
+  border-radius: 10px;
+  padding: 1rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.recipe-catalog__empty-text {
+  color: rgb(143, 143, 143);
 }
 
 /* ----------------------3-state toggle */
