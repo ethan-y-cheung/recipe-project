@@ -7,10 +7,9 @@ interface CommentProps {
   recipe_ID: string;
   // updatePosts: React.Dispatch<React.SetStateAction<Comments[]>>;
   updatePosts: (newComment : Comments) => void;
-  allPosts: Comments[];
 }
 
-const CommentForm = ( {recipe_ID, username, updatePosts, allPosts} : CommentProps) => {
+const CommentForm = ( {recipe_ID, username, updatePosts} : CommentProps) => {
   const [formError, setFormError] = useState<boolean>(false);
 
   const [commentData, setCommentData] = useState<Comments>({

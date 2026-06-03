@@ -99,6 +99,9 @@ const Discussion = ( {recipe_ID, username, comments} : DiscussionProps) => {
   }
 
   const handleReply = async (originalPost: Comments, replyContent : string) => {
+    setReplyError(replyContent === "");
+    if (replyContent === "") return;
+    
     // create a reply object
     const reply : Comments = {creator_ID: username, recipe_ID: recipe_ID, id: "", content: replyContent, likes: [], created_at: new Date(), replies: [] };
 
