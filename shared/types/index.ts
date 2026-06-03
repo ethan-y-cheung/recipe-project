@@ -27,6 +27,7 @@ export interface Recipe{
     rating: Rating[];
     total_time: string | null;
     servings: number | null; // potentially null because api doesn't include these fields
+    approved: boolean;
 }
 export interface Rating{
     user_ID: string;
