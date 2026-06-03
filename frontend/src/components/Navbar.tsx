@@ -38,20 +38,50 @@ export default function Navbar() {
       </div>
 
       <ul className="navbar-links">
-        <li><NavLink to="/" end>Home</NavLink></li>
-        <li><NavLink to="/recipes">Recipes</NavLink></li>
-        {currentUser && <li><NavLink to="/create">Create Recipe</NavLink></li>}
-        {currentUser && <li><NavLink to="/my-recipes">My Recipes</NavLink></li>}
-        {isAdmin && <li><NavLink to="/admin">Admin</NavLink></li>}
+        <li>
+          <NavLink to="/" end>
+            Home
+          </NavLink>
+        </li>
+        <li>
+          <NavLink to="/recipes">Recipes</NavLink>
+        </li>
+        {currentUser && (
+          <li>
+            <NavLink to="/create">Create Recipe</NavLink>
+          </li>
+        )}
+        {currentUser && (
+          <li>
+            <NavLink to="/my-recipes">My Recipes</NavLink>
+          </li>
+        )}
+        {isAdmin && (
+          <li>
+            <NavLink to="/admin">Admin</NavLink>
+          </li>
+        )}
       </ul>
 
       <div className="navbar-auth">
         {currentUser ? (
-          <button className="nav-btn-login" onClick={handleSignOut}>Log Out</button>
+          <button className="nav-btn-login" onClick={handleSignOut}>
+            Log Out
+          </button>
         ) : (
           <>
-            <button className="nav-btn-login" onClick={() => navigate("/login", { state: { mode: "signin" } })}>Log In</button>
-            <button className="nav-btn-signup" onClick={() => navigate("/login", { state: { mode: "signup" } })}>Sign Up</button>
+            <button
+              className="nav-btn-login"
+              onClick={() => navigate("/login", { state: { mode: "signin" } })}
+            >
+              Log In
+            </button>
+            <button
+              className="nav-btn-signup"
+              onClick={() => navigate("/login", { state: { mode: "signup" } })}
+            >
+              Sign Up
+            </button>
           </>
         )}
       </div>
@@ -63,19 +93,63 @@ export default function Navbar() {
       {open && (
         <div className="navbar-dropdown">
           <ul className="navbar-dropdown-links">
-            <li><NavLink to="/" end onClick={() => setOpen(false)}>Home</NavLink></li>
-            <li><NavLink to="/recipes" onClick={() => setOpen(false)}>Recipes</NavLink></li>
-            {currentUser && <li><NavLink to="/create" onClick={() => setOpen(false)}>Create Recipe</NavLink></li>}
-            {currentUser && <li><NavLink to="/my-recipes" onClick={() => setOpen(false)}>My Recipes</NavLink></li>}
-            {isAdmin && <li><NavLink to="/admin" onClick={() => setOpen(false)}>Admin</NavLink></li>}
+            <li>
+              <NavLink to="/" end onClick={() => setOpen(false)}>
+                Home
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="/recipes" onClick={() => setOpen(false)}>
+                Recipes
+              </NavLink>
+            </li>
+            {currentUser && (
+              <li>
+                <NavLink to="/create" onClick={() => setOpen(false)}>
+                  Create Recipe
+                </NavLink>
+              </li>
+            )}
+            {currentUser && (
+              <li>
+                <NavLink to="/my-recipes" onClick={() => setOpen(false)}>
+                  My Recipes
+                </NavLink>
+              </li>
+            )}
+            {isAdmin && (
+              <li>
+                <NavLink to="/admin" onClick={() => setOpen(false)}>
+                  Admin
+                </NavLink>
+              </li>
+            )}
           </ul>
           <div className="navbar-dropdown-auth">
             {currentUser ? (
-              <button className="nav-btn-login" onClick={handleSignOut}>Log Out</button>
+              <button className="nav-btn-login" onClick={handleSignOut}>
+                Log Out
+              </button>
             ) : (
               <>
-                <button className="nav-btn-login" onClick={() => { navigate("/login", { state: { mode: "signin" } }); setOpen(false); }}>Log In</button>
-                <button className="nav-btn-signup" onClick={() => { navigate("/login", { state: { mode: "signup" } }); setOpen(false); }}>Sign Up</button>
+                <button
+                  className="nav-btn-login"
+                  onClick={() => {
+                    navigate("/login", { state: { mode: "signin" } });
+                    setOpen(false);
+                  }}
+                >
+                  Log In
+                </button>
+                <button
+                  className="nav-btn-signup"
+                  onClick={() => {
+                    navigate("/login", { state: { mode: "signup" } });
+                    setOpen(false);
+                  }}
+                >
+                  Sign Up
+                </button>
               </>
             )}
           </div>
