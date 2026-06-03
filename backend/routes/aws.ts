@@ -33,7 +33,7 @@ router.post("/generate-upload-url", async (req : Request<{}, {}, postRequestBody
       return;
     }
 
-    const fileKey : string = `profiles/${Date.now()}-${fileName}`;
+    const fileKey : string = `recipes/${Date.now()}-${fileName}`;
 
     const command = new PutObjectCommand({
       Bucket: process.env.S3_BUCKET || "",
