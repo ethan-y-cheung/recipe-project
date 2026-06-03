@@ -9,8 +9,9 @@ import {
   updateProfile,
   type User,
 } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { auth, db } from '../firebase';
+import { auth } from '../firebase';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 interface AuthContextType {
   currentUser: User | null;
@@ -30,18 +31,16 @@ export function useAuth() {
   return context;
 }
 
-async function ensureUserDocument(user: User, username?: string) {
-  const userRef = doc(db, 'users', user.uid);
-  const snap = await getDoc(userRef);
-  if (!snap.exists()) {
-    await setDoc(userRef, {
-      username: username || user.displayName || user.email?.split('@')[0],
-      email: user.email,
-      admin: false,
-      my_recipes: [],
-      saved_recipes: [],
-    });
-  }
+async function syncUserWithBackend(user: User, username?: string) {
+  const token = await user.getIdToken();
+  await fetch(`${API_URL}/users/sync`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ username: username || user.displayName }),
+  });
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -53,11 +52,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {
-          await ensureUserDocument(user);
+          await syncUserWithBackend(user);
           const tokenResult = await user.getIdTokenResult();
           setIsAdmin(tokenResult.claims.admin === true);
         } catch (err) {
-          console.error('Failed to sync user document:', err);
+          console.error('Failed to sync user:', err);
           setIsAdmin(false);
         }
       } else {
@@ -72,7 +71,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function signUp(email: string, password: string, username: string) {
     const { user } = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(user, { displayName: username });
-    await ensureUserDocument(user, username);
+    await syncUserWithBackend(user, username);
   }
 
   async function signIn(email: string, password: string) {
