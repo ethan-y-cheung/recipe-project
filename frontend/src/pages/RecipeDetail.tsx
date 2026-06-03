@@ -1,6 +1,6 @@
-import { useParams } from 'react-router-dom'
+// import { useParams } from 'react-router-dom'
 import { Star, Bookmark, ThumbsUp, Reply, MessageCircle} from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import type { Recipe, Comments, User, Rating } from "../../../shared/types/index.ts";
 import Chatbot from '../components/Chatbot.tsx';
@@ -48,21 +48,27 @@ const comments: Comments[] = [
 ]
 
 export default function RecipeDetail() {
-  const { recipeId } = useParams<{recipeId: string}>();
+  // used later when pulling data from firebase
+  // const { recipeId } = useParams<{recipeId: string}>();
 
   const [done, setDone] = useState<boolean[] | null>(new Array(recipe.ingredients.length).fill(false));
   const [bookmarked, setBookmarked] = useState<boolean>(false); // idk how to do this :(
   
 
   const [avgRating, setAverageRating] = useState<number>(recipe.rating.length > 0 
-  ? recipe.rating.reduce((score, rating) => score + rating.value, 0) / recipe.rating.length 
+  ? recipe.rating.reduce((score, rating) => score + (rating.value ?? 0), 0) / recipe.rating.length 
   : 0);
+
+  useEffect(() => {
+    console.log(avgRating);
+  })
 
   
   const [showChat, setShowChat] = useState<boolean>(false);
-  const [rating, setRating] = useState<0 | 1 | 2 | 3 | 4 | 5>(0);
+  const [rating, setRating] = useState<null | 1 | 2 | 3 | 4 | 5>(null);
 
-  const handleRating = () => {
+  const handleRating = (userRating : 1 | 2 | 3 | 4 | 5) => {
+    setRating(userRating);
     let newRatings: Rating[];
 
     // if you have already rated it, remove that value
@@ -70,15 +76,14 @@ export default function RecipeDetail() {
       newRatings = recipe.rating.filter(rating => rating.user_ID !== user.username);
     // otherwise add in the new rating
     } else {
-      newRatings = [...recipe.rating, {user_ID: user.username, value: rating}]; 
+      newRatings = [...recipe.rating, {user_ID: user.username, value: userRating}]; 
     }
    
     setAverageRating(newRatings.length > 0 
-    ? newRatings.reduce((score, rating) => score + rating.value, 0) / newRatings.length 
+    ? newRatings.reduce((score, rating) => score + (rating.value ?? 0), 0) / newRatings.length 
     : 0)
   }
 
-  // const { recipeType, recipeId } = useParams()
   return (
     <>
       <article className="page-content">
@@ -119,14 +124,14 @@ export default function RecipeDetail() {
                 {recipe.ingredients.map((ingredient, index) => (
                   <label 
                   key={index}
-                  className={`ingredient ${done[index] ? "crossed-out": ""}`}>
+                  className={`ingredient ${(done ? done[index] : false ) ? "crossed-out": ""}`}>
                     <input
                       type="checkbox"
                       style={{width:"1rem", height:"1rem"}}
-                      checked={done[index]} 
+                      checked={(done ? done[index] : false )} 
                       onChange={() => {
-                        const newDone = [...done];
-                        newDone[index] = !done[index]; // flip state
+                        const newDone = [...done ?? []];
+                        newDone[index] = done ? !done[index] : false; // flip state, provide default for null array
                         setDone(newDone);
                       }} 
                     />
@@ -169,11 +174,11 @@ export default function RecipeDetail() {
               <div className="rating-container">
                 <h2>Rating</h2> 
                 <div className="star-container">
-                  <Star fill={rating >= 1 ? "#FFDF00" : "transparent"} onClick={() => setRating(1)} className="header-icon"/>
-                  <Star fill={rating >= 2 ? "#FFDF00" : "transparent"} onClick={() => setRating(2)} className="header-icon"/>
-                  <Star fill={rating >= 3 ? "#FFDF00" : "transparent"} onClick={() => setRating(3)} className="header-icon"/>
-                  <Star fill={rating >= 4 ? "#FFDF00" : "transparent"} onClick={() => setRating(4)} className="header-icon"/>
-                  <Star fill={rating >= 5 ? "#FFDF00" : "transparent"} onClick={() => setRating(5)} className="header-icon"/>
+                  <Star fill={rating ?? 0 >= 1 ? "#FFDF00" : "transparent"} onClick={() => handleRating(1)} className="header-icon"/>
+                  <Star fill={rating ?? 0 >= 2 ? "#FFDF00" : "transparent"} onClick={() => setRating(2)} className="header-icon"/>
+                  <Star fill={rating ?? 0 >= 3 ? "#FFDF00" : "transparent"} onClick={() => setRating(3)} className="header-icon"/>
+                  <Star fill={rating ?? 0 >= 4 ? "#FFDF00" : "transparent"} onClick={() => setRating(4)} className="header-icon"/>
+                  <Star fill={rating ?? 0 >= 5 ? "#FFDF00" : "transparent"} onClick={() => setRating(5)} className="header-icon"/>
                 </div>
               </div>
               <CommentForm username={user.username}/>

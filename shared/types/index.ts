@@ -28,7 +28,7 @@ export interface Recipe{
 }
 export interface Rating{
     user_ID: string;
-    value : (0 | 1 | 2 | 3 | 4 | 5);
+    value : (null | 1 | 2 | 3 | 4 | 5);
 }
 export interface Tag{
     name: string;
