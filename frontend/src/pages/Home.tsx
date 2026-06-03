@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import "./Home.css";
+import "../styles/Home.css";
 import { Search, ChefHat, BookHeart } from "lucide-react";
 
 export default function Home() {
@@ -58,7 +58,9 @@ export default function Home() {
         <h2 className="cards-heading">What would you like to do?</h2>
         <div className="cards">
           <Link to="/recipes" className="card card-green">
-            <div className="card-icon"><Search size={18} /></div>
+            <div className="card-icon">
+              <Search size={18} />
+            </div>
             <div className="card-body">
               <p className="card-name">Browse Recipes</p>
               <p className="card-desc">
@@ -68,7 +70,9 @@ export default function Home() {
             <span className="card-arrow">→</span>
           </Link>
           <Link to="/create" className="card card-rose">
-            <div className="card-icon"><ChefHat size={18} /></div>
+            <div className="card-icon">
+              <ChefHat size={18} />
+            </div>
             <div className="card-body">
               <p className="card-name">Create a Recipe</p>
               <p className="card-desc">Share your recipe with the community.</p>
@@ -76,7 +80,9 @@ export default function Home() {
             <span className="card-arrow">→</span>
           </Link>
           <Link to="/my-recipes" className="card card-cream">
-            <div className="card-icon"><BookHeart size={18} /></div>
+            <div className="card-icon">
+              <BookHeart size={18} />
+            </div>
             <div className="card-body">
               <p className="card-name">My Recipes</p>
               <p className="card-desc">View your created and saved recipes.</p>
