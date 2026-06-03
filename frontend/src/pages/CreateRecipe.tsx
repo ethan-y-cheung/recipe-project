@@ -149,6 +149,24 @@ export default function CreateRecipe() {
       images,
     }
 
+    // Each listed ingredient needs a name plus both a qty and units.
+    const incompleteIngredient = ingredients.some(
+      (i) =>
+        (i.name.trim() || i.qty.trim() || i.units.trim()) &&
+        !(i.name.trim() && i.qty.trim() && i.units.trim())
+    )
+    if (incompleteIngredient) {
+      setSubmitError('Each ingredient needs a name, quantity, and units.')
+      return
+    }
+
+    // Total time, if given, must include a unit like sec, min(s), or hour(s).
+    const TIME_UNIT = /\b(sec|secs|second|seconds|min|mins|minute|minutes|hr|hrs|hour|hours)\b/i
+    if (totalTime.trim() && !TIME_UNIT.test(totalTime)) {
+      setSubmitError('Total time needs a unit, e.g. "30 min" or "1 hour".')
+      return
+    }
+
     setSubmitting(true)
     setSubmitError(null)
     try {
