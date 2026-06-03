@@ -258,11 +258,16 @@
 .stars {
     display: inline-flex;
     gap: 0.2rem;
+    align-items: center;
 }
 
-.star {
+.star-icon {
     cursor: pointer;
     transition: transform 0.25s ease;
+}
+
+.star-icon.active {
+    color: #ffb800;
 }
 
 .star:hover {

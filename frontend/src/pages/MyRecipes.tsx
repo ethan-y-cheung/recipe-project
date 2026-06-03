@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { Star } from "lucide-react";
 import "../styles/MyRecipes.css";
 import type { Recipe } from "../../../shared/types/index.ts";
 
@@ -301,16 +302,23 @@ export default function MyRecipes() {
                                     <div className="rating-wrapper">
                                         <span>Rating:</span>
                                         <div className="stars">
-                                            {[1, 2, 3, 4, 5].map((star) => (
-                                                <span
-                                                    key={star}
-                                                    className={`star ${star <= averageRating ? "active" : ""}`}
-                                                >
-                                                    <svg viewBox="0 0 24 24">
-                                                        <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                                                    </svg>
-                                                </span>
-                                            ))}
+                                            {[1, 2, 3, 4, 5].map((star) => {
+                                                const isActive =
+                                                    star <= averageRating;
+                                                return (
+                                                    <Star
+                                                        key={star}
+                                                        size={20}
+                                                        className={`star-icon ${isActive ? "active" : ""}`}
+                                                        fill={
+                                                            isActive
+                                                                ? "currentColor"
+                                                                : "transparent"
+                                                        }
+                                                        stroke="currentColor"
+                                                    />
+                                                );
+                                            })}
                                         </div>
                                     </div>
 
