@@ -20,7 +20,9 @@ const recipe: Recipe = {
     {name: "salt", quantity: "1 teaspoon"},
     {name: "siracha", quantity: "1 lb"}],
   instructions: ["cook ramen", "eat ramen", "clean kitchen"],
-  images: [""],
+  images: [ "https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=800&auto=format&fit=crop&q=60"],
+  servings: 1,
+  total_time: "20 minutes",
   rating: [{user_ID: "Kaitlyn", value: 5}, {user_ID: "Leo", value: 2}]
 };
 
@@ -81,32 +83,46 @@ export default function RecipeDetail() {
 
   return (
     <>
-      <article className="page-content">
+      <article className="detail-page-content">
         <header className="recipe-header">
-          <div className="recipe-header-row">
-            <h1>{recipe.title}</h1>
-            <div className="star-container">
-              <Star fill={avgRating >= 1 ? "#FFDF00" : "transparent"} className="header-icon"/>
-              <Star fill={avgRating >= 2 ? "#FFDF00" : "transparent"} className="header-icon"/>
-              <Star fill={avgRating >= 3 ? "#FFDF00" : "transparent"} className="header-icon"/>
-              <Star fill={avgRating >= 4 ? "#FFDF00" : "transparent"} className="header-icon"/>
-              <Star fill={avgRating >= 5 ? "#FFDF00" : "transparent"} className="header-icon"/>
+          <section className="recipe-header-info">
+            <div className="recipe-header-row">
+              <h1>{recipe.title}</h1>
+              <div className="star-container">
+                <Star fill={avgRating >= 1 ? "#FFDF00" : "transparent"} className="header-icon"/>
+                <Star fill={avgRating >= 2 ? "#FFDF00" : "transparent"} className="header-icon"/>
+                <Star fill={avgRating >= 3 ? "#FFDF00" : "transparent"} className="header-icon"/>
+                <Star fill={avgRating >= 4 ? "#FFDF00" : "transparent"} className="header-icon"/>
+                <Star fill={avgRating >= 5 ? "#FFDF00" : "transparent"} className="header-icon"/>
+              </div>
             </div>
-          </div>
 
-          <div className="recipe-header-row">
-            <p>author: {recipe.creator_ID ? recipe.creator_ID : "Unknown"}</p>
-            <p>created: {recipe.created_at ? formatDistanceToNow(recipe.created_at, { addSuffix: true }) : "Unknown"}</p>
-          </div>
-          
-          <div className="recipe-header-row">
-            <Bookmark fill={bookmarked ? "#FFDF00" : "transparent"} className="header-icon" onClick={() => setBookmarked(prevState => !prevState)}/> 
-            <div className="star-container">
-              {recipe.tags.map((tag, index) => (
-                <div key={index} className="tag"> {`${tag.type} : ${tag.name}`}</div>
-              ))}
+            <div className="recipe-header-row">
+              <p>author: {recipe.creator_ID ? recipe.creator_ID : "Unknown"}</p>
+              <p>created: {recipe.created_at ? formatDistanceToNow(recipe.created_at, { addSuffix: true }) : "Unknown"}</p>
             </div>
-          </div>
+            
+            <div className="recipe-header-row">
+              <Bookmark fill={bookmarked ? "#FFDF00" : "transparent"} className="header-icon" onClick={() => setBookmarked(prevState => !prevState)}/> 
+              <div className="star-container">
+                {recipe.tags.map((tag, index) => (
+                  <div key={index} className="tag"> {`${tag.type} : ${tag.name}`}</div>
+                ))}
+              </div>
+            </div>
+
+            {/* <div className="recipe-header-row"> */}
+              <span className="additional-info">Servings: {recipe.servings??"unknown"}</span>
+              <span className="additional-info">Total time: {recipe.total_time??"unknown"}</span>
+            {/* </div> */}
+          </section>
+
+          <img
+              className="header-image"
+              src={recipe.images[0]}
+              alt={recipe.title}
+          />
+          
         </header>
           
         <section className="detail-page">
