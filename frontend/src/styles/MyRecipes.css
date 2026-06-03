@@ -1,5 +1,6 @@
 .recipe-container {
     position: relative;
+    margin-top: 1.5rem;
     left: 50%;
     width: 100vw;
     margin-left: -50vw;
