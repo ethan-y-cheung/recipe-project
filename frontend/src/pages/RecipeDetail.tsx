@@ -245,9 +245,6 @@ export default function RecipeDetail() {
               </ol>
             </section>
 
-            {/* Discussion Section */}
-            <Discussion handleDelete={handleDelete} recipe_ID = {recipe.id} username={user.username} comments={allPosts}/>
-
             <h2 className="section-title">Leave Feedback </h2>
             <section className="feedback-container">
                 {/* rate and leave a comment */}
@@ -263,6 +260,9 @@ export default function RecipeDetail() {
               </div>
               <CommentForm recipe_ID={recipe.id} username={user.username} updatePosts={handleComment}/>
             </section>
+
+            {/* Discussion Section */}
+            <Discussion handleDelete={handleDelete} recipe_ID = {recipe.id} username={user.username} comments={allPosts}/>
           </div>
       
           {/* similar recipe section */}

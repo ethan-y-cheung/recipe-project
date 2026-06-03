@@ -108,6 +108,15 @@
   list-style-type: decimal;
 }
 
+.message-scroll {
+  overflow-y: auto;
+  max-height: 18.5rem;
+}
+
+.message-scroll::-webkit-scrollbar {
+  display: none;
+}
+
 .similar-recipe-container {
   width: 100%;
   flex-grow: 1;
@@ -391,15 +400,14 @@
 }
 
 .chat-popup {
+  display: flex;
+  flex-direction: column;
   position: fixed;
   box-shadow: 0 0 2rem 1rem rgba(0,0,0,0.3);
   bottom: 6rem;
   right: 2rem;
-  width: 25vw;
-  min-width: 20rem;
-  height: 30vh;
-  min-height: 25rem;
-  max-height: 40rem;
+  width: 20rem;
+  height: 25rem;
   background-color: white;
   /* border: 1px solid #757575; */
   border-radius: 2rem;
