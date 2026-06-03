@@ -134,6 +134,18 @@
   border-radius: 30px;
 }
 
+.discussion-filter {
+  max-width: 10rem;
+  margin: 0.5rem 0 1rem 1rem;
+  border-radius: 1rem;
+}
+
+.filter-label {
+  margin-left: 1rem;
+  font-size: 0.875rem;
+  color: black;
+}
+
 .rating-container {
   display: flex;
   flex-direction: column;
@@ -300,6 +312,7 @@
   font-weight: bold;
   font-size: 1rem;
   cursor: pointer;
+  background-color: white;
 }
 
 .submit-button:hover, .reply-button:hover {
