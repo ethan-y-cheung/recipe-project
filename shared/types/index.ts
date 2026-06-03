@@ -14,9 +14,10 @@ export interface User{
 export interface Recipe{
     recipe_ID: string;
     user_generated: boolean;
-    creator_ID: string | null;
+    creator_ID?: string | null;
     title : string;
-    created_at: Date | null;
+    created_at?: Date | null;
+    approved: boolean;
     tags: Tag[];
     ingredients: {
         name: string;
@@ -25,16 +26,16 @@ export interface Recipe{
     instructions: string[];
     images: string[]; //first index is always thumbnail
     rating: Rating[];
-    total_time: string | null;
-    servings: number | null; // potentially null because api doesn't include these fields
-    approved: boolean;
+    total_time?: string | null;
+    servings?: number | null; // potentially null because api doesn't include these fields
+
 }
 export interface Rating{
     user_ID: string;
     value : (1 | 2 | 3 | 4 | 5);
 }
 export interface Tag{
-    name: string;
+    name: string;   
     type: string;
 }
 export interface Comments{

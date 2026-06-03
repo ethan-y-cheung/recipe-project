@@ -19,3 +19,66 @@
   --base-yellow: #F6F4E8;
   --base-green: #E5EEE4;
 }
+
+.review-btn,
+.approve-btn,
+.deny-btn {
+    border-width: 2px;
+    border-radius: 6px;
+
+    padding: 0.5rem 0.9rem;
+
+    cursor: pointer;
+
+    font-size: 0.9rem;
+    font-weight: 600;
+    opacity: 0.7;
+}
+
+.review-btn {
+    color: blue;
+    border-color: blue;
+    background-color: white;
+}
+
+.review-btn:hover {
+    color: white;
+    border-color: white;
+    background-color: blue;
+}
+
+.approve-btn {
+    color: limegreen;
+    border-color: limegreen;
+    background-color: white;
+}
+
+.approve-btn:hover {
+    color: white;
+    border-color: white;
+    background-color: limegreen;
+}
+
+.deny-btn {
+    color: red;
+    border-color: red;
+    background-color: white;
+}
+
+.deny-btn:hover {
+    color: white;
+    border-color: white;
+    background-color: red;
+}
+
+.close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+
+    background: transparent;
+    border: none;
+
+    font-size: 1.5rem;
+    cursor: pointer;
+}

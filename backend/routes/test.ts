@@ -12,6 +12,7 @@ router.get('/recipes', (req : express.Request, res : express.Response) => {
             user_generated: true,
             title: 'Sample Recipe 1',
             created_at: new Date("2026-06-02"),
+            approved: false,
             tags: [{name :"lunch", type: "Meal Type"}, {name: "quick", type: "Difficulty"}],
             ingredients: [{
                 name: 'Ingredient 1',
@@ -49,6 +50,7 @@ router.get('/recipes', (req : express.Request, res : express.Response) => {
             user_generated: true,
             title: 'Sample Recipe 2',
             created_at: new Date("2026-06-02"),
+            approved: false,
             tags: [{name :"lunch", type: "Meal Type"}, {name: "quick", type: "Difficulty"}],
             ingredients: [{
                 name: 'Ingredient 1',
@@ -85,6 +87,7 @@ router.get('/recipes', (req : express.Request, res : express.Response) => {
             user_generated: true,
             title: 'Sample Recipe 2',
             created_at: new Date("2026-06-02"),
+            approved: false,
             tags: [],
             ingredients: [{
                 name: 'Ingredient 1',
@@ -122,6 +125,7 @@ router.get('/recipes', (req : express.Request, res : express.Response) => {
             user_generated: true,
             title: 'Sample Recipe 2',
             created_at: new Date("2026-06-02"),
+            approved: false,
             tags: [{name :"lunch", type: "Meal Type"}, {name: "quick", type: "Difficulty"}],
             ingredients: [{
                 name: 'Ingredient 1',
@@ -152,6 +156,7 @@ router.get('/recipes', (req : express.Request, res : express.Response) => {
             user_generated: true,
             title: 'Sample Recipe 1',
             created_at: new Date("2026-06-02"),
+            approved: false,
             tags: [{name :"lunch", type: "Meal Type"}, {name: "quick", type: "Difficulty"}],
             ingredients: [{
                 name: 'Ingredient 1',
@@ -189,6 +194,7 @@ router.get('/recipes', (req : express.Request, res : express.Response) => {
             user_generated: true,
             title: 'Sample Recipe 1',
             created_at: new Date("2026-06-02"),
+            approved: false,
             tags: [{name :"lunch", type: "Meal Type"}, {name: "quick", type: "Difficulty"}],
             ingredients: [{
                 name: 'Ingredient 1',
@@ -250,6 +256,7 @@ router.get('/recipes', (req : express.Request, res : express.Response) => {
             user_generated: true,
             title: 'Sample Recipe 1',
             created_at: new Date("2026-06-02"),
+            approved: false,
             tags: [{name :"lunch", type: "Meal Type"}, {name: "quick", type: "Difficulty"}],
             ingredients: [{
                 name: 'Ingredient 1',
@@ -284,6 +291,7 @@ router.get('/recipes', (req : express.Request, res : express.Response) => {
             user_generated: true,
             title: 'Sample Recipe 1',
             created_at: new Date("2026-06-02"),
+            approved: false,
             tags: [{name :"lunch", type: "Meal Type"}, {name: "quick", type: "Difficulty"}],
             ingredients: [{
                 name: 'Ingredient 1',
@@ -324,6 +332,7 @@ router.get('/recipes', (req : express.Request, res : express.Response) => {
             user_generated: false,
             title: 'Sample Recipe 1',
             created_at: new Date("2026-06-02"),
+            approved: false,
             tags: [{name :"lunch", type: "Meal Type"}, {name: "quick", type: "Difficulty"}],
             ingredients: [{
                 name: 'Ingredient 1',
@@ -356,6 +365,6 @@ router.get('/recipes', (req : express.Request, res : express.Response) => {
             },]
         },
     ];
-    res.status(200).json({ recipes: sampleRecipes });
+    res.status(200).json(sampleRecipes);
 });
 export default router;
