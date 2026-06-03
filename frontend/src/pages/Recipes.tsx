@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import '../styles/Recipes.css'
 
 import { Search } from 'lucide-react';
@@ -30,20 +30,36 @@ import RecipeCard from '../components/RecipeCard';
 
 // mock data... I'll use the mock data from backend endpoint (or actual API) instead next work period
 // using the common ts type definitions
-import recipes from './recipeData'
+import { recipes } from './recipeData';
+import type { RecipeType } from './recipeData';
 
 const FILTER_OPTIONS = ['All Recipes', 'Official Only', 'User-Generated'] as const
 type RecipeFilter = (typeof FILTER_OPTIONS)[number]
 
 export default function Recipes() {
 
-  // Recipe type (all, official, user generated)
+  // Active.displayed recipe type(s) (all, official, user generated)
   const [activeFilter, setActiveFilter] = useState<RecipeFilter>('All Recipes');
+  const [searchFilter, setSearchFilter] = useState<string>("");
+  const [tagFilter, setTagFilter] = useState<string[]>([]);
 
-  // Search query string.... todo will connect with
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [searchFilter, setSearchFilter] = useState("");
+  const [filteredRecipes, setFilteredRecipes] = useState<RecipeType[]>([]);
 
+  useEffect(() => {
+    const noFiltersApplied = activeFilter === 'All Recipes' && !searchFilter && tagFilter.length === 0;
+    if(noFiltersApplied) {
+      setFilteredRecipes(recipes);
+      return;
+    }
+
+    // todo: change to actual filtered recipes
+    setFilteredRecipes([]);
+  }, [activeFilter, searchFilter, tagFilter])
+
+  // console.log(searchFilter === 'All Recipes');
+  // console.log(!activeFilter);
+  // console.log(tagFilter.length);
+  console.log(tagFilter)
 
   // will fetch from backend instead once connected to firebase
   // are technically tags... will rename
@@ -114,11 +130,17 @@ export default function Recipes() {
           <InputGroupAddon>
             <Search />
           </InputGroupAddon>
-          <InputGroupInput placeholder="Search..." />
+
+          <InputGroupInput
+            value={searchFilter}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchFilter(e.target.value)}
+            placeholder="Search..."
+          />
         </InputGroup>
 
+        {/* add mobile dimension for tag filter */}
         {/* Tags dropdown filter      if time, limit to X tags */}
-        <Combobox items={recipeFilters} multiple>
+        <Combobox items={recipeFilters} value={tagFilter} onValueChange={(newValue: string[]) => setTagFilter(newValue)} multiple aria-label="Tag Filtering Dropdwon">
 
           {/* filter input trigger */}
           <ComboboxChips ref={anchor} className="recipe-search-row__combobox">
@@ -126,7 +148,7 @@ export default function Recipes() {
               {(values) => (
                 <>
                   {values.map((value: string) => (
-                    <ComboboxChip key={value}>{value}</ComboboxChip>
+                    <ComboboxChip key={value} aria-label={value}>{value}</ComboboxChip>
                   ))}
                   <ComboboxChipsInput placeholder={values.length === 0 ? "Filters" : ""} />
                 </>
@@ -161,7 +183,7 @@ export default function Recipes() {
 
     {/* Recipe grid */}
     <section className="recipe-catalog">
-      {recipes.map(recipeData => (
+      {filteredRecipes.map(recipeData => (
         <div key={recipeData.id}>
           <RecipeCard recipeData={recipeData}/>
         </div>
@@ -174,6 +196,17 @@ export default function Recipes() {
 
 
 
+
+// backend
+// - fetching all tags
+// - randomize combined fetched recipes - limit to 20 (?)
+  // - fetch recipes from api
+  // - fetch user-generated recipes + all associated tags
+// error handling
+
+// ----------------------------
+// pagination
+// jest testing
 
 
 

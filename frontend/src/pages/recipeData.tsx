@@ -1,4 +1,4 @@
-export type Recipe = {
+export type RecipeType = {
   id: string
   recipeImage: string
   recipeName: string
@@ -9,7 +9,7 @@ export type Recipe = {
   tags: string[]
 }
 
-const recipes: Recipe[] = [
+export const recipes: RecipeType[] = [
   {
     id: '1',
     recipeImage: 'https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=800&q=80',
