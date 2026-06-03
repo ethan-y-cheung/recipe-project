@@ -16,7 +16,7 @@ export const recipes: RecipeType[] = [
     recipeName: 'Chicken Shawarma',
     authorName: 'Forge Kitchen',
     userGenerated: false,
-    saved: false,
+    saved: true,
     averageRating: 4.9,
     tags: ['Middle Eastern', 'Chicken', 'Dinner'],
   },

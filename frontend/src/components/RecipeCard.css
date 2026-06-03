@@ -35,7 +35,7 @@
   justify-content: space-between;
 }
 .recipe-card__recipe-name {
-  font-family: "Gelasio", serif;
+  /* font-family: "Gelasio", serif; */
   margin: 0;
   font-size: 1rem;
   color: black;
@@ -44,7 +44,7 @@
   white-space: nowrap;
   width: 10rem;
 
-  font-weight: 1400;
+  font-weight: 600;
 }
 .recipe-card__author-name {
   margin-top: -0.3rem;
@@ -59,24 +59,28 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: rgb(227, 227, 227);
+  background-color: rgb(255, 255, 255);
   border: 0px solid black;
 
   border-radius: 50%;
 }
 .recipe-card__save-button:hover {
-  background-color: var(--base-green);
+  /* background-color: rgb(255, 246, 246); */
+  /* box-shadow: 0px 3px 2px rgb(214, 214, 214); */
+  border: 2px solid rgb(194, 194, 194);
 }
 .recipe-card__save-button--active {
-  background-color: #cbe8c9;
+  background-color: #ffffff;
 }
 .recipe-card__save-button-icon {
   height: 1.5rem;
   width: 1.25rem;
 
-  /* imported/default icon styling */
   fill: none;
-  stroke: currentColor;
+  stroke: rgb(141, 141, 141);
+
+  /* imported/default icon styling */
+
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -84,8 +88,8 @@
 .recipe-card__save-button-icon--active {
   height: 1.5rem;
   width: 1.25rem;
-  fill: black;
-  stroke: black;
+  fill: var(--accent-red);
+  stroke: var(--accent-red);
 }
 
 .recipe-card__tag-row {
