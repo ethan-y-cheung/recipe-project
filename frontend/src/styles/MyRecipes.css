@@ -197,6 +197,12 @@
     color: #d19f96;
 }
 
+.icon-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
 .icon-btn svg {
     width: 28px;
     height: 28px;
@@ -231,6 +237,12 @@
     overflow: hidden;
     position: relative;
     min-height: 0;
+}
+
+.recipe-image-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .rating-wrapper {
@@ -296,6 +308,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    margin-bottom: 0.5rem;
     min-height: 0;
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
 }

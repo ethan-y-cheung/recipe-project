@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import "../styles/MyRecipes.css";
 import type { Recipe } from "../../../shared/types/index.ts";
 
-export const DUMMY_RECIPES: Recipe[] = [
+const DUMMY_RECIPES: Recipe[] = [
     {
         recipe_ID: "rec_001",
         user_generated: true,
@@ -221,11 +221,14 @@ export default function MyRecipes() {
                     ) : (
                         <div className="recipe-card">
                             <div className="recipe-header-row">
-                                <h2 className="recipe-title">TITLE</h2>
+                                <h2 className="recipe-title">
+                                    {currentRecipe.title}
+                                </h2>
                                 <div className="recipe-actions">
                                     <button
                                         className="icon-btn"
                                         title="Edit Recipe"
+                                        disabled={activeView === "saved"}
                                     >
                                         <svg
                                             fill="none"
@@ -269,11 +272,6 @@ export default function MyRecipes() {
                                             <img
                                                 src={currentRecipe.images[0]}
                                                 alt={currentRecipe.title}
-                                                style={{
-                                                    width: "100%",
-                                                    height: "100%",
-                                                    objectFit: "cover",
-                                                }}
                                             />
                                         ) : (
                                             <svg
@@ -331,19 +329,11 @@ export default function MyRecipes() {
 
                                 <div className="info-card-box">
                                     <h3>Ingredients</h3>
-                                    <div
-                                        className="content-body"
-                                        style={{ whiteSpace: "pre-line" }}
-                                    >
+                                    <div className="content-body">
                                         {" "}
                                         {currentRecipe.ingredients?.map(
                                             (item, idx) => (
-                                                <div
-                                                    key={idx}
-                                                    style={{
-                                                        marginBottom: "0.25rem",
-                                                    }}
-                                                >
+                                                <div key={idx}>
                                                     •{" "}
                                                     <strong>
                                                         {item.quantity}
@@ -357,19 +347,11 @@ export default function MyRecipes() {
 
                                 <div className="info-card-box">
                                     <h3>Instructions</h3>
-                                    <div
-                                        className="content-body"
-                                        style={{ whiteSpace: "pre-line" }}
-                                    >
+                                    <div className="content-body">
                                         {" "}
                                         {currentRecipe.instructions?.map(
                                             (step, idx) => (
-                                                <div
-                                                    key={idx}
-                                                    style={{
-                                                        marginBottom: "0.5rem",
-                                                    }}
-                                                >
+                                                <div key={idx}>
                                                     <strong>{idx + 1}.</strong>{" "}
                                                     {step}
                                                 </div>
