@@ -196,8 +196,9 @@ export default function MyRecipes() {
     const [activeView, setActiveView] = useState<"created" | "saved">(
         "created",
     );
-    const [activeIndex, setActiveIndex] = useState<number>(0);
+    const [activeIndex, setActiveIndex] = useState<number | null>(null);
     const [searchQuery, setSearchQuery] = useState<string>("");
+    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
     const categoryFiltered = recipes.filter((recipe) =>
         activeView === "created"
@@ -252,7 +253,9 @@ export default function MyRecipes() {
                 </header>
 
                 <div className="split-screen-container">
-                    <aside className="master-sidebar">
+                    <aside
+                        className={`master-sidebar ${!isPreviewOpen ? "expanded" : ""}`}
+                    >
                         <div className="sidebar-controls">
                             <div className="search-input-wrapper">
                                 <Search className="search-icon" size={18} />
@@ -262,7 +265,9 @@ export default function MyRecipes() {
                                     value={searchQuery}
                                     onChange={(e) => {
                                         setSearchQuery(e.target.value);
-                                        setActiveIndex(0);
+                                        setActiveIndex(
+                                            isPreviewOpen ? 0 : null,
+                                        );
                                     }}
                                 />
                             </div>
@@ -273,7 +278,9 @@ export default function MyRecipes() {
                                         checked={activeView === "created"}
                                         onChange={() => {
                                             setActiveView("created");
-                                            setActiveIndex(0);
+                                            setActiveIndex(
+                                                isPreviewOpen ? 0 : null,
+                                            );
                                         }}
                                     />
                                     <span className="checkmark"></span>
@@ -285,7 +292,9 @@ export default function MyRecipes() {
                                         checked={activeView === "saved"}
                                         onChange={() => {
                                             setActiveView("saved");
-                                            setActiveIndex(0);
+                                            setActiveIndex(
+                                                isPreviewOpen ? 0 : null,
+                                            );
                                         }}
                                     />
                                     <span className="checkmark"></span>
@@ -316,7 +325,10 @@ export default function MyRecipes() {
                                         <div
                                             key={recipe.recipe_ID}
                                             className={`preview-card ${idx === activeIndex ? "active-card" : ""}`}
-                                            onClick={() => setActiveIndex(idx)}
+                                            onClick={() => {
+                                                setActiveIndex(idx);
+                                                setIsPreviewOpen(true);
+                                            }}
                                         >
                                             <div className="preview-image-wrapper">
                                                 {recipe.images &&
@@ -373,8 +385,11 @@ export default function MyRecipes() {
                             )}
                         </div>
                     </aside>
-                    <main className="detail-pane" id="recipeDisplayArea">
-                        {filteredRecipes.length === 0 ? (
+                    <main
+                        className={`detail-pane ${!isPreviewOpen ? "collapsed" : ""}`}
+                        id="recipeDisplayArea"
+                    >
+                        {filteredRecipes.length === 0 || !currentRecipe ? (
                             <div className="recipe-card">
                                 <div className="empty-state">
                                     <svg
@@ -399,9 +414,22 @@ export default function MyRecipes() {
                         ) : (
                             <div className="recipe-card">
                                 <div className="recipe-header-row">
-                                    <h2 className="recipe-title">
-                                        {currentRecipe.title}
-                                    </h2>
+                                    <div className="recipe-title-wrapper">
+                                        <button
+                                            className="close-preview-btn"
+                                            onClick={() => {
+                                                setIsPreviewOpen(false);
+                                                setActiveIndex(null);
+                                            }}
+                                            title="Close Preview"
+                                        >
+                                            &larr; Close Preview
+                                        </button>
+                                        <h2 className="recipe-title">
+                                            {currentRecipe.title}
+                                        </h2>
+                                    </div>
+
                                     <div className="recipe-actions">
                                         <button
                                             className="icon-btn"
