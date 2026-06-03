@@ -1,4 +1,4 @@
-import "../styles/RecipeDetail.css";
+import "../../styles/RecipeDetail.css";
 import {X} from "lucide-react";
 import {useState} from 'react';
 import axios from 'axios';

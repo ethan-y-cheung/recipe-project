@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import type { Comments } from "../../../shared/types/index.ts";
-import "../styles/RecipeDetail.css";
+import type { Comments } from '../../../../shared/types/index.ts';
+import "../../styles/RecipeDetail.css";
 
 interface CommentProps {
   username: string;

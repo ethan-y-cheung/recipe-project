@@ -1,13 +1,15 @@
-import "../styles/RecipeDetail.css";
-import { ThumbsUp, Reply } from 'lucide-react';
-import type { Comments } from "../../../shared/types/index.ts";
+import "../../styles/RecipeDetail.css";
+import { ThumbsUp, Reply, Trash, SquarePen } from 'lucide-react';
+import type { Comments } from '../../../../shared/types/index.ts';
 import {formatDistanceToNow} from 'date-fns';
 import { useState, useEffect } from 'react';
+import ConfirmDelete from "./ConfirmDelete.tsx";
 
 interface DiscussionProps {
   username: string;
   recipe_ID: string;
   comments: Comments[];
+  handleDelete: (comment_id : string) => void;
 }
 
 type FilterValue = 'likes' | 'created_at';
@@ -28,12 +30,14 @@ const api = {
 }
 
 
-const Discussion = ( {recipe_ID, username, comments} : DiscussionProps) => {
+const Discussion = ( {handleDelete, recipe_ID, username, comments} : DiscussionProps) => {
   const [openReply, setOpenReply] = useState<string>("");
   const [isMutating, setIsMutating] = useState<boolean>(false);
   const [allPosts, setAllPosts] = useState<Comments[]>(comments);
   const [replyError, setReplyError] = useState<boolean>(false);
   const [replyText, setReplyText] = useState<string>("");
+  const [openConfirmation, setOpenConfirmation] = useState<boolean>(false);
+  const [currentComment, setCurrentComment] = useState<Comments>();
 
   useEffect(() => {
     setAllPosts(comments);
@@ -170,6 +174,13 @@ const Discussion = ( {recipe_ID, username, comments} : DiscussionProps) => {
                   <p>{comment.likes.length}</p>
                   <ThumbsUp onClick={() => handleLike(comment)} className="icon-button"/>
                   <button onClick={() => handleOpenReply(comment.id)} className="reply-button"> <Reply/>reply </button>
+
+                   {username === comment.creator_ID ? 
+                    <>
+                      <SquarePen className="icon-button"/>
+                      <Trash onClick={() => {setCurrentComment(comment) ; setOpenConfirmation(prevState=>!prevState)}} className="icon-button"/>
+                    </> : null }
+                  
                 </div>
               </div>
               
@@ -201,6 +212,11 @@ const Discussion = ( {recipe_ID, username, comments} : DiscussionProps) => {
                     <p>{reply.likes.length}</p>
                     <ThumbsUp onClick={() => handleLike(reply)} className="icon-button" />
                     <button className="reply-button"> <Reply/>reply </button>
+                    {username === reply.creator_ID ? 
+                    <>
+                      <SquarePen className="icon-button"/>
+                      <Trash onClick={() => {setCurrentComment(comment) ; setOpenConfirmation(prevState=>!prevState)}} className="icon-button"/>
+                    </> : null }
                   </div>
                 </div>))}
               </section> 
@@ -209,6 +225,7 @@ const Discussion = ( {recipe_ID, username, comments} : DiscussionProps) => {
             
           ))}
       </div>
+      {openConfirmation ? <ConfirmDelete comment_id={currentComment.id} confirmDelete={handleDelete} closeForm={setOpenConfirmation}/> : null}
     </>
   );
 }

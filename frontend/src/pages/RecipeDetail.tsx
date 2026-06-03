@@ -1,14 +1,17 @@
 // import { useParams } from 'react-router-dom'
 import { Star, Bookmark, MessageCircle} from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import type { Recipe, Comments, User, Rating } from "../../../shared/types/index.ts";
-import Chatbot from '../components/Chatbot.tsx';
-import CommentForm from '../components/CommentForm.tsx';
-import Discussion from '../components/Discussion.tsx';
+import Chatbot from '../components/RecipeDetail/Chatbot.tsx';
+import CommentForm from '../components/RecipeDetail/CommentForm.tsx';
+import Discussion from '../components/RecipeDetail/Discussion.tsx';
+// import RecipeCard from '@/components/RecipeCard.tsx';
+
+// import axios from 'axios';
 import "../styles/RecipeDetail.css";
 
-const recipe: Recipe = {
+const fakeData: Recipe = {
   id: "123",
   user_generated: false,
   creator_ID: "Allison",
@@ -24,11 +27,11 @@ const recipe: Recipe = {
   images: [ "https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=800&auto=format&fit=crop&q=60"],
   servings: 1,
   total_time: "20 minutes",
-  rating: [{user_ID: "Kaitlyn", value: 5}, {user_ID: "Leo", value: 2}]
+  rating: [{user_ID: "Kaitlyn", value: 5}, {user_ID: "Michael", value: 2}]
 };
 
 const user: User = {
-  username: "example",
+  username: "Michael",
   password: "password123",
   admin: false,
   my_recipes: [],
@@ -64,37 +67,103 @@ export default function RecipeDetail() {
   // used later when pulling data from firebase
   // const { recipeId } = useParams<{recipeId: string}>();
   const [allPosts, setAllPosts] = useState<Comments[]>(comments);
-  const [done, setDone] = useState<boolean[] | null>(new Array(recipe.ingredients.length).fill(false));
+  const [recipe, setRecipe] = useState<Recipe | null>(null);
+  const [done, setDone] = useState<boolean[] | null>(null);
   const [bookmarked, setBookmarked] = useState<boolean>(false); // idk how to do this :(
-  
-
-  const [avgRating, setAverageRating] = useState<number>(recipe.rating.length > 0 
-  ? recipe.rating.reduce((score, rating) => score + (rating.value ?? 0), 0) / recipe.rating.length 
-  : 0);
+  const [avgRating, setAverageRating] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState<boolean>(false)
   
   const [showChat, setShowChat] = useState<boolean>(false);
+  // pull old rating if it exists
   const [rating, setRating] = useState<null | 1 | 2 | 3 | 4 | 5>(null);
-  
+
+  // fetch recipe data
+  useEffect(() => {
+    const fetchRecipeData = async() => {
+      setIsLoading(true);
+      try {
+        // database or api call here
+        setRecipe(fakeData);
+        setDone(new Array(fakeData.ingredients.length).fill(false));
+
+        const ratingsArray = fakeData.rating || [];
+        if (ratingsArray.length > 0) {
+          const total = ratingsArray.reduce((score, r) => score + (r.value ?? 0), 0);
+          setAverageRating(total / ratingsArray.length);
+        } else {
+          setAverageRating(0);
+        }
+        const userRating = ratingsArray.find(r => r.user_ID === user.username);
+        setRating(userRating?.value ?? null);
+
+      } catch (error) {
+        console.error("unable to fetch recipe data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchRecipeData();
+  }, [])
+
   const handleComment = (newComment:Comments) => {
     console.log(newComment);
     setAllPosts([...allPosts, newComment]);
   }
+
+  const handleDelete = async (comment_id : string) => {
+    try {
+      // await axios.delete("http://localhost:5001/comments", {
+      //   params: {comment_id: comment_id}
+      // });
+
+      const newPosts : Comments[] = allPosts.filter((post) => post.id !== comment_id)
+
+      setAllPosts([
+        ...newPosts.map(post => ({
+          ...post, 
+          replies: post.replies.filter(reply => reply.id !== comment_id)
+        }))
+      ]);
+
+    } catch (error) {
+      console.error("error deleting comment: ", error);
+    }
+  }
+
   const handleRating = (userRating : 1 | 2 | 3 | 4 | 5) => {
     setRating(userRating);
     let newRatings: Rating[];
 
     // if you have already rated it, remove that value
-    if (recipe.rating.some(rating => rating.user_ID === user.username)) {
+    if (recipe?.rating.some(rating => rating.user_ID === user.username)) {
       newRatings = recipe.rating.filter(rating => rating.user_ID !== user.username);
     // otherwise add in the new rating
     } else {
-      newRatings = [...recipe.rating, {user_ID: user.username, value: userRating}]; 
+      newRatings = recipe ? [...recipe.rating, {user_ID: user.username, value: userRating}] : []; 
     }
-   
+    
+    // update average rating
     setAverageRating(newRatings.length > 0 
     ? newRatings.reduce((score, rating) => score + (rating.value ?? 0), 0) / newRatings.length 
     : 0)
+
+    try {
+      // database interaction here
+      console.log(userRating);
+    } catch (error) {
+      console.error("unable to process rating: ", error);
+    }
   }
+
+  if (isLoading) {
+    return (<div>Loading data...</div>);
+  }
+
+  // guard clause
+  if (!recipe) {
+    return <></>;
+  }
+
 
   return (
     <>
@@ -177,7 +246,7 @@ export default function RecipeDetail() {
             </section>
 
             {/* Discussion Section */}
-            <Discussion recipe_ID = {recipe.id} username={user.username} comments={allPosts}/>
+            <Discussion handleDelete={handleDelete} recipe_ID = {recipe.id} username={user.username} comments={allPosts}/>
 
             <h2 className="section-title">Leave Feedback </h2>
             <section className="feedback-container">
@@ -185,14 +254,14 @@ export default function RecipeDetail() {
               <div className="rating-container">
                 <h2>Rating</h2> 
                 <div className="star-container">
-                  <Star fill={rating ?? 0 >= 1 ? "#FFDF00" : "transparent"} onClick={() => handleRating(1)} className="header-icon"/>
-                  <Star fill={rating ?? 0 >= 2 ? "#FFDF00" : "transparent"} onClick={() => handleRating(2)} className="header-icon"/>
-                  <Star fill={rating ?? 0 >= 3 ? "#FFDF00" : "transparent"} onClick={() => handleRating(3)} className="header-icon"/>
-                  <Star fill={rating ?? 0 >= 4 ? "#FFDF00" : "transparent"} onClick={() => handleRating(4)} className="header-icon"/>
-                  <Star fill={rating ?? 0 >= 5 ? "#FFDF00" : "transparent"} onClick={() => handleRating(5)} className="header-icon"/>
+                  <Star fill={(rating ? rating : 0) >= 1 ? "#FFDF00" : "transparent"} onClick={() => handleRating(1)} className="header-icon"/>
+                  <Star fill={(rating ? rating : 0) >= 2 ? "#FFDF00" : "transparent"} onClick={() => handleRating(2)} className="header-icon"/>
+                  <Star fill={(rating ? rating : 0) >= 3 ? "#FFDF00" : "transparent"} onClick={() => handleRating(3)} className="header-icon"/>
+                  <Star fill={(rating ? rating : 0) >= 4 ? "#FFDF00" : "transparent"} onClick={() => handleRating(4)} className="header-icon"/>
+                  <Star fill={(rating ? rating : 0) >= 5 ? "#FFDF00" : "transparent"} onClick={() => handleRating(5)} className="header-icon"/>
                 </div>
               </div>
-              <CommentForm allPosts={allPosts} recipe_ID={recipe.id} username={user.username} updatePosts={handleComment}/>
+              <CommentForm recipe_ID={recipe.id} username={user.username} updatePosts={handleComment}/>
             </section>
           </div>
       
@@ -201,7 +270,10 @@ export default function RecipeDetail() {
             <h2 className="section-title">Similar Recipes</h2>
             <div className="similar-recipe-container">
               {/* Insert similar cards here */}
-              
+              {/* <RecipeCard recipeData={recipe} isSaved={true} avgRating={3}/>
+              <RecipeCard recipeData={recipe} isSaved={true} avgRating={3}/>
+              <RecipeCard recipeData={recipe} isSaved={true} avgRating={3}/>
+              <RecipeCard recipeData={recipe} isSaved={true} avgRating={3}/> */}
             </div>
           </aside>
           
