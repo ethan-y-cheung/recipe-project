@@ -105,6 +105,7 @@
   padding: 1rem 1rem 1rem 2rem;
   box-sizing: border-box;
   margin: 1rem 0 0 0;
+  list-style-type: decimal;
 }
 
 .similar-recipe-container {
@@ -222,6 +223,7 @@
   border: 1px solid var(--border);
   padding: 1rem;
   border-radius: 0.5rem;
+  width: 100%;
   /* min-height: 3rem; */
   
 }
@@ -387,11 +389,11 @@
   box-shadow: 0 0 2rem 1rem rgba(0,0,0,0.3);
   bottom: 6rem;
   right: 2rem;
-  width: 15vw;
+  width: 25vw;
   min-width: 20rem;
-  height: 20vh;
+  height: 30vh;
   min-height: 25rem;
-  max-height: 30rem;
+  max-height: 40rem;
   background-color: white;
   /* border: 1px solid #757575; */
   border-radius: 2rem;
@@ -424,10 +426,49 @@
   border: 1px solid #757575;
   border-radius: 1rem;
   padding: 0.2rem;
+  padding-left: 0.5rem;
 }
 
-.pin-to-searchbar {
+.message {
+  position: relative;
+  background-color: rgb(239, 237, 221);
+  border: gray 1px solid;
+  border-radius: 2rem;
+  padding: 0.5rem;
+  margin: 1rem 0 1rem 1rem;
+  width: fit-content;
+  overflow-wrap: break-word;
+  max-width: 80%;
+}
+
+.user {
+  position: relative;
+  justify-self: flex-end;
+  margin-right: 1rem;
+  background-color: rgb(147, 199, 244);
+}
+
+.bot {
+  justify-self: flex-start;
+}
+
+.message::after {
   position: absolute;
-  bottom: 1rem;
-  right: 3rem;
+  bottom: 10px;
+  width: 0;
+  height: 0;
+  border: 10px solid transparent;
+}
+
+.message.bot {
+  border-bottom-left-radius: 2px;
+}
+.message.bot::after {
+  left: -10px;
+}
+.message.user {
+  border-bottom-right-radius: 2px;
+}
+.message.user::after {
+  right: -10px;
 }
