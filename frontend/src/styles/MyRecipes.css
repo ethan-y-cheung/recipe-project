@@ -1,0 +1,525 @@
+.recipe-container {
+    width: 100%;
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 0;
+}
+
+/* Header */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.logo {
+    font-family:
+        "Plus Jakarta Sans",
+        system-ui,
+        -apple-system,
+        sans-serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1e1e1e;
+    letter-spacing: -0.5px;
+}
+
+.logo span {
+    font-family: "Playfair Display", Georgia, serif;
+    color: #dc9b9b;
+    font-weight: 400;
+    margin-left: 0.25rem;
+}
+
+/* Action Buttons */
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #dc9b9b;
+    color: #1e1e1e;
+    font-family:
+        "Plus Jakarta Sans",
+        system-ui,
+        -apple-system,
+        sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 0.75rem;
+    padding: 0.75rem 1.25rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.btn-primary:hover {
+    background-color: #bf8980;
+    transform: translateY(-1px);
+}
+
+.btn-primary:active {
+    transform: translateY(1px);
+}
+
+/* Main Layout */
+.app-layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+
+.filter-row {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2.5rem;
+    padding-left: 0.25rem;
+}
+
+/* Checkboxes */
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #555555;
+    user-select: none;
+    position: relative;
+}
+
+.checkbox-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkmark {
+    height: 20px;
+    width: 20px;
+    background-color: #ffffff;
+    border: 2px solid #dc9b9b;
+    border-radius: 4px;
+    position: relative;
+    transition: all 0.25s ease;
+}
+
+.checkbox-container input:checked ~ .checkmark {
+    background-color: #f2e3e0;
+}
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+    left: 5px;
+    top: 1px;
+    width: 6px;
+    height: 11px;
+    border: solid #1e1e1e;
+    border-width: 0 2.5px 2.5px 0;
+    transform: rotate(45deg);
+}
+
+.checkbox-container input:checked ~ .checkmark:after {
+    display: block;
+}
+
+.checkbox-container:hover input ~ .checkmark {
+    background-color: #f2e3e0;
+    opacity: 0.9;
+}
+/* Recipe Card */
+.recipe-card {
+    background-color: #f6f4e8;
+    border-radius: 2rem;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    height: 560px;
+    justify-content: space-between;
+    box-sizing: border-box;
+}
+
+.recipe-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    flex-shrink: 0;
+}
+
+.recipe-title {
+    font-family:
+        "Plus Jakarta Sans",
+        system-ui,
+        -apple-system,
+        sans-serif;
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: #1e1e1e;
+    line-height: 1.1;
+    word-break: break-word;
+    margin: 0;
+    max-width: 75%;
+}
+
+.recipe-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    color: #1e1e1e;
+    transition:
+        transform 0.25s ease,
+        color 0.25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-btn:hover {
+    transform: scale(1.15);
+    color: #d19f96;
+}
+
+.icon-btn svg {
+    width: 28px;
+    height: 28px;
+}
+
+.recipe-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.3fr 1.3fr;
+    gap: 2rem;
+    flex: 1;
+    min-height: 0;
+}
+
+.recipe-visual-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    height: 100%;
+    min-height: 0;
+    justify-content: space-between;
+}
+
+.recipe-image-box {
+    flex: 1;
+    aspect-ratio: 1.15;
+    background-color: #ffffff;
+    border-radius: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid #1e1e1e;
+    overflow: hidden;
+    position: relative;
+    min-height: 0;
+}
+
+.rating-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1e1e1e;
+}
+
+.stars {
+    display: inline-flex;
+    gap: 0.2rem;
+}
+
+.star {
+    cursor: pointer;
+    transition: transform 0.25s ease;
+}
+
+.star:hover {
+    transform: scale(1.2);
+}
+
+.star svg {
+    width: 24px;
+    height: 24px;
+    stroke: #1e1e1e;
+    stroke-width: 1.5;
+    fill: none;
+}
+
+.star.active svg {
+    fill: #f7d070;
+}
+
+.tags-wrapper {
+    font-size: 1.15rem;
+    font-weight: 500;
+    color: #1e1e1e;
+    line-height: 1.4;
+}
+
+.tags-label {
+    font-weight: 700;
+}
+
+/* Ingredient and Instruction Columns */
+.recipe-info-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    height: 100%;
+    min-height: 0;
+}
+
+.info-card-box {
+    background-color: #e5eee4;
+    border-radius: 1.25rem;
+    padding: 1rem;
+    min-height: 165px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-height: 0;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.info-card-box h3 {
+    font-family:
+        "Plus Jakarta Sans",
+        system-ui,
+        -apple-system,
+        sans-serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #1e1e1e;
+}
+
+.info-card-box .content-body {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #555555;
+    overflow-y: auto;
+    max-height: 130px;
+    padding-right: 0.25rem;
+}
+
+.content-body::-webkit-scrollbar {
+    width: 4px;
+}
+.content-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+.content-body::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+}
+
+/* Navigation Footer */
+.recipe-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+.btn-nav {
+    background-color: #dc9b9b;
+    color: #1e1e1e;
+    font-family:
+        "Plus Jakarta Sans",
+        system-ui,
+        -apple-system,
+        sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 0.75rem;
+    padding: 0.65rem 1.25rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-nav:hover:not(:disabled) {
+    background-color: #bf8980;
+    transform: translateY(-1px);
+}
+
+.btn-nav:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* Modals */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    backdrop-filter: blur(4px);
+}
+
+.modal-box {
+    background-color: #ffffff;
+    border-radius: 2rem;
+    width: 90%;
+    max-width: 600px;
+    padding: 2rem;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+    animation: modalSlide 0.3s ease-out;
+}
+
+@keyframes modalSlide {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.modal-header h2 {
+    font-family:
+        "Plus Jakarta Sans",
+        system-ui,
+        -apple-system,
+        sans-serif;
+    font-size: 1.75rem;
+    color: #1e1e1e;
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    font-size: 1.75rem;
+    cursor: pointer;
+    color: #555555;
+}
+
+.form-group {
+    margin-bottom: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #1e1e1e;
+}
+
+.form-control {
+    padding: 0.75rem;
+    border: 2px solid #e7ece6;
+    border-radius: 0.75rem;
+    font-family:
+        "Plus Jakarta Sans",
+        system-ui,
+        -apple-system,
+        sans-serif;
+    font-size: 0.95rem;
+    color: #1e1e1e;
+    outline: none;
+    transition: border-color 0.25s ease;
+}
+
+.form-control:focus {
+    border-color: #d19f96;
+}
+
+.form-row-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.btn-cancel {
+    background-color: #eaeaea;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family:
+        "Plus Jakarta Sans",
+        system-ui,
+        -apple-system,
+        sans-serif;
+}
+
+.btn-cancel:hover {
+    background-color: #dcdcdc;
+}
+
+.delete-modal-text {
+    font-size: 1.1rem;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+    color: #555555;
+}
+
+.btn-danger {
+    background-color: #e05a47;
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #c84634;
+}
+
+/* Empty State */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    padding: 3rem 1rem;
+    text-align: center;
+    color: #555555;
+}
+.empty-state svg {
+    width: 80px;
+    height: 80px;
+    color: #d19f96;
+}
