@@ -51,7 +51,8 @@ const recipesPerPage = 8 as const; // default # recipes shown per page
 export default function Recipes() {
 
   // Page number
-  const [page, setPage] = useState<Number>(1);
+  const [page, setPage] = useState<Number>(0);
+  console.log(page);
 
   // Active displayed recipe type(s) (all, official, user generated)
   const [activeFilter, setActiveFilter] = useState<RecipeFilter>('All Recipes');
@@ -60,6 +61,7 @@ export default function Recipes() {
 
   const [filteredRecipes, setFilteredRecipes] = useState<RecipeType[]>([]);
 
+  // Runs side effects for filtering displayed recipes
   useEffect(() => {
     const noFiltersApplied = activeFilter === 'All Recipes' && !searchFilter && tagFilter.length === 0;
     if(noFiltersApplied) {
@@ -75,6 +77,10 @@ export default function Recipes() {
   // console.log(!activeFilter);
   // console.log(tagFilter.length);
   console.log(tagFilter)
+
+
+  
+
 
   // will fetch from backend instead once connected to firebase
   // are technically tags... will rename
@@ -217,7 +223,7 @@ export default function Recipes() {
         </PaginationItem>
 
         <PaginationItem>
-          <PaginationLink href="#">1</PaginationLink>
+          <PaginationLink onClick={() => {setPage(1)}} href="#">1</PaginationLink>
         </PaginationItem>
         <PaginationItem>
           <PaginationLink href="#" isActive={true}>2</PaginationLink>
@@ -226,9 +232,9 @@ export default function Recipes() {
           <PaginationLink href="#">3</PaginationLink>
         </PaginationItem>
         
-        <PaginationItem>
+        {/* <PaginationItem>
           <PaginationEllipsis />
-        </PaginationItem>
+        </PaginationItem> */}
         
         <PaginationItem> {/*next button*/}
           <PaginationNext href="#" />
