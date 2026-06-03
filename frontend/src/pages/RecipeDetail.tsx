@@ -58,11 +58,6 @@ export default function RecipeDetail() {
   const [avgRating, setAverageRating] = useState<number>(recipe.rating.length > 0 
   ? recipe.rating.reduce((score, rating) => score + (rating.value ?? 0), 0) / recipe.rating.length 
   : 0);
-
-  useEffect(() => {
-    console.log(avgRating);
-  })
-
   
   const [showChat, setShowChat] = useState<boolean>(false);
   const [rating, setRating] = useState<null | 1 | 2 | 3 | 4 | 5>(null);
@@ -127,6 +122,7 @@ export default function RecipeDetail() {
                   className={`ingredient ${(done ? done[index] : false ) ? "crossed-out": ""}`}>
                     <input
                       type="checkbox"
+                      // trying to import this as a classname somehow doesn't change the checkbox size
                       style={{width:"1rem", height:"1rem"}}
                       checked={(done ? done[index] : false )} 
                       onChange={() => {

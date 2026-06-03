@@ -41,8 +41,8 @@ const CommentForm = ( {username} : CommentProps) => {
     <div className="comment-form">
       <h2>Comment</h2> 
 
-      <div style={{display: "flex", flexDirection: "column", alignItems: "start", width: "100%"}}>
-        <span style={{fontSize: "0.875rem"}}>Message</span>
+      <div className="comment-container">
+        <span className="helper-text">Message</span>
         <textarea 
           className={`${formError ? "error" : ""} comment-form-text`}
           placeholder="Turn the heat down by 35 degrees..."

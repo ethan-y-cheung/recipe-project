@@ -136,6 +136,17 @@
   gap: 1rem;
 }
 
+.comment-container {
+  display: "flex";
+  flex-direction: "column";
+  align-items: "start";
+  width: "100%";
+}
+
+.helper-text {
+  font-size: 0.875rem;
+}
+
 .comment-form-text {
   padding: 0.5rem;
   border-radius: 0.5rem;
