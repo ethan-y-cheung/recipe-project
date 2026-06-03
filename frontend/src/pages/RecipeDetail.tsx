@@ -1,6 +1,6 @@
 // import { useParams } from 'react-router-dom'
 import { Star, Bookmark, ThumbsUp, Reply, MessageCircle} from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import type { Recipe, Comments, User, Rating } from "../../../shared/types/index.ts";
 import Chatbot from '../components/Chatbot.tsx';
