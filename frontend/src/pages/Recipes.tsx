@@ -46,12 +46,39 @@ import type { RecipeType } from './recipeData';
 const FILTER_OPTIONS = ['All Recipes', 'Official Only', 'User-Generated'] as const
 type RecipeFilter = (typeof FILTER_OPTIONS)[number]
 
-const recipesPerPage = 8 as const; // default # recipes shown per page
+const recipesPerPage = 4 as const; // default # recipes shown per page
+
+
+// will fetch from backend instead once connected to firebase
+// are technically tags... will rename
+
+// assign colors to tags of specific types
+// todo: replace w/ actual filters
+const recipeFilters = [
+  {
+    value: "Meal Type",
+    items: [
+      "Breakfast",
+      "Lunch",
+      "Dinner"
+    ],
+  },
+  {
+    value: "Dietary Restrictions",
+    items: [
+      "Vegetarian",
+      "Vegan",
+      "Gluten-free"
+    ],
+  }
+] as const
+
+
 
 export default function Recipes() {
 
   // Page number
-  const [page, setPage] = useState<Number>(0);
+  const [page, setPage] = useState<number>(0);
   console.log(page);
 
   // Active displayed recipe type(s) (all, official, user generated)
@@ -73,37 +100,33 @@ export default function Recipes() {
     setFilteredRecipes([]);
   }, [activeFilter, searchFilter, tagFilter])
 
+  useEffect(() => {
+    // pull all data
+    // set recipe data, unfiltered;
+  }, [])
+
+  // Helper: Returns array with numbers from start (inlcude) to stop (exclusive)
+  const createRange = (start: number, stop: number) => {
+    const length = (stop - start) + 1;
+    const range: number[] = [];
+    for (let i = 0; i < length; i++) {
+      range.push(start + i);
+    }
+    return range;
+  };
+
+  // const nextPage = () => {
+  //   // unfiltered recipes/
+  //   const totalPages = 
+  //   if (page + 1 <= Math.ceil()) {
+  //     setPage(page + 1);
+  //   }
+  // }
+
   // console.log(searchFilter === 'All Recipes');
   // console.log(!activeFilter);
   // console.log(tagFilter.length);
-  console.log(tagFilter)
-
-
-  
-
-
-  // will fetch from backend instead once connected to firebase
-  // are technically tags... will rename
-
-  // assign colors to tags of specific types
-  const recipeFilters = [
-    {
-      value: "Meal Type",
-      items: [
-        "Breakfast",
-        "Lunch",
-        "Dinner"
-      ],
-    },
-    {
-      value: "Dietary Restrictions",
-      items: [
-        "Vegetarian",
-        "Vegan",
-        "Gluten-free"
-      ],
-    }
-  ] as const
+  // console.log(tagFilter)
 
   const anchor = useComboboxAnchor()
 
@@ -114,11 +137,12 @@ export default function Recipes() {
       <header className="recipes-heading">
         <div className="recipes-heading__text">
           <p className="recipes-heading__subtitle">
-            Browse
+            <span><Search /></span>
+            {/* Browse */}
           </p>
           <h2 className="recipes-heading__title">Explore <span className="recipe-heading__title--red">Recipes</span></h2>
           <p className="recipes-heading__subtitle">
-            Find your next favorite meal from our growing recipe collection.
+            Discover new favorites from our growing recipe collection.
           </p>
         </div>
         <div className="recipes-heading__image-mask">
@@ -221,26 +245,32 @@ export default function Recipes() {
     {/* Pagination (page numbers...) */}
     <Pagination>
       <PaginationContent>
-        <PaginationItem> {/*previous button*/}
-          <PaginationPrevious href="#" />
+
+        <PaginationItem className={page > 1 ? '': 'recipe-catalog__pagination--disabled'}> {/*previous button*/}
+          <PaginationPrevious />
+          {/* href="#" */}
         </PaginationItem>
 
-        <PaginationItem>
-          <PaginationLink onClick={() => {setPage(1)}} href="#">1</PaginationLink>
-        </PaginationItem>
-        <PaginationItem>
-          <PaginationLink href="#" isActive={true}>2</PaginationLink>
-        </PaginationItem>
-        <PaginationItem>
-          <PaginationLink href="#">3</PaginationLink>
-        </PaginationItem>
+        {/* maps page numbers to button links */}
+
+        {/* todo: stop if number if > max pages */}
+        {createRange(page - 1, page + 2).map((pageNumber: number) => 
+          pageNumber > 0 && (<PaginationItem>
+            <PaginationLink 
+              onClick={() => setPage(pageNumber)}
+              isActive={pageNumber === page}
+              >
+                {pageNumber}
+            </PaginationLink>
+          </PaginationItem>)
+        )}
         
         {/* <PaginationItem>
           <PaginationEllipsis />
         </PaginationItem> */}
         
         <PaginationItem> {/*next button*/}
-          <PaginationNext href="#" />
+          <PaginationNext onClick={() => {setPage(page + 1)}}/>
         </PaginationItem>
 
       </PaginationContent>
