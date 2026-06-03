@@ -9,20 +9,40 @@ interface DiscussionProps {
   comments: Comments[];
 }
 
+type FilterValue = 'likes' | 'created_at';
+
 interface FilterOption {
-  value: string;
+  value: FilterValue;
   label: string;
 }
 
 
 const Discussion = ( {comments} : DiscussionProps) => {
   // const [openReply, setOpenReply] = useState<boolean>(false);
-  const options : FilterOption[] = [{label: "most likes", value: "popularity"}, {label: "most recent", value: "timing"}]
-  const [filter, setFilter] = useState<string> ("most likes");
+  const options: FilterOption[] = [
+    { label: "Most Likes", value: "likes" },
+    { label: "Most Recent", value: "created_at" }
+  ];
 
-  const handleFiltering = (newFilter : string) => {
+  // default filtering is by popularity
+  const [filter, setFilter] = useState<FilterValue>("likes");
+
+
+  const handleFiltering = (newFilter: FilterValue) => {
     setFilter(newFilter);
   }
+
+  const sortedComments = comments.toSorted((a, b) => {
+    if (filter === 'likes') {
+      // Sort descending by total number of likes
+      return b.likes.length - a.likes.length;
+    }
+    if (filter === 'created_at') {
+      // Sort descending by date (most recent first)
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    }
+    return 0;
+  });
 
   return (
     <>
@@ -37,14 +57,7 @@ const Discussion = ( {comments} : DiscussionProps) => {
         id="discussion-filter"
         className="discussion-filter"
         value={filter}
-        onChange={(e) => handleFiltering(e.target.value)}
-        style={{
-          padding: '8px 12px',
-          borderRadius: '4px',
-          border: '1px solid #ccc',
-          fontSize: '16px',
-          backgroundColor: '#fff'
-        }}
+        onChange={(e) => handleFiltering(e.target.value as FilterValue)}
       >
         {/* Recommended placeholder / default state */}
         <option value="" disabled>
@@ -60,7 +73,7 @@ const Discussion = ( {comments} : DiscussionProps) => {
       </select>
 
       <div className="discussion-container">
-          {comments.map((comment, index) => (
+          {sortedComments.map((comment, index) => (
             <article key={index}>
               <div className="comment"> 
                 <p style={{color: "black"}}><strong>{comment.creator_ID}</strong></p>
