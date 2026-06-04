@@ -149,18 +149,28 @@ export default function RecipeDetail() {
     }
   }
 
-  const handleDelete = async (comment_id : string) => {
+  const handleDelete = async (comment : Comments | null) => {
+    if (!comment) return;
     try {
-      // await axios.delete("http://localhost:5001/comments", {
-      //   params: {comment_id: comment_id}
-      // });
+      const token = await currentUser?.getIdToken();
+      const response = await axios.post(
+        `${BASE_URL}/comments/delete`, 
+        { 
+          comment: comment // This is the request body (req.body)
+        }, 
+        { 
+          headers: { 
+            Authorization: `Bearer ${token}`, 
+          }, 
+        }
+      );
 
-      const newPosts : Comments[] = allPosts.filter((post) => post.id !== comment_id)
+      const newPosts : Comments[] = allPosts.filter((post) => post.id !== comment.id)
 
       setAllPosts([
         ...newPosts.map(post => ({
           ...post, 
-          replies: post.replies.filter(reply => reply.id !== comment_id)
+          replies: post.replies.filter(reply => reply.id !== comment.id)
         }))
       ]);
 

@@ -9,7 +9,7 @@ interface DiscussionProps {
   username: string;
   recipe_ID: string;
   comments: Comments[];
-  handleDelete: (comment_id : string) => void;
+  handleDelete: (comment : Comments | null) => void;
 }
 
 type FilterValue = 'likes' | 'created_at';
@@ -228,7 +228,7 @@ const Discussion = ( {handleDelete, recipe_ID, username, comments} : DiscussionP
             
           ))}
       </div>
-      {openConfirmation ? <ConfirmDelete comment_id={currentComment?.id ?? ""} confirmDelete={handleDelete} closeForm={setOpenConfirmation}/> : null}
+      {openConfirmation ? <ConfirmDelete comment={currentComment??null} confirmDelete={handleDelete} closeForm={setOpenConfirmation}/> : null}
     </>
   );
 }
