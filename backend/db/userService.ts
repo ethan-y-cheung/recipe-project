@@ -56,7 +56,6 @@ export const updateCreatedRecipe = async (
 
     await recipeRef.update({
         ...allowedUpdates,
-        updated_at: new Date().toISOString(),
     });
 
     return true;

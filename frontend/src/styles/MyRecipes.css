@@ -527,12 +527,7 @@
 }
 
 .star-icon {
-    cursor: pointer;
     transition: transform 0.25s ease;
-}
-
-.star-icon:hover {
-    transform: scale(1.2);
 }
 
 .star-icon.active {
