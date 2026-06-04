@@ -46,7 +46,7 @@ import type { Recipe } from '../../../shared/types/index.ts';
 
 
 
-const FILTER_OPTIONS = ['All Recipes', 'Official Only', 'User-Generated'] as const
+const FILTER_OPTIONS = ['All Recipes', 'Official Only', 'User-Generated Only'] as const
 type RecipeFilter = (typeof FILTER_OPTIONS)[number]
 
 const recipesPerPage = 8 as const; // default # recipes shown per page
