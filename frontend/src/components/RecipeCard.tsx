@@ -16,7 +16,7 @@ const RecipeCard = ({ recipeData, isSaved }: { recipeData: Recipe, isSaved: bool
   }
 
   return (
-    <article className="recipe-card">
+    <article className="recipe-card-original">
       <div className="recipe-card__image-mask">
         {<img className="recipe-card__image" src={recipeData.images ? recipeData.images[0] : ''} />}
       </div>

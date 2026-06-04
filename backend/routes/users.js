@@ -4,30 +4,69 @@ import { requireAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// POST /users/sync — create Firestore user document if it doesn't exist
-router.post('/sync', requireAuth, async (req, res) => {
+// Helper function: Create user document if it doesn't exist
+async function ensureUserDoc(uid, email, username) {
+  const db = admin.firestore();
+  const userRef = db.collection("users").doc(uid);
+
+  const snap = await userRef.get();
+
+  if (!snap.exists) {
+    await userRef.set({
+      username: username || email?.split("@")[0],
+      email,
+      admin: false,
+      my_recipes: [],
+      saved_recipes: [],
+    });
+  }
+
+  return userRef;
+}
+
+// Sync firestore on login - creates document if not exists
+router.post("/sync", requireAuth, async (req, res) => {
   const { uid, email } = req.user;
   const { username } = req.body;
 
   try {
-    const db = admin.firestore();
-    const userRef = db.collection('users').doc(uid);
-    const snap = await userRef.get();
+    await ensureUserDoc(uid, email, username);
 
-    if (!snap.exists) {
-      await userRef.set({
-        username: username || email?.split('@')[0],
-        email,
-        admin: false,
-        my_recipes: [],
-        saved_recipes: [],
-      });
-    }
-
-    res.json({ message: 'User synced' });
+    return res.json({
+      message: "User synced",
+    });
   } catch (err) {
-    console.error('User sync error:', err);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("User sync error:", err);
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+});
+
+// Update user data (my_recipes, saved_recipes) - creates document if not exists
+router.post("/", requireAuth, async (req, res) => {
+  const { uid, email, username } = req.user;
+  const { my_recipes, saved_recipes } = req.body;
+
+  try {
+    const userRef = await ensureUserDoc(uid, email, username);
+
+    await userRef.set(
+      {
+        ...(my_recipes !== undefined && { my_recipes }),
+        ...(saved_recipes !== undefined && { saved_recipes }),
+      },
+      { merge: true }
+    );
+
+    return res.json({
+      message: "User updated",
+    });
+  } catch (err) {
+    console.error("User update error:", err);
+    return res.status(500).json({
+      error: "Internal server error",
+    });
   }
 });
 

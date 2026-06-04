@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import '../styles/Recipes.css'
 import axios from 'axios';
 
+import { useAuth } from '../contexts/AuthContext.tsx';
+
 import { Search } from 'lucide-react';
 import {
   InputGroup,
@@ -93,19 +95,47 @@ export default function Recipes() {
   // ids of current user's saved recipes - if user saves/unsaves, re-fetch
   const [savedRecipes, setSavedRecipes] = useState([]);
 
+  const API_URL = import.meta.env.VITE_API_URL
+
+  const { currentUser, userData, refreshUser } = useAuth();
+
   // Fetch recipes on first load--------------------------------------
   useEffect(() => {
 
     const fetchData = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/test/recipes`);
+        const response = await axios.get(`${API_URL}/test/recipes`);
         let data = response.data;
         console.log("full recipe list", data);
+
+        // if time: refactor into readable functions
 
         setRecipes(data); // load full recipe list
         // console.log('number of recipes loaded: ', data.length);
         setTotalPages(Math.ceil(data.length/recipesPerPage));
         setFilteredRecipes(data.slice(page - 1, page * recipesPerPage)); // load recipe list on **1st** page
+
+        console.log(currentUser, userData);
+        if (userData) {
+
+          userData.my_recipes = [
+            {
+              'recipe_id': '3',
+              'notes': 'notenotoene'
+            }
+          ];
+        }
+
+        const token = await currentUser?.getIdToken();
+        const response2 = await fetch(`${API_URL}/users`, {
+           method: 'POST',
+           headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+           },
+           body: JSON.stringify(userData)
+         }
+         );
       }
       catch (err) {
         console.log(`An error occured Recipes.tsx while fetching recipe data: ${err}`)
@@ -117,8 +147,8 @@ export default function Recipes() {
 
 
 
-  console.log('current page: ', page);
-  console.log(searchFilter);
+  // console.log('current page: ', page);
+  // console.log(searchFilter);
 
   // Filter displayed recipes--------------------------------------
   useEffect(() => {
@@ -153,8 +183,8 @@ export default function Recipes() {
     }
 
     // Always calculate total pages
-    console.log('filtered recipes', filteredRecipes);
-    console.log('number of recipes after filtering: ', filteredRecipes.length);
+    // console.log('filtered recipes', filteredRecipes);
+    // console.log('number of recipes after filtering: ', filteredRecipes.length);
 
     setTotalPages(Math.ceil(filteredRecipes.length/recipesPerPage));
     setFilteredRecipes(filteredRecipes.slice((currentPage - 1) * recipesPerPage, (currentPage * recipesPerPage)));
