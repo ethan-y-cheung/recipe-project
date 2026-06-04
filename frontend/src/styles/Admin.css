@@ -2,6 +2,21 @@
 .admin-title {
     text-align: center;
 }
+.admin-empty {
+    text-align: center;
+    padding: 3rem;
+    color: #6b7280;
+}
+.admin-error {
+    max-width: 1200px;
+    margin: 1rem auto;
+    padding: 0.75rem 1rem;
+    background-color: #fee2e2;
+    color: #b91c1c;
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: center;
+}
 .admin-page {
     max-width: 1200px;
     margin: 0 auto;

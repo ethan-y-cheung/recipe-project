@@ -1,18 +1,23 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import type { Recipe } from "../../../shared/types";
+import { useAuth } from "../contexts/AuthContext";
 
 import AdminRecipeDetailModal from "../components/AdminRecipeDetailModal";
 
 import "../styles/Admin.css";
 import "../styles/common.css";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 export default function Admin() {
+  const { currentUser } = useAuth();
   const [pendingRecipes, setPendingRecipes] = useState<Recipe[]>([]);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [error, setError] = useState<string | null>(null);
 
-  const RECIPES_PER_PAGE = 3;
+  const RECIPES_PER_PAGE = 8;
 
   const startIndex = (currentPage - 1) * RECIPES_PER_PAGE;
   const endIndex = startIndex + RECIPES_PER_PAGE;
@@ -28,32 +33,59 @@ export default function Admin() {
 
   useEffect(() => {
     const fetchRecipes = async () => {
+      if (!currentUser) return;
       try {
-        const response : { data: Recipe[] } = await axios.get(`${import.meta.env.VITE_API_URL}/test/recipes`);
-        const data = response.data;
-        console.log("response data" + data);
-        const filteredData = data.filter((recipe) => !recipe.approved);
-        setPendingRecipes(filteredData);
+        const token = await currentUser.getIdToken();
+        const response = await axios.get<Recipe[]>(`${API_URL}/admin/pending-recipes`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setPendingRecipes(response.data);
       } catch (error) {
         console.error("Error fetching pending recipes:", error);
       }
     };
     fetchRecipes();
-  }, []);
-  
+  }, [currentUser]);
+
   const approveRecipe = async (id: string) => {
-    // axios call to firebase and set approved to true
-    console.log(`Approving recipe with ID: ${id}`);
-  }
+    if (!currentUser) return;
+    try {
+      const token = await currentUser.getIdToken();
+      await axios.patch(`${API_URL}/admin/recipes/${id}/approve`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setPendingRecipes(prev => prev.filter(r => r.id !== id));
+      setSelectedRecipe(null);
+    } catch (error) {
+      console.error("Error approving recipe:", error);
+      setError("Failed to approve recipe. Please try again.");
+    }
+  };
+
   const denyRecipe = async (id: string) => {
-    // axios call to delete recipe from db
-    console.log(`Denying recipe with ID: ${id}`);
-  }
+    if (!currentUser) return;
+    try {
+      const token = await currentUser.getIdToken();
+      await axios.delete(`${API_URL}/admin/recipes/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setPendingRecipes(prev => prev.filter(r => r.id !== id));
+      setSelectedRecipe(null);
+    } catch (error) {
+      console.error("Error denying recipe:", error);
+      setError("Failed to deny recipe. Please try again.");
+    }
+  };
   return <>
 
       <header>
           <h1 className="admin-title">Admin Panel</h1>
       </header>
+      {error && (
+        <div className="admin-error" onClick={() => setError(null)}>
+          {error}
+        </div>
+      )}
       {
         selectedRecipe && (
             <AdminRecipeDetailModal
@@ -74,6 +106,10 @@ export default function Admin() {
               <span>Author</span>
               <span>Actions</span>
           </div>
+
+          {pendingRecipes.length === 0 && (
+            <div className="admin-empty">No recipes pending review.</div>
+          )}
 
           {visibleRecipes.map(recipe => (
               <div
@@ -112,7 +148,7 @@ export default function Admin() {
       </div>
     </div>  
 
-    <div className="pgn-container">
+    {totalPages > 1 && <div className="pgn-container">
 
       <button
           className= "pgn-btn"
@@ -137,6 +173,6 @@ export default function Admin() {
       >
           Next
       </button>
-    </div>
+    </div>}
   </>
 }
