@@ -47,4 +47,5 @@ export interface Comments{
     likes: string[]; // array of user_IDs who liked the comment
     created_at: Date;
     replies: Comments[]; //array of replies to the comment, which are also of type Comments
+    reply_IDs: string[];
 }

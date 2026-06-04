@@ -8,7 +8,7 @@ import CommentForm from '../components/RecipeDetail/CommentForm.tsx';
 import Discussion from '../components/RecipeDetail/Discussion.tsx';
 // import RecipeCard from '@/components/RecipeCard.tsx';
 
-// import axios from 'axios';
+import axios from 'axios';
 import "../styles/RecipeDetail.css";
 
 const fakeData: Recipe = {
@@ -39,35 +39,38 @@ const user: User = {
   saved_recipes: [],
 }
 
-const comments: Comments[] = [
-    {recipe_ID: "123",
-    id: "111",
-    creator_ID: "Lucinda",
-    content: "needs butter",
-    likes: [], //array of user_IDs who liked the comment
-    created_at: new Date(2026, 6, 1),
-    replies: []},
-    {recipe_ID: "123",
-      id: "333",
-    creator_ID: "Michael",
-    content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam facilisis, nunc sed feugiat euismod, mi ante pulvinar velit, facilisis commodo massa massa egestas nulla. Donec id leo sed turpis mollis malesuada. Phasellus posuere semper molestie. Praesent quis tincidunt nisl. Duis fringilla metus risus, ac tempor nunc dignissim a. Nulla vitae ornare ligula. Morbi facilisis facilisis nulla, in rutrum odio maximus at.",
-    likes: ["rachel"], //array of user_IDs who liked the comment
-    created_at: new Date(2024, 1, 1),
-    replies: [
-       {recipe_ID: "123",
-        id: "222",
-      creator_ID: "Lucinda",
-      content: "needs butter",
-      likes: [], //array of user_IDs who liked the comment
-      created_at: new Date(2026, 6, 1),
-      replies: []}
-    ]}
-]
+// const comments: Comments[] = [
+//     {recipe_ID: "123",
+//     id: "111",
+//     creator_ID: "Lucinda",
+//     content: "needs butter",
+//     likes: [], //array of user_IDs who liked the comment
+//     created_at: new Date(2026, 6, 1),
+//     replies: []},
+
+//     {recipe_ID: "123",
+//       id: "333",
+//     creator_ID: "Michael",
+//     content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam facilisis, nunc sed feugiat euismod, mi ante pulvinar velit, facilisis commodo massa massa egestas nulla. Donec id leo sed turpis mollis malesuada. Phasellus posuere semper molestie. Praesent quis tincidunt nisl. Duis fringilla metus risus, ac tempor nunc dignissim a. Nulla vitae ornare ligula. Morbi facilisis facilisis nulla, in rutrum odio maximus at.",
+//     likes: ["rachel"], //array of user_IDs who liked the comment
+//     created_at: new Date(2024, 1, 1),
+//     replies: [
+//        {recipe_ID: "123",
+//         id: "222",
+//       creator_ID: "Lucinda",
+//       content: "needs butter",
+//       likes: [], //array of user_IDs who liked the comment
+//       created_at: new Date(2026, 6, 1),
+//       replies: []}
+//     ]}
+// ]
+
+const BASE_URL = "http://localhost:5001/";
 
 export default function RecipeDetail() {
   // used later when pulling data from firebase
   // const { recipeId } = useParams<{recipeId: string}>();
-  const [allPosts, setAllPosts] = useState<Comments[]>(comments);
+  const [allPosts, setAllPosts] = useState<Comments[]>([]);
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [done, setDone] = useState<boolean[] | null>(null);
   const [bookmarked, setBookmarked] = useState<boolean>(false); // idk how to do this :(
@@ -85,6 +88,10 @@ export default function RecipeDetail() {
       try {
         // database or api call here
         setRecipe(fakeData);
+
+        const {data} = await axios.get(`${BASE_URL}comments`, {params: {recipe_ID: fakeData.id}}); // This becomes req.query.recipe_ID on the server
+
+        setAllPosts(data);
         setDone(new Array(fakeData.ingredients.length).fill(false));
 
         const ratingsArray = fakeData.rating || [];
@@ -171,7 +178,7 @@ export default function RecipeDetail() {
       <article className="detail-page-content">
         <header className="recipe-header">
           <section className="recipe-header-info">
-            <div className="recipe-header-row">
+            <div className="detail-header-row">
               <h1>{recipe.title}</h1>
               <div className="star-container">
                 <Star fill={avgRating >= 1 ? "#FFDF00" : "transparent"} className="header-icon"/>
@@ -182,12 +189,12 @@ export default function RecipeDetail() {
               </div>
             </div>
 
-            <div className="recipe-header-row">
+            <div className="detail-header-row">
               <p>author: {recipe.creator_ID ? recipe.creator_ID : "Unknown"}</p>
               <p>created: {recipe.created_at ? formatDistanceToNow(recipe.created_at, { addSuffix: true }) : "Unknown"}</p>
             </div>
             
-            <div className="recipe-header-row">
+            <div className="detail-header-row">
               <Bookmark fill={bookmarked ? "#FFDF00" : "transparent"} className="header-icon" onClick={() => setBookmarked(prevState => !prevState)}/> 
               <div className="star-container">
                 {recipe.tags.map((tag, index) => (

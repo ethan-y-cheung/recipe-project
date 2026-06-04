@@ -5,6 +5,7 @@ import usersRouter from "./routes/users.js";
 import dotenv from "dotenv";
 import testRouter from "./routes/test.js";
 import awsRouter from "./routes/aws.js";
+import commentRouter from "./routes/comments.js";
 
 dotenv.config();
 const app = express();
@@ -20,6 +21,7 @@ app.use("/admin", adminRouter);
 app.use("/users", usersRouter);
 app.use("/test", testRouter);
 app.use('/aws', awsRouter);
+app.use('/comments', commentRouter);
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
