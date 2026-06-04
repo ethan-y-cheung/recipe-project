@@ -17,6 +17,7 @@ const fakeData: Recipe = {
   creator_ID: "Allison",
   title : "ramen",
   created_at: new Date(),
+  approved: true,
   tags: [{name: "quick", type: "difficulty"}],
   ingredients: [
     {name: "ramen", quantity: "one package"}, 

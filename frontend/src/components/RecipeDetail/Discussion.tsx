@@ -40,7 +40,10 @@ const Discussion = ( {handleDelete, recipe_ID, username, comments} : DiscussionP
   const [currentComment, setCurrentComment] = useState<Comments>();
 
   useEffect(() => {
-    setAllPosts(comments);
+    const updatePosts = () => {
+      setAllPosts(comments);
+    }
+    updatePosts();
   }, [comments]); // handles updates caused by submitting a new comment form in the detail page
 
 
@@ -225,7 +228,7 @@ const Discussion = ( {handleDelete, recipe_ID, username, comments} : DiscussionP
             
           ))}
       </div>
-      {openConfirmation ? <ConfirmDelete comment_id={currentComment.id} confirmDelete={handleDelete} closeForm={setOpenConfirmation}/> : null}
+      {openConfirmation ? <ConfirmDelete comment_id={currentComment?.id ?? ""} confirmDelete={handleDelete} closeForm={setOpenConfirmation}/> : null}
     </>
   );
 }
