@@ -6,6 +6,7 @@ import '../styles/CreateRecipe.css'
 import Dropdown from '../components/CreateRecipe/Dropdown'
 import EditableList from '../components/CreateRecipe/EditableList'
 import TagPicker from '../components/CreateRecipe/TagPicker'
+import { useAuth } from '../contexts/AuthContext'
 
 // Defaults
 const DEFAULT_TAGS = [
@@ -23,14 +24,53 @@ type Ingredient = { id: number; name: string; qty: string; units: string }
 // imageUrl is a local blob: preview; file is the actual bytes we upload to S3.
 type Direction = { id: number; text: string; imageUrl: string | null; file: File | null }
 
+// Downscale an image to fit within maxDim (longest side) and re-encode as JPEG
+// so we never upload full-resolution phone photos. Big images make uploads,
+// storage, and later <img> rendering slow; capping the dimension fixes all
+// three. Images already within the cap pass through untouched (no upscaling, no
+// pointless re-encode). Falls back to the original file if anything goes wrong
+// so a decode quirk never blocks an upload.
+async function downscaleImage(file: File, maxDim = 1600, quality = 0.8): Promise<File> {
+  // Only attempt to downscale raster images; leave anything else (e.g. SVG) be.
+  if (!file.type.startsWith('image/')) return file
+  try {
+    const bitmap = await createImageBitmap(file)
+    const scale = Math.min(1, maxDim / Math.max(bitmap.width, bitmap.height))
+    if (scale === 1) {
+      bitmap.close()
+      return file // already small enough
+    }
+
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.round(bitmap.width * scale)
+    canvas.height = Math.round(bitmap.height * scale)
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return file
+    ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
+    bitmap.close()
+
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, 'image/jpeg', quality)
+    )
+    if (!blob) return file
+    const name = file.name.replace(/\.[^.]+$/, '') + '.jpg'
+    return new File([blob], name, { type: 'image/jpeg' })
+  } catch {
+    return file
+  }
+}
+
 // Upload a single file to S3 via a presigned URL and return its permanent
 // fileKey, which is what we persist on the recipe. Throws on any failure so the
 // caller can surface a single "upload failed" message.
 async function uploadImage(file: File): Promise<string> {
+  // Shrink oversized images before they ever leave the browser.
+  const upload = await downscaleImage(file)
+
   const signRes = await fetch(`${API_BASE}/aws/generate-upload-url`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ fileName: file.name, fileType: file.type }),
+    body: JSON.stringify({ fileName: upload.name, fileType: upload.type }),
   })
   if (!signRes.ok) {
     const data = await signRes.json().catch(() => null)
@@ -41,12 +81,12 @@ async function uploadImage(file: File): Promise<string> {
     fileKey: string
   }
 
-  // PUT the raw bytes straight to S3. Content-Type must match what the URL was
-  // signed with, or S3 rejects the request.
+  // PUT the (possibly downscaled) bytes straight to S3. Content-Type must match
+  // what the URL was signed with above, or S3 rejects the request.
   const putRes = await fetch(uploadUrl, {
     method: 'PUT',
-    headers: { 'Content-Type': file.type },
-    body: file,
+    headers: { 'Content-Type': upload.type },
+    body: upload,
   })
   if (!putRes.ok) {
     throw new Error('Image upload to storage failed')
@@ -59,6 +99,7 @@ let nextId = 0
 const newId = () => (nextId += 1)
 
 export default function CreateRecipe() {
+  const { currentUser } = useAuth()
   const [title, setTitle] = useState('')
   const [coverUrl, setCoverUrl] = useState<string | null>(null)
   const [coverFile, setCoverFile] = useState<File | null>(null)
@@ -184,9 +225,17 @@ export default function CreateRecipe() {
       return
     }
 
+    // The create endpoint requires auth, so we need a signed-in user's token.
+    if (!currentUser) {
+      setSubmitError('You must be signed in to create a recipe.')
+      return
+    }
+
     setSubmitting(true)
     setSubmitError(null)
     try {
+      const token = await currentUser.getIdToken()
+
       // Upload every image (cover first, then each step) in parallel. The array
       // stays positional: a step with no image resolves to null. One file's
       // failure rejects the whole batch so we never persist a partial image set.
@@ -213,7 +262,10 @@ export default function CreateRecipe() {
 
       const res = await fetch(`${API_BASE}/recipes`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(recipe),
       })
       if (!res.ok) {

@@ -1,5 +1,6 @@
 import express from "express";
 import { db } from "../firebase.ts";
+import { requireAuth } from "../middleware/auth.js";
 
 const router = express.Router();
 const recipesCollection = db.collection("recipes");
@@ -52,18 +53,22 @@ router.get("/:id", async (req, res) => {
 });
 
 // POST /recipes - create a recipe
-router.post("/", async (req, res) => {
+router.post("/", requireAuth, async (req, res) => {
     try {
         const {
             title,
             ingredients,
             instructions,
-            creator_ID,
             tags,
             images,
             total_time,
             servings,
         } = req.body;
+
+        // Ownership comes from the verified token, never the request body, so a
+        // client can't claim authorship of someone else's recipe. requireAuth
+        // guarantees req.user is populated here.
+        const creator_ID = req.user.uid;
 
         // required fields
         if (typeof title !== "string" || title.trim() === "") {
@@ -96,7 +101,7 @@ router.post("/", async (req, res) => {
         const recipe = {
             recipe_ID: "", // filled in with the Firestore doc id below
             user_generated: true,
-            creator_ID: typeof creator_ID === "string" ? creator_ID : null,
+            creator_ID,
             title: title.trim(),
             created_at: new Date().toISOString(),
             tags: normalizeTags(tags),
