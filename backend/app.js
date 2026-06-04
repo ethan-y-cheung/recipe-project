@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import testRouter from "./routes/test.js";
 import awsRouter from "./routes/aws.js";
 import commentRouter from "./routes/comments.js";
+import chatRouter from "./routes/openai.js";
 
 dotenv.config();
 const app = express();
@@ -22,6 +23,7 @@ app.use("/users", usersRouter);
 app.use("/test", testRouter);
 app.use('/aws', awsRouter);
 app.use('/comments', commentRouter);
+app.use('/chat', chatRouter);
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
