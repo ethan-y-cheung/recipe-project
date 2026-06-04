@@ -2,7 +2,7 @@
 import { Star, Bookmark, MessageCircle} from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import type { Recipe, Comments, User, Rating } from "../../../shared/types/index.ts";
+import type { Recipe, Comments, Rating } from "../../../shared/types/index.ts";
 import Chatbot from '../components/RecipeDetail/Chatbot.tsx';
 import CommentForm from '../components/RecipeDetail/CommentForm.tsx';
 import Discussion from '../components/RecipeDetail/Discussion.tsx';
@@ -61,7 +61,6 @@ export default function RecipeDetail() {
 
   // fetch recipe data
   useEffect(() => {
-  
     const fetchRecipeData = async() => {
       setIsLoading(true);
       try {
@@ -93,8 +92,6 @@ export default function RecipeDetail() {
             Authorization: `Bearer ${token}`,
           },
         });
-
-        console.log(response.data);
         setAllPosts(response.data);
         setDone(new Array(recipeData.ingredients.length).fill(false));
         
@@ -102,7 +99,6 @@ export default function RecipeDetail() {
         const ratingsArray = recipeData.rating || [];
         if (ratingsArray.length > 0) {
           const total = ratingsArray.reduce((score, r) => score + (r.value ?? 0), 0);
-          console.log(total / ratingsArray.length)
           setAverageRating(total / ratingsArray.length);
         } else {
           setAverageRating(0);
@@ -124,14 +120,24 @@ export default function RecipeDetail() {
     fetchRecipeData();
   }, [currentUser, userData])
 
-  const handleComment = (newComment:Comments) => {
-    console.log(newComment);
+  const handleComment = async (newComment:Comments) => {
     // optimistic ui update
     setAllPosts([...allPosts, newComment]);
     try {
-      // await axios.delete("http://localhost:5001/comments", {
-      //   params: {comment_id: comment_id}
-      // });
+      const token = await currentUser?.getIdToken();
+      const response = await axios.post(
+        `${BASE_URL}/comments`, 
+        { 
+          comment: newComment // This is the request body (req.body)
+        }, 
+        { 
+          headers: { 
+            Authorization: `Bearer ${token}`, // This is now correctly sent as a header
+          }, 
+        }
+      );
+      const newCommentId = response.data.id;
+      newComment.id = newCommentId;
 
       // get new comment id / comment object from backend
       setAllPosts([...allPosts, newComment]);

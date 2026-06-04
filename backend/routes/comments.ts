@@ -21,7 +21,10 @@ router.post("/", requireAuth, async (req : Request<{}, {}, RequestBody>, res : R
     }
 
     const docRef = await createComment(comment);
-    res.status(201).json(docRef);
+    res.status(201).json({ 
+      message: "Comment created successfully",
+      id: docRef.id 
+    }); 
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error("Failed to post a new comment in backend:", errorMessage);

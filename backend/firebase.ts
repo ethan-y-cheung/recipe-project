@@ -12,7 +12,6 @@ const app = admin.apps.length
       }),
     });
 
-
 export const db = app.firestore();
 
 // Export the base admin namespace for utility types if needed elsewhere (?)

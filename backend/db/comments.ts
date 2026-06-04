@@ -1,6 +1,5 @@
 import { db } from '../firebase.ts';
 import admin from "firebase-admin"; 
-import { doc, writeBatch } from 'firebase/firestore';
 import { Comments } from '../types/index.ts';
 
 const fetchRecipeComments = async (recipe_ID : string) => {
@@ -99,7 +98,7 @@ const deleteComment = async (comment : Comments) => {
   // add the parent comment deletion
   const commentRef = db.collection("comments").doc(comment.id);
   batch.delete(commentRef);
-  
+
   // Commit all deletions at once
   await batch.commit();
 }
