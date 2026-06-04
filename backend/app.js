@@ -5,6 +5,9 @@ import adminRouter from "./routes/admin.js";
 import usersRouter from "./routes/users.js";
 import testRouter from "./routes/test.js";
 import awsRouter from "./routes/aws.js";
+import commentRouter from "./routes/comments.js";
+import chatRouter from "./routes/openai.js";
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -18,6 +21,8 @@ app.use("/admin", adminRouter);
 app.use("/users", usersRouter);
 app.use("/test", testRouter);
 app.use('/aws', awsRouter);
+app.use('/comments', commentRouter);
+app.use('/chat', chatRouter);
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });

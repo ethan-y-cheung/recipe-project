@@ -1,13 +1,15 @@
 import "../../styles/RecipeDetail.css";
 import {X, CircleAlert } from "lucide-react"
+import type { Comments } from "../../../../shared/types/index.ts"
 
 interface ConfirmDeleteProps {
   closeForm: React.Dispatch<React.SetStateAction<boolean>>;
-  comment_id: string;
-  confirmDelete: (comment_id : string) => void;
+  comment: Comments | null;
+  confirmDelete: (comment : Comments | null, parent_id: string) => void;
+  parent_id: string;
 } 
 
-const ConfirmDelete = ( {closeForm, confirmDelete, comment_id} : ConfirmDeleteProps ) => {
+const ConfirmDelete = ( {closeForm, confirmDelete, comment, parent_id} : ConfirmDeleteProps ) => {
 
   return (
     <>
@@ -24,7 +26,7 @@ const ConfirmDelete = ( {closeForm, confirmDelete, comment_id} : ConfirmDeletePr
 
           <div className="flex gap-[1rem] mt-[1rem]">
             <button
-            onClick={() => {confirmDelete(comment_id); closeForm(prevState => !prevState)}}
+            onClick={() => {confirmDelete(comment, parent_id); closeForm(prevState => !prevState)}}
             className="reply-button"
             >
               Confirm
