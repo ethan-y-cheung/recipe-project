@@ -1,15 +1,17 @@
-import db from '../firebase.ts';
-import { doc, collection, getDocs, where, deleteField, writeBatch, addDoc, query, Timestamp, updateDoc } from 'firebase/firestore';
+import { db } from '../firebase.ts';
+import admin from "firebase-admin"; 
+import { doc, writeBatch } from 'firebase/firestore';
 import { Comments } from '../types/index.ts';
 
 const fetchRecipeComments = async (recipe_ID : string) => {
   // fetch all comments for a given recipe
-  const commentsRef = collection(db, "comments");
-  const q = query(commentsRef, where("recipe_ID", "==", recipe_ID));
-  const querySnapshot = await getDocs(q);
+  const snapshot = await db
+    .collection("comments")
+    .where("recipe_ID", "==", recipe_ID)
+    .get();
 
   // map to type Comments
-  const allComments: Comments[] = querySnapshot.docs.map((document) => {
+  const allComments: Comments[] = snapshot.docs.map((document) => {
     const data = document.data();
     return {
       id: document.id,
@@ -56,10 +58,10 @@ const fetchRecipeComments = async (recipe_ID : string) => {
 
 // create a new comment
 const createComment = async (post : Comments) => {
-  const docRef = await addDoc(collection(db, "comments"), {
+  const docRef = await db.collection("comments").add({
     creator_ID: post.creator_ID,
     content: post.content,
-    created_at: Timestamp.now(),
+    created_at: admin.firestore.Timestamp.now(), 
     likes: [],
     reply_IDs: [],
     recipe_ID: post.recipe_ID
@@ -69,31 +71,35 @@ const createComment = async (post : Comments) => {
 
 // update a comment
 const updateComment = async (comment : Comments) => {
-  const docRef = doc(db, "comment", comment.id);
-  const firestoreTimestamp = Timestamp.fromDate(new Date(comment.created_at));
-  await updateDoc(docRef, {...comment, 
+  const docRef = db.collection("comment").doc(comment.id);
+  const firestoreTimestamp = admin.firestore.Timestamp.fromDate(new Date(comment.created_at));
+
+  // Destructure properties to safely strip 'id' and 'replies' before updating
+  const { id, replies, ...updateData } = comment;
+
+  await docRef.update({
+    ...updateData,
     created_at: firestoreTimestamp,
-    replies: deleteField(),
-    id: deleteField()}); // should have handled any other updates earlier
+  });
 }
 
 // delete a comment and its replies
 const deleteComment = async (comment : Comments) => {
   // Create a Firestore batch for efficiency
-  const batch = writeBatch(db);
+  const batch = db.batch();
 
   // queue deletions
   if (comment.reply_IDs && comment.reply_IDs.length > 0) {
-    comment.reply_IDs.forEach((id : string) => {
-      const replyRef = doc(db, "comments", id);
+    comment.reply_IDs.forEach((id: string) => {
+      const replyRef = db.collection("comments").doc(id);
       batch.delete(replyRef);
     });
   }
 
   // add the parent comment deletion
-  const commentRef = doc(db, "comments", comment.id);
+  const commentRef = db.collection("comments").doc(comment.id);
   batch.delete(commentRef);
-
+  
   // Commit all deletions at once
   await batch.commit();
 }

@@ -1,7 +1,8 @@
-import 'dotenv/config';
 import express, { Request, Response} from 'express';
 import { Comments } from '../types/index.ts';
 import { createComment, fetchRecipeComments, deleteComment, updateComment } from "../db/comments.ts";
+// @ts-ignore
+import { requireAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -10,7 +11,7 @@ interface RequestBody {
 }
 
 // endpoint to post a new comment
-router.post("/", async (req : Request<{}, {}, RequestBody>, res : Response): Promise<void> => {
+router.post("/", requireAuth, async (req : Request<{}, {}, RequestBody>, res : Response): Promise<void> => {
   try {
     const { comment } = req.body;
 
@@ -29,7 +30,7 @@ router.post("/", async (req : Request<{}, {}, RequestBody>, res : Response): Pro
 })
 
 // endpoint to update an old comment
-router.put("/", async (req : Request<{}, {}, RequestBody>, res : Response): Promise<void> => {
+router.put("/", requireAuth, async (req : Request<{}, {}, RequestBody>, res : Response): Promise<void> => {
   try {
     const {comment} = req.body;
     await updateComment(comment);
@@ -43,7 +44,7 @@ router.put("/", async (req : Request<{}, {}, RequestBody>, res : Response): Prom
 })
 
 // endpoint to delete a comment and its replies
-router.post("/delete", async (req : Request<{}, {}, RequestBody>, res : Response): Promise<void> =>  {
+router.post("/delete", requireAuth, async (req : Request<{}, {}, RequestBody>, res : Response): Promise<void> =>  {
   const { comment } = req.body;
   if (!comment) {
     res.status(400).json({error: 'the comment is required'});
@@ -62,19 +63,17 @@ router.post("/delete", async (req : Request<{}, {}, RequestBody>, res : Response
 
 // endpoint to grab all comments by recipe id
 // Request<Params, ResBody, ReqBody, ReqQuery>
-router.get("/", async (req : Request<{}, {}, {}, {recipe_ID? : string}>, res : Response): Promise<void> => {
-  console.log("Entered endpoint")
+router.get("/", requireAuth, async (req : Request<{}, {}, {}, {recipe_ID? : string}>, res : Response): Promise<void> => {
   try {
     const { recipe_ID } = req.query;
-    console.log("Entered try")
     if (typeof recipe_ID !== 'string') {
       res.status(400).json({ message: "recipe_ID query parameter is required" });
       return; 
     }
     const posts = await fetchRecipeComments(recipe_ID);
-    console.log("After await");
     res.status(200).json(posts)
   } catch (error) {
+    console.error("CRASH ERROR DETAILS:", error);
     res.status(500).json({message: "Error retrieving posts"});
   }
 });

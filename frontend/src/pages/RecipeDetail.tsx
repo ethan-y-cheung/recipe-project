@@ -6,6 +6,7 @@ import type { Recipe, Comments, User, Rating } from "../../../shared/types/index
 import Chatbot from '../components/RecipeDetail/Chatbot.tsx';
 import CommentForm from '../components/RecipeDetail/CommentForm.tsx';
 import Discussion from '../components/RecipeDetail/Discussion.tsx';
+import { useAuth } from '@/contexts/AuthContext.tsx';
 // import RecipeCard from '@/components/RecipeCard.tsx';
 
 import axios from 'axios';
@@ -31,13 +32,13 @@ const recipeData: Recipe = {
   rating: [{user_ID: "Kaitlyn", value: 5}, {user_ID: "Michael", value: 2}]
 };
 
-const user: User = {
-  username: "Michael",
-  password: "password123",
-  admin: false,
-  my_recipes: [],
-  saved_recipes: [{recipeID: "123", user_tags: [], notes: ""}],
-}
+// const user: User = {
+//   username: "Michael",
+//   password: "password123",
+//   admin: false,
+//   my_recipes: [],
+//   saved_recipes: [{recipeID: "123", user_tags: [], notes: ""}],
+// }
 
 const comments: Comments[] = [
     {recipe_ID: "123",
@@ -68,7 +69,7 @@ const comments: Comments[] = [
     ]}
 ]
 
-const BASE_URL = "http://localhost:5001/";
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 export default function RecipeDetail() {
   // used later when pulling data from firebase
@@ -82,11 +83,12 @@ export default function RecipeDetail() {
   const [showChat, setShowChat] = useState<boolean>(false);
   // pull old rating if it exists
   const [rating, setRating] = useState<null | 1 | 2 | 3 | 4 | 5>(null);
+  const { currentUser, userData } = useAuth();
 
   // grab a temporary viewing url for user uploaded images
   const viewPhoto = async (fileKey : string) => {
     try {
-      const { data } = await axios.post(`${BASE_URL}aws/get-view-url`, { fileKey });
+      const { data } = await axios.post(`${BASE_URL}/aws/get-view-url`, { fileKey });
       console.log(data.viewUrl);
       return data.viewUrl;
     } catch (error) {
@@ -100,8 +102,10 @@ export default function RecipeDetail() {
     const fetchRecipeData = async() => {
       setIsLoading(true);
       try {
+        if (!currentUser || !userData) return;
         // database or api call here
         // const {data} = await axios.get(`${BASE_URL}comments`, {params: {recipe_ID: fakeData.id}}); // This becomes req.query.recipe_ID on the server
+        const token = await currentUser.getIdToken();
         setRecipe(recipeData);
 
         // requires aws calls
@@ -120,8 +124,14 @@ export default function RecipeDetail() {
           recipeData.imageUrls = recipeData.images;
         }
 
-        const {data} = await axios.get(`${BASE_URL}comments`, {params: {recipe_ID: recipeData.id}}); // This becomes req.query.recipe_ID on the server
-        console.log(data);
+        const response = await axios.get(`${BASE_URL}/comments`, {
+          params: { recipe_ID: recipeData.id},
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        console.log(response.data);
         setAllPosts(comments);
         setDone(new Array(recipeData.ingredients.length).fill(false));
         
@@ -136,11 +146,11 @@ export default function RecipeDetail() {
         }
 
         // determine if the user rated this recipe previously
-        const userRating = ratingsArray.find(r => r.user_ID === user.username);
+        const userRating = ratingsArray.find(r => r.user_ID === userData.username);
         setRating(userRating?.value ?? null);
 
         // determine if this recipe is saved
-        setBookmarked(user.saved_recipes.some(recipe => recipe.recipeID === recipeData.id))
+        setBookmarked(userData.saved_recipes.some(recipe => recipe.recipeID === recipeData.id))
 
       } catch (error) {
         console.error("unable to fetch recipe data:", error);
@@ -149,7 +159,7 @@ export default function RecipeDetail() {
       }
     }
     fetchRecipeData();
-  }, [])
+  }, [currentUser, userData])
 
   const handleComment = (newComment:Comments) => {
     console.log(newComment);
@@ -191,15 +201,16 @@ export default function RecipeDetail() {
   }
 
   const handleRating = (userRating : 1 | 2 | 3 | 4 | 5) => {
+    if (!userData) return;
     setRating(userRating);
     let newRatings: Rating[];
 
     // if you have already rated it, remove that value
-    if (recipe?.rating.some(rating => rating.user_ID === user.username)) {
-      newRatings = recipe.rating.filter(rating => rating.user_ID !== user.username);
+    if (recipe?.rating.some(rating => rating.user_ID === userData.username)) {
+      newRatings = recipe.rating.filter(rating => rating.user_ID !== userData.username);
     // otherwise add in the new rating
     } else {
-      newRatings = recipe ? [...recipe.rating, {user_ID: user.username, value: userRating}] : []; 
+      newRatings = recipe ? [...recipe.rating, {user_ID: userData.username, value: userRating}] : []; 
     }
     
     // update average rating
@@ -220,7 +231,7 @@ export default function RecipeDetail() {
   }
 
   // guard clause
-  if (!recipe) {
+  if (!recipe || !userData) {
     return <></>;
   }
 
@@ -318,11 +329,11 @@ export default function RecipeDetail() {
                   <Star fill={(rating ? rating : 0) >= 5 ? "#FFDF00" : "transparent"} onClick={() => handleRating(5)} className="header-icon"/>
                 </div>
               </div>
-              <CommentForm recipe_ID={recipe.id} username={user.username} updatePosts={handleComment}/>
+              <CommentForm recipe_ID={recipe.id} username={userData.username} updatePosts={handleComment}/>
             </section>
 
             {/* Discussion Section */}
-            <Discussion handleDelete={handleDelete} recipe_ID = {recipe.id} username={user.username} comments={allPosts}/>
+            <Discussion handleDelete={handleDelete} recipe_ID = {recipe.id} username={userData.username} comments={allPosts}/>
           </div>
       
           {/* similar recipe section */}
