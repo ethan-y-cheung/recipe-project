@@ -43,6 +43,7 @@ import RecipeCard from '../components/RecipeCard';
 
 import type { Recipe, User as AppUser } from '../../../shared/types/index.ts';
 
+import toast, { Toaster } from 'react-hot-toast';
 
 
 
@@ -115,10 +116,17 @@ export default function Recipes() {
       });
 
       if (!response.ok) {
+        toast.error("Failed to saved recipe");
         console.error('Failed to update saved recipe:', await response.text());
         return;
       }
 
+      if (currentlySaved) {
+        toast.success("Removed recipe from saved");
+      }
+      else {
+        toast.success("Added recipe to saved");
+      }
       const updatedUser = await response.json();
       setLocalUserData(updatedUser);
     } catch (err) {
@@ -135,7 +143,6 @@ export default function Recipes() {
         let data = response.data;
         console.log("full recipe list", data);
 
-        // if time: refactor into readable functions
 
         setRecipes(data); // load full recipe list
         // console.log('number of recipes loaded: ', data.length);
@@ -221,6 +228,8 @@ export default function Recipes() {
 
   return (
     <main className="recipes-page-main">
+
+      <Toaster />
 
       {/* Header block */}
       <header className="recipes-heading">

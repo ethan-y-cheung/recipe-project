@@ -3,7 +3,12 @@ import './RecipeCard.css'
 import type { Recipe, Rating } from '../../../shared/types/index.ts'
 import { BookmarkIcon, StarIcon } from './IconExports.tsx';
 
-const RecipeCard = ({ recipeData, isSaved, onSave }: { recipeData: Recipe, isSaved: boolean, onSave: (recipeId: string, currentlySaved: boolean) => Promise<void> }) => {
+const RecipeCard = ({ recipeData, isSaved, onSave }: 
+  { recipeData: Recipe, isSaved: boolean, onSave: (recipeId: string, currentlySaved: boolean) => Promise<void> }) => {
+  
+  // supply onSave function -> makes save/delete Recipe calls
+  // save/delete calls return updated user data (updated saved_recipes list)
+  
   const ratingsArray : Rating[] = recipeData.rating || [];
   let avgRating : number;
 
