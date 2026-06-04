@@ -46,6 +46,7 @@ const DUMMY_RECIPES: Recipe[] = [
         ],
         total_time: "45 mins",
         servings: 6,
+        approved: true,
     },
     {
         id: "rec_002",
@@ -84,6 +85,7 @@ const DUMMY_RECIPES: Recipe[] = [
         ],
         total_time: "25 mins",
         servings: 4,
+        approved: true,
     },
     {
         id: "rec_003",
@@ -122,6 +124,7 @@ const DUMMY_RECIPES: Recipe[] = [
         rating: [],
         total_time: null, // Verifies fallback render logic when value is absent
         servings: null,
+        approved: true,
     },
     {
         id: "rec_004",
@@ -163,6 +166,7 @@ const DUMMY_RECIPES: Recipe[] = [
         ],
         total_time: "30 mins",
         servings: 3,
+        approved: true,
     },
     {
         id: "rec_005",
@@ -196,6 +200,7 @@ const DUMMY_RECIPES: Recipe[] = [
         ],
         total_time: "5 mins",
         servings: 1,
+        approved: true,
     },
 ];
 
