@@ -28,17 +28,22 @@ const RecipeCard = ({ recipeData, isSaved }: { recipeData: Recipe, isSaved: bool
         </div>
 
         <button className={`recipe-card__save-button${isSaved ? ' recipe-card__save-button--active':''}`}>
-          {/* <Bookmark /> */}
+          {/* Save icon */}
           <BookmarkIcon className={`recipe-card__save-button-icon${isSaved ? ' recipe-card__save-button-icon--active':''}`} />
         </button>
 
       </div>
       <section className="recipe-card__tag-row">
         <div className="recipe-card-tag">
-          {/* star/ratings icon */}
+          {/* Star/ratings icon */}
           <StarIcon className={"recipe-card-tag__star-icon"}/> 
-          <p className="recipe-card-tag__text">{avgRating}</p>
+          <p className="recipe-card-tag__text">{recipeData.rating.length > 0 ? avgRating : 'New'}</p>
         </div>
+        {/* for testing... user generated vs. official */}
+        {!recipeData.user_generated && <div className="recipe-card-tag recipe-card-tag--official">
+          {/* Star/ratings icon */}
+           <p className="recipe-card-tag__text">Official</p>
+        </div>}
         {recipeData.tags.slice(0, 1).map(tag => (
           <div key={tag.name} className="recipe-card-tag">
             <p className="recipe-card-tag__text">{tag.name}</p>

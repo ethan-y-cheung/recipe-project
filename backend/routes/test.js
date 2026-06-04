@@ -354,7 +354,6 @@ router.get('/recipes', (req, res) => {
             id: "9",
             creator_ID: "Molly",
             user_generated: false,
-<<<<<<< HEAD
             title: "Sample Recipe 1",
             created_at: new Date("2026-06-02"),
             approved: false,
@@ -390,19 +389,6 @@ router.get('/recipes', (req, res) => {
                     value: 4,
                 },
             ],
-=======
-            title: 'Sample Recipe 10',
-            created_at: new Date("2026-06-02"),
-            approved: false,
-            tags: [{name :"dinner", type: "Meal Type"}, {name: "quick", type: "Difficulty"}],
-            ingredients: [{
-                name: 'Ingredient 1',
-                quantity: ''
-            },],
-            instructions: [],
-            images: [],
-            rating: [],
->>>>>>> 5bc5317 (feat: now using shared types from index.ts, dynamically display recipe data from test.js)
         },
     ];
     res.status(200).json(sampleRecipes);
