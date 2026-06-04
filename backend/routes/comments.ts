@@ -8,19 +8,19 @@ const router = express.Router();
 
 interface RequestBody {
   comment: Comments;
+  parent_id?: string;
 }
 
 // endpoint to post a new comment
 router.post("/", requireAuth, async (req : Request<{}, {}, RequestBody>, res : Response): Promise<void> => {
   try {
-    const { comment } = req.body;
-
+    const { comment, parent_id } = req.body;
     if (!comment.creator_ID || !comment.content || !comment.recipe_ID ) {
       res.status(400).json({ error: 'creator, content, and recipe id are all required' });
       return;
     }
 
-    const docRef = await createComment(comment);
+    const docRef = await createComment(comment, parent_id??"");
     res.status(201).json({ 
       message: "Comment created successfully",
       id: docRef.id 

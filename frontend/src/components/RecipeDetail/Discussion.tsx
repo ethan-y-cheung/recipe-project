@@ -10,6 +10,7 @@ interface DiscussionProps {
   recipe_ID: string;
   comments: Comments[];
   handleDelete: (comment : Comments | null) => void;
+  createComment: (newComment : Comments, parent_id: string) => void;
 }
 
 type FilterValue = 'likes' | 'created_at';
@@ -30,7 +31,7 @@ const api = {
 }
 
 
-const Discussion = ( {handleDelete, recipe_ID, username, comments} : DiscussionProps) => {
+const Discussion = ( {createComment, handleDelete, recipe_ID, username, comments} : DiscussionProps) => {
   const [openReply, setOpenReply] = useState<string>("");
   const [isMutating, setIsMutating] = useState<boolean>(false);
   const [allPosts, setAllPosts] = useState<Comments[]>(comments);
@@ -112,25 +113,12 @@ const Discussion = ( {handleDelete, recipe_ID, username, comments} : DiscussionP
     // create a reply object
     const reply : Comments = {creator_ID: username, recipe_ID: recipe_ID, id: "", content: replyContent, likes: [], created_at: new Date(), replies: [], reply_IDs: [] };
 
-    // add to the comment replies
-    originalPost.replies.push(reply);
-
-    // update posts on the page
-
-    const updatedPosts : Comments[] = allPosts.map(post => post.id === originalPost.id ? originalPost : post); 
-    setAllPosts([...updatedPosts]);
-
     try {
-      // mocked update database
-      await api.toggleLike();
+      // database interaction, optimistic ui update in RecipeDetail.tsx
+      await createComment(reply, originalPost.id);
 
-      // retrieve new post doc for reply and update og comment to include that instead for unique ids
     } catch (error) {
-      // undo change if db call fails
       console.error(`Failed to reply to post:`, error);
-      originalPost.replies.filter(reply => reply.id !== "");
-      const updatedPosts : Comments[] = allPosts.map(post => post.id === originalPost.id ? originalPost : post); // either remove or add user id for liking the post
-      setAllPosts(updatedPosts);
     } finally {
       setOpenReply("");
       setReplyText("");
@@ -218,7 +206,7 @@ const Discussion = ( {handleDelete, recipe_ID, username, comments} : DiscussionP
                     {username === reply.creator_ID ? 
                     <>
                       <SquarePen className="icon-button"/>
-                      <Trash onClick={() => {setCurrentComment(comment) ; setOpenConfirmation(prevState=>!prevState)}} className="icon-button"/>
+                      <Trash onClick={() => {setCurrentComment(reply) ; setOpenConfirmation(prevState=>!prevState)}} className="icon-button"/>
                     </> : null }
                   </div>
                 </div>))}

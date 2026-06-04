@@ -120,15 +120,24 @@ export default function RecipeDetail() {
     fetchRecipeData();
   }, [currentUser, userData])
 
-  const handleComment = async (newComment:Comments) => {
+  const handleComment = async (newComment:Comments, parent_id : string) => {
     // optimistic ui update
-    setAllPosts([...allPosts, newComment]);
+    if (parent_id === "") {
+      setAllPosts([...allPosts, newComment]);
+    }
+    // } else {
+    //   setAllPosts([...allPosts.map(post => post.id === parent_id ? 
+    //     {...post, reply_IDs:[...post.reply_IDs, newComment.id], replies:[...post.replies, newComment]} 
+    //     : post)])
+    // }
+ 
     try {
       const token = await currentUser?.getIdToken();
       const response = await axios.post(
         `${BASE_URL}/comments`, 
         { 
-          comment: newComment // This is the request body (req.body)
+          comment: newComment, // This is the request body (req.body)
+          parent_id: parent_id
         }, 
         { 
           headers: { 
@@ -139,8 +148,14 @@ export default function RecipeDetail() {
       const newCommentId = response.data.id;
       newComment.id = newCommentId;
 
-      // get new comment id / comment object from backend
-      setAllPosts([...allPosts, newComment]);
+      // use new comment id / comment object from backend
+      if (parent_id === "") {
+        setAllPosts([...allPosts, newComment]);
+      } else {
+        setAllPosts([...allPosts.map(post => post.id === parent_id ? 
+        {...post, reply_IDs:[...post.reply_IDs, newComment.id], replies:[...post.replies, newComment]} 
+        : post)])
+      }
 
     } catch (error) {
       // undo optimistic change
@@ -153,7 +168,7 @@ export default function RecipeDetail() {
     if (!comment) return;
     try {
       const token = await currentUser?.getIdToken();
-      const response = await axios.post(
+      await axios.post(
         `${BASE_URL}/comments/delete`, 
         { 
           comment: comment // This is the request body (req.body)
@@ -308,11 +323,11 @@ export default function RecipeDetail() {
                   <Star fill={(rating ? rating : 0) >= 5 ? "#FFDF00" : "transparent"} onClick={() => handleRating(5)} className="header-icon"/>
                 </div>
               </div>
-              <CommentForm recipe_ID={recipe.id} username={userData.username} updatePosts={handleComment}/>
+              <CommentForm recipe_ID={recipe.id} username={userData.username} createComment={handleComment}/>
             </section>
 
             {/* Discussion Section */}
-            <Discussion handleDelete={handleDelete} recipe_ID = {recipe.id} username={userData.username} comments={allPosts}/>
+            <Discussion createComment={handleComment} handleDelete={handleDelete} recipe_ID = {recipe.id} username={userData.username} comments={allPosts}/>
           </div>
       
           {/* similar recipe section */}
@@ -339,9 +354,6 @@ export default function RecipeDetail() {
       </button>
 
       {showChat ? <Chatbot setClose={setShowChat}/> : null }
-  
-      
-    
     </>
   )
 }

@@ -56,7 +56,8 @@ const fetchRecipeComments = async (recipe_ID : string) => {
 };
 
 // create a new comment
-const createComment = async (post : Comments) => {
+const createComment = async (post : Comments, parent_id: string) => {
+  // create new comment
   const docRef = await db.collection("comments").add({
     creator_ID: post.creator_ID,
     content: post.content,
@@ -65,12 +66,21 @@ const createComment = async (post : Comments) => {
     reply_IDs: [],
     recipe_ID: post.recipe_ID
   });
+
+  // if it is a reply, get the parent and update it
+  if (parent_id !== "") {
+    const parentRef = db.collection("comments").doc(parent_id.trim());
+    await parentRef.update({
+      // add reply id to parent comment
+      reply_IDs: admin.firestore.FieldValue.arrayUnion(docRef.id)
+    });
+  }
   return docRef;
 }
 
 // update a comment
 const updateComment = async (comment : Comments) => {
-  const docRef = db.collection("comment").doc(comment.id);
+  const docRef = db.collection("comments").doc(comment.id);
   const firestoreTimestamp = admin.firestore.Timestamp.fromDate(new Date(comment.created_at));
 
   // Destructure properties to safely strip 'id' and 'replies' before updating
