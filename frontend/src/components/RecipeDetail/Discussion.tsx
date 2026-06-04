@@ -9,7 +9,7 @@ interface DiscussionProps {
   username: string;
   recipe_ID: string;
   comments: Comments[];
-  handleDelete: (comment : Comments | null) => void;
+  handleDelete: (comment : Comments | null, parent_id: string) => void;
   createComment: (newComment : Comments, parent_id: string) => void;
 }
 
@@ -39,6 +39,7 @@ const Discussion = ( {createComment, handleDelete, recipe_ID, username, comments
   const [replyText, setReplyText] = useState<string>("");
   const [openConfirmation, setOpenConfirmation] = useState<boolean>(false);
   const [currentComment, setCurrentComment] = useState<Comments>();
+  const [parentId, setParentId] = useState<string>("");
 
   useEffect(() => {
     const updatePosts = () => {
@@ -169,7 +170,7 @@ const Discussion = ( {createComment, handleDelete, recipe_ID, username, comments
                    {username === comment.creator_ID ? 
                     <>
                       <SquarePen className="icon-button"/>
-                      <Trash onClick={() => {setCurrentComment(comment) ; setOpenConfirmation(prevState=>!prevState)}} className="icon-button"/>
+                      <Trash onClick={() => {setParentId("") ; setCurrentComment(comment) ; setOpenConfirmation(prevState=>!prevState)}} className="icon-button"/>
                     </> : null }
                   
                 </div>
@@ -206,7 +207,7 @@ const Discussion = ( {createComment, handleDelete, recipe_ID, username, comments
                     {username === reply.creator_ID ? 
                     <>
                       <SquarePen className="icon-button"/>
-                      <Trash onClick={() => {setCurrentComment(reply) ; setOpenConfirmation(prevState=>!prevState)}} className="icon-button"/>
+                      <Trash onClick={() => {setParentId(comment.id) ; setCurrentComment(reply) ; setOpenConfirmation(prevState=>!prevState)}} className="icon-button"/>
                     </> : null }
                   </div>
                 </div>))}
@@ -216,7 +217,7 @@ const Discussion = ( {createComment, handleDelete, recipe_ID, username, comments
             
           ))}
       </div>
-      {openConfirmation ? <ConfirmDelete comment={currentComment??null} confirmDelete={handleDelete} closeForm={setOpenConfirmation}/> : null}
+      {openConfirmation ? <ConfirmDelete comment={currentComment??null} confirmDelete={handleDelete} closeForm={setOpenConfirmation} parent_id={parentId}/> : null}
     </>
   );
 }

@@ -125,11 +125,6 @@ export default function RecipeDetail() {
     if (parent_id === "") {
       setAllPosts([...allPosts, newComment]);
     }
-    // } else {
-    //   setAllPosts([...allPosts.map(post => post.id === parent_id ? 
-    //     {...post, reply_IDs:[...post.reply_IDs, newComment.id], replies:[...post.replies, newComment]} 
-    //     : post)])
-    // }
  
     try {
       const token = await currentUser?.getIdToken();
@@ -164,14 +159,16 @@ export default function RecipeDetail() {
     }
   }
 
-  const handleDelete = async (comment : Comments | null) => {
+  const handleDelete = async (comment : Comments | null, parent_id: string) => {
     if (!comment) return;
     try {
       const token = await currentUser?.getIdToken();
+      // delete comments
       await axios.post(
         `${BASE_URL}/comments/delete`, 
         { 
-          comment: comment // This is the request body (req.body)
+          comment: comment, // This is the request body (req.body)
+          parent_id: parent_id,
         }, 
         { 
           headers: { 

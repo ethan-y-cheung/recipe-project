@@ -93,7 +93,7 @@ const updateComment = async (comment : Comments) => {
 }
 
 // delete a comment and its replies
-const deleteComment = async (comment : Comments) => {
+const deleteComment = async (comment : Comments, parent_id: string) => {
   // Create a Firestore batch for efficiency
   const batch = db.batch();
 
@@ -111,6 +111,15 @@ const deleteComment = async (comment : Comments) => {
 
   // Commit all deletions at once
   await batch.commit();
+
+  // update parent (root) comment if applicable
+  if (parent_id !== "") {
+    const parentRef = db.collection("comments").doc(parent_id.trim());
+    await parentRef.update({
+      // add reply id to parent comment
+      reply_IDs: admin.firestore.FieldValue.arrayRemove(comment.id)
+    });
+  }
 }
 
 

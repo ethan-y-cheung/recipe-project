@@ -5,10 +5,11 @@ import type { Comments } from "../../../../shared/types/index.ts"
 interface ConfirmDeleteProps {
   closeForm: React.Dispatch<React.SetStateAction<boolean>>;
   comment: Comments | null;
-  confirmDelete: (comment : Comments | null) => void;
+  confirmDelete: (comment : Comments | null, parent_id: string) => void;
+  parent_id: string;
 } 
 
-const ConfirmDelete = ( {closeForm, confirmDelete, comment} : ConfirmDeleteProps ) => {
+const ConfirmDelete = ( {closeForm, confirmDelete, comment, parent_id} : ConfirmDeleteProps ) => {
 
   return (
     <>
@@ -25,7 +26,7 @@ const ConfirmDelete = ( {closeForm, confirmDelete, comment} : ConfirmDeleteProps
 
           <div className="flex gap-[1rem] mt-[1rem]">
             <button
-            onClick={() => {confirmDelete(comment); closeForm(prevState => !prevState)}}
+            onClick={() => {confirmDelete(comment, parent_id); closeForm(prevState => !prevState)}}
             className="reply-button"
             >
               Confirm

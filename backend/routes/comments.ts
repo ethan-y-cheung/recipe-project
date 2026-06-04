@@ -48,13 +48,13 @@ router.put("/", requireAuth, async (req : Request<{}, {}, RequestBody>, res : Re
 
 // endpoint to delete a comment and its replies
 router.post("/delete", requireAuth, async (req : Request<{}, {}, RequestBody>, res : Response): Promise<void> =>  {
-  const { comment } = req.body;
+  const { comment, parent_id } = req.body;
   if (!comment) {
     res.status(400).json({error: 'the comment is required'});
     return;
   }
   try {
-    await deleteComment(comment);
+    await deleteComment(comment, parent_id??"");
     res.status(200).json({success: true})
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
