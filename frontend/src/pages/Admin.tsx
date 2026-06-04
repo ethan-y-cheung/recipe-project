@@ -29,7 +29,7 @@ export default function Admin() {
   useEffect(() => {
     const fetchRecipes = async () => {
       try {
-        const response : { data: Recipe[] } = await axios.get('http://localhost:5000/test/recipes');
+        const response : { data: Recipe[] } = await axios.get(`${import.meta.env.VITE_API_URL}/test/recipes`);
         const data = response.data;
         console.log("response data" + data);
         const filteredData = data.filter((recipe) => !recipe.approved);
@@ -77,7 +77,7 @@ export default function Admin() {
 
           {visibleRecipes.map(recipe => (
               <div
-                  key={recipe.recipe_ID}
+                  key={recipe.id}
                   className="recipe-row"
               >
                   <span>{recipe.created_at instanceof Date ? recipe.created_at.toLocaleDateString() : "n/a"}</span>
@@ -96,13 +96,13 @@ export default function Admin() {
 
                       <button 
                         className="approve-btn"
-                        onClick={() => approveRecipe(recipe.recipe_ID)}
+                        onClick={() => approveRecipe(recipe.id)}
                       >
                         Approve
                       </button>
 
                       <button className="deny-btn"
-                        onClick={() => denyRecipe(recipe.recipe_ID)}
+                        onClick={() => denyRecipe(recipe.id)}
                       >
                           Deny
                       </button>

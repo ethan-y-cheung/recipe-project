@@ -33,7 +33,7 @@ export default function AdminRecipeDetailModal({
 
                     <button className="approve-btn"
                         onClick={() =>
-                            onApprove(recipe.recipe_ID)
+                            onApprove(recipe.id)
                         }
                     >
                         Approve
@@ -41,7 +41,7 @@ export default function AdminRecipeDetailModal({
 
                     <button className="deny-btn"
                         onClick={() =>
-                            onDeny(recipe.recipe_ID)
+                            onDeny(recipe.id)
                         }
                     >
                         Deny
