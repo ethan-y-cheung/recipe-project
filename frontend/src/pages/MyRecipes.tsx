@@ -2,11 +2,11 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Star, Search } from "lucide-react";
 import "../styles/MyRecipes.css";
-import type { Recipe } from "../../../shared/types/index.ts";
+import type { Recipe, Tag } from "../../../shared/types/index.ts";
 
 const DUMMY_RECIPES: Recipe[] = [
     {
-        recipe_ID: "rec_001",
+        id: "rec_001",
         user_generated: true,
         creator_ID: "user_dev_sajid",
         title: "Strawberry Shortcake",
@@ -44,10 +44,12 @@ const DUMMY_RECIPES: Recipe[] = [
             { user_ID: "user_emily", value: 4 },
             { user_ID: "user_marcus", value: 4 },
         ],
+        total_time: "45 mins",
+        servings: 6,
     },
     {
-        recipe_ID: "rec_002",
-        user_generated: true,
+        id: "rec_002",
+        user_generated: false,
         creator_ID: null,
         title: "Garlic Butter Salmon Fillet",
         created_at: null,
@@ -80,9 +82,11 @@ const DUMMY_RECIPES: Recipe[] = [
             { user_ID: "user_chef_dan", value: 5 },
             { user_ID: "user_fitness_guru", value: 5 },
         ],
+        total_time: "25 mins",
+        servings: 4,
     },
     {
-        recipe_ID: "rec_003",
+        id: "rec_003",
         user_generated: true,
         creator_ID: "user_baker_pro",
         title: "Widescreen Stress Tester Recipe (Extremely Long Content Mock)",
@@ -116,10 +120,12 @@ const DUMMY_RECIPES: Recipe[] = [
             "https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=800&auto=format&fit=crop&q=60",
         ],
         rating: [],
+        total_time: null, // Verifies fallback render logic when value is absent
+        servings: null,
     },
     {
-        recipe_ID: "rec_004",
-        user_generated: true,
+        id: "rec_004",
+        user_generated: false,
         creator_ID: null,
         title: "Classic Shakshuka",
         created_at: null,
@@ -155,9 +161,11 @@ const DUMMY_RECIPES: Recipe[] = [
             { user_ID: "user_foodie99", value: 5 },
             { user_ID: "user_brunch_lover", value: 4 },
         ],
+        total_time: "30 mins",
+        servings: 3,
     },
     {
-        recipe_ID: "rec_005",
+        id: "rec_005",
         user_generated: true,
         creator_ID: "user_dev_sajid",
         title: "Homemade Matcha Latte",
@@ -186,6 +194,8 @@ const DUMMY_RECIPES: Recipe[] = [
             { user_ID: "user_matcha_fan", value: 5 },
             { user_ID: "user_healthy_bites", value: 5 },
         ],
+        total_time: "5 mins",
+        servings: 1,
     },
 ];
 
@@ -217,10 +227,14 @@ export default function MyRecipes() {
         return matchesTitle || matchesTags;
     });
 
-    const currentRecipe = filteredRecipes[activeIndex];
+    const currentRecipe =
+        activeIndex !== null ? filteredRecipes[activeIndex] : null;
 
     const totalRatingScore =
-        currentRecipe?.rating?.reduce((sum, r) => sum + r.value, 0) || 0;
+        currentRecipe?.rating?.reduce<number>(
+            (sum, r) => sum + (r.value ?? 0),
+            0,
+        ) || 0;
     const averageRating = currentRecipe?.rating?.length
         ? Math.round(totalRatingScore / currentRecipe.rating.length)
         : 0;
@@ -311,8 +325,8 @@ export default function MyRecipes() {
                                 filteredRecipes.map((recipe, idx) => {
                                     // Calculate average preview rating stars
                                     const cardTotal =
-                                        recipe.rating?.reduce(
-                                            (sum, r) => sum + r.value,
+                                        recipe.rating?.reduce<number>(
+                                            (sum, r) => sum + (r.value ?? 0),
                                             0,
                                         ) || 0;
                                     const cardAvg = recipe.rating?.length
@@ -323,7 +337,7 @@ export default function MyRecipes() {
 
                                     return (
                                         <div
-                                            key={recipe.recipe_ID}
+                                            key={recipe.id}
                                             className={`preview-card ${idx === activeIndex ? "active-card" : ""}`}
                                             onClick={() => {
                                                 setActiveIndex(idx);
@@ -480,7 +494,7 @@ export default function MyRecipes() {
                                                 <span
                                                     className="meta-value"
                                                     title={
-                                                        currentRecipe.creator_ID ||
+                                                        currentRecipe?.creator_ID ||
                                                         "Unknown"
                                                     }
                                                 >
@@ -574,7 +588,10 @@ export default function MyRecipes() {
                                                 {currentRecipe.tags &&
                                                 currentRecipe.tags.length > 0
                                                     ? currentRecipe.tags
-                                                          .map((t) => t.name)
+                                                          .map(
+                                                              (t: Tag) =>
+                                                                  t.name,
+                                                          )
                                                           .join(", ")
                                                     : "None"}
                                             </span>
@@ -586,7 +603,13 @@ export default function MyRecipes() {
                                         <div className="content-body">
                                             {" "}
                                             {currentRecipe.ingredients?.map(
-                                                (item, idx) => (
+                                                (
+                                                    item: {
+                                                        quantity: string;
+                                                        name: string;
+                                                    },
+                                                    idx: number,
+                                                ) => (
                                                     <div key={idx}>
                                                         •{" "}
                                                         <strong>
@@ -604,7 +627,7 @@ export default function MyRecipes() {
                                         <div className="content-body">
                                             {" "}
                                             {currentRecipe.instructions?.map(
-                                                (step, idx) => (
+                                                (step: string, idx: number) => (
                                                     <div key={idx}>
                                                         <strong>
                                                             {idx + 1}.
