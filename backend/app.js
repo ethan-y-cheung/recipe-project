@@ -1,10 +1,12 @@
 import cors from "cors";
-import "dotenv/config";
-import dotenv from "dotenv";
 import express from "express";
 import adminRouter from "./routes/admin.js";
 import usersRouter from "./routes/users.js";
+import dotenv from "dotenv";
 import testRouter from "./routes/test.js";
+import awsRouter from "./routes/aws.js";
+
+dotenv.config();
 
 dotenv.config();
 const app = express();
@@ -19,6 +21,7 @@ app.use(express.json());
 app.use("/admin", adminRouter);
 app.use("/users", usersRouter);
 app.use("/test", testRouter);
+app.use('/aws', awsRouter);
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
