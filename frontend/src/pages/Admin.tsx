@@ -104,6 +104,7 @@ export default function Admin() {
               <span>Date</span>
               <span>Title</span>
               <span>Author</span>
+              <span>Tags</span>
               <span>Actions</span>
           </div>
 
@@ -121,6 +122,12 @@ export default function Admin() {
                   <span>{recipe.title}</span>
 
                   <span>{recipe.creator_ID}</span>
+
+                  <div className="admin-tags">
+                    {recipe.tags.map((tag, i) => (
+                      <span key={i} className="admin-tag">{tag.name}</span>
+                    ))}
+                  </div>
 
                   <div className="action-buttons">
                       <button 
