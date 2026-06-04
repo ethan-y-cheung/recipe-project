@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Users, Clock, Tag } from 'lucide-react'
 import '../styles/common.css'
 import '../styles/CreateRecipe.css'
 
@@ -238,7 +239,9 @@ export default function CreateRecipe() {
 
   return (
     <div className="create-recipe">
-      <h1 className="create-recipe__title">Create Recipe</h1>
+      <header className="app-header">
+        <h1 className="create-recipe__title">Create <span className="recipe-heading__title--red">Recipe</span></h1>
+      </header>
 
       <div className="create-card">
         {/* Title + cover + submit */}
@@ -284,15 +287,24 @@ export default function CreateRecipe() {
         {/* Meta: servings, total time, tags */}
         <div className="create-meta">
           <div className="meta-field">
-            <label className="meta-field__label">Servings</label>
+            <label className="meta-field__label">
+              <Users size={16} aria-hidden="true" />
+              Servings
+            </label>
             <Dropdown value={servings} onChange={setServings} options={SERVING_PRESETS} placeholder="Select or type" />
           </div>
           <div className="meta-field">
-            <label className="meta-field__label">Total time</label>
+            <label className="meta-field__label">
+              <Clock size={16} aria-hidden="true" />
+              Total time
+            </label>
             <Dropdown value={totalTime} onChange={setTotalTime} options={TIME_PRESETS} placeholder="Select or type" />
           </div>
           <div className="meta-field meta-field--tags">
-            <label className="meta-field__label">Tags</label>
+            <label className="meta-field__label">
+              <Tag size={16} aria-hidden="true" />
+              Tags
+            </label>
             <TagPicker
               availableTags={availableTags}
               selectedTags={tags}
