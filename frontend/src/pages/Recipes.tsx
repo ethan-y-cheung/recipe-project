@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import '../styles/Recipes.css'
+import axios from 'axios';
 
 import { Search } from 'lucide-react';
 import {
@@ -91,13 +92,21 @@ export default function Recipes() {
   // Runs side effects for filtering displayed recipes
   useEffect(() => {
     const noFiltersApplied = activeFilter === 'All Recipes' && !searchFilter && tagFilter.length === 0;
-    if(noFiltersApplied) {
-      setFilteredRecipes(recipes);
-      return;
-    }
 
-    // todo: change to actual filtered recipes
-    setFilteredRecipes([]);
+    const fetchData = async () => {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/test/recipes`);
+      const data = response.data;
+      console.log("data", data);
+
+      if(noFiltersApplied) {
+        setFilteredRecipes(recipes);
+        return;
+      }
+
+      // todo: change to actual filtered recipes
+      setFilteredRecipes([]);
+    }
+    fetchData();
   }, [activeFilter, searchFilter, tagFilter])
 
   useEffect(() => {
@@ -255,7 +264,8 @@ export default function Recipes() {
 
         {/* todo: stop if number if > max pages */}
         {createRange(page - 1, page + 2).map((pageNumber: number) => 
-          pageNumber > 0 && (<PaginationItem>
+          pageNumber > 0 && (
+          <PaginationItem key={pageNumber}>
             <PaginationLink 
               onClick={() => setPage(pageNumber)}
               isActive={pageNumber === page}
