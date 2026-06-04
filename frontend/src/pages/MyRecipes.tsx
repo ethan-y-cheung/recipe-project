@@ -344,8 +344,7 @@ export default function MyRecipes() {
                                             }}
                                         >
                                             <div className="preview-image-wrapper">
-                                                {recipe.images &&
-                                                recipe.images.length > 0 ? (
+                                                {recipe.images?.[0] ? (
                                                     <img
                                                         src={recipe.images[0]}
                                                         alt={recipe.title}
@@ -529,8 +528,7 @@ export default function MyRecipes() {
                                         </div>
 
                                         <div className="recipe-image-box">
-                                            {currentRecipe.images &&
-                                            currentRecipe.images.length > 0 ? (
+                                            {currentRecipe.images?.[0] ? (
                                                 <img
                                                     src={
                                                         currentRecipe.images[0]

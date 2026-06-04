@@ -105,8 +105,12 @@ router.post("/", async (req, res) => {
                 quantity: ing.quantity, // "qty + units", e.g. "2 cups"
             })),
             instructions,
+            // Positional images: index 0 is the cover, indices 1..N align to the
+            // direction steps. Each entry is a permanent S3 fileKey (resolved to a
+            // signed view URL at display time) or null where a step has no image.
+            // Keep nulls so the step<->image alignment never drifts.
             images: Array.isArray(images)
-                ? images.filter((url) => typeof url === "string")
+                ? images.map((key) => (typeof key === "string" ? key : null))
                 : [],
             rating: [],
             total_time: typeof total_time === "string" ? total_time : null,
