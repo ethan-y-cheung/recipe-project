@@ -19,7 +19,39 @@ const UNIT_PRESETS = ['g', 'ml', 'cup', 'tbsp', 'oz']
 const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:5000'
 
 type Ingredient = { id: number; name: string; qty: string; units: string }
-type Direction = { id: number; text: string; imageUrl: string | null }
+// imageUrl is a local blob: preview; file is the actual bytes we upload to S3.
+type Direction = { id: number; text: string; imageUrl: string | null; file: File | null }
+
+// Upload a single file to S3 via a presigned URL and return its permanent
+// fileKey, which is what we persist on the recipe. Throws on any failure so the
+// caller can surface a single "upload failed" message.
+async function uploadImage(file: File): Promise<string> {
+  const signRes = await fetch(`${API_BASE}/aws/generate-upload-url`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ fileName: file.name, fileType: file.type }),
+  })
+  if (!signRes.ok) {
+    const data = await signRes.json().catch(() => null)
+    throw new Error(data?.error ?? 'Could not get an upload URL')
+  }
+  const { uploadUrl, fileKey } = (await signRes.json()) as {
+    uploadUrl: string
+    fileKey: string
+  }
+
+  // PUT the raw bytes straight to S3. Content-Type must match what the URL was
+  // signed with, or S3 rejects the request.
+  const putRes = await fetch(uploadUrl, {
+    method: 'PUT',
+    headers: { 'Content-Type': file.type },
+    body: file,
+  })
+  if (!putRes.ok) {
+    throw new Error('Image upload to storage failed')
+  }
+  return fileKey
+}
 
 // Monotonic id generators for list rows
 let nextId = 0
@@ -28,6 +60,7 @@ const newId = () => (nextId += 1)
 export default function CreateRecipe() {
   const [title, setTitle] = useState('')
   const [coverUrl, setCoverUrl] = useState<string | null>(null)
+  const [coverFile, setCoverFile] = useState<File | null>(null)
   const [servings, setServings] = useState('')
   const [totalTime, setTotalTime] = useState('')
   const [availableTags, setAvailableTags] = useState<string[]>(DEFAULT_TAGS)
@@ -36,7 +69,7 @@ export default function CreateRecipe() {
     { id: newId(), name: '', qty: '', units: '' },
   ])
   const [directions, setDirections] = useState<Direction[]>([
-    { id: newId(), text: '', imageUrl: null },
+    { id: newId(), text: '', imageUrl: null, file: null },
   ])
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -52,12 +85,14 @@ export default function CreateRecipe() {
       if (prev) URL.revokeObjectURL(prev)
       return URL.createObjectURL(file)
     })
+    setCoverFile(file)
   }
   const removeCover = () => {
     setCoverUrl((prev) => {
       if (prev) URL.revokeObjectURL(prev)
       return null
     })
+    setCoverFile(null)
     if (coverInputRef.current) coverInputRef.current.value = ''
   }
 
@@ -71,7 +106,7 @@ export default function CreateRecipe() {
     setIngredients((p) => p.filter((i) => i.id !== id))
   
   const addDirection = () =>
-    setDirections((p) => [...p, { id: newId(), text: '', imageUrl: null }])
+    setDirections((p) => [...p, { id: newId(), text: '', imageUrl: null, file: null }])
   
   const updateDirection = (id: number, text: string) =>
     setDirections((p) => p.map((d) => (d.id === id ? { ...d, text } : d)))
@@ -82,7 +117,7 @@ export default function CreateRecipe() {
       p.map((d) => {
         if (d.id !== id) return d
         if (d.imageUrl) URL.revokeObjectURL(d.imageUrl)
-        return { ...d, imageUrl: URL.createObjectURL(file) }
+        return { ...d, imageUrl: URL.createObjectURL(file), file }
       })
     )
   }
@@ -92,7 +127,7 @@ export default function CreateRecipe() {
       p.map((d) => {
         if (d.id !== id) return d
         if (d.imageUrl) URL.revokeObjectURL(d.imageUrl)
-        return { ...d, imageUrl: null }
+        return { ...d, imageUrl: null, file: null }
       })
     )
     const input = dirInputRefs.current[id]
@@ -125,30 +160,11 @@ export default function CreateRecipe() {
   }
 
   // Create
-  // NOTE: image upload isn't wired up yet, so these are local blob: object URLs
-  // that only resolve in the current browser session. They're sent so the
-  // images array is populated end-to-end; swap for uploaded download URLs once
-  // storage exists. Cover image goes first per the "thumbnail" convention.
-  // created_at is stamped server-side; the backend normalizes tag strings.
+  // Images are uploaded to S3 first, then the recipe is saved with a positional
+  // array of fileKeys: index 0 is the cover, indices 1..N align to the direction
+  // steps. Entries are null where the cover/step has no image so the alignment
+  // never drifts. created_at is stamped server-side; the backend normalizes tags.
   const handleConfirm = async () => {
-    const images = [coverUrl, ...directions.map((d) => d.imageUrl)].filter(
-      (url): url is string => Boolean(url)
-    )
-    const recipe = {
-      title: title.trim(),
-      ingredients: ingredients
-        .filter((i) => i.name.trim() || i.qty.trim() || i.units.trim())
-        .map((i) => ({
-          name: i.name.trim(),
-          quantity: [i.qty.trim(), i.units.trim()].filter(Boolean).join(' '),
-        })),
-      instructions: directions.map((d) => d.text.trim()).filter(Boolean),
-      tags,
-      servings: servings.trim() ? Number(servings.trim()) : undefined,
-      total_time: totalTime.trim() || undefined,
-      images,
-    }
-
     // Each listed ingredient needs a name plus both a qty and units.
     const incompleteIngredient = ingredients.some(
       (i) =>
@@ -170,6 +186,30 @@ export default function CreateRecipe() {
     setSubmitting(true)
     setSubmitError(null)
     try {
+      // Upload every image (cover first, then each step) in parallel. The array
+      // stays positional: a step with no image resolves to null. One file's
+      // failure rejects the whole batch so we never persist a partial image set.
+      const images = await Promise.all(
+        [coverFile, ...directions.map((d) => d.file)].map((file) =>
+          file ? uploadImage(file) : Promise.resolve(null)
+        )
+      )
+
+      const recipe = {
+        title: title.trim(),
+        ingredients: ingredients
+          .filter((i) => i.name.trim() || i.qty.trim() || i.units.trim())
+          .map((i) => ({
+            name: i.name.trim(),
+            quantity: [i.qty.trim(), i.units.trim()].filter(Boolean).join(' '),
+          })),
+        instructions: directions.map((d) => d.text.trim()).filter(Boolean),
+        tags,
+        servings: servings.trim() ? Number(servings.trim()) : undefined,
+        total_time: totalTime.trim() || undefined,
+        images,
+      }
+
       const res = await fetch(`${API_BASE}/recipes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
