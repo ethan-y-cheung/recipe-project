@@ -32,43 +32,6 @@ const recipeData: Recipe = {
   rating: [{user_ID: "Kaitlyn", value: 5}, {user_ID: "Michael", value: 2}]
 };
 
-// const user: User = {
-//   username: "Michael",
-//   password: "password123",
-//   admin: false,
-//   my_recipes: [],
-//   saved_recipes: [{recipeID: "123", user_tags: [], notes: ""}],
-// }
-
-const comments: Comments[] = [
-    {recipe_ID: "123",
-    id: "111",
-    creator_ID: "Lucinda",
-    content: "needs butter",
-    likes: [], //array of user_IDs who liked the comment
-    created_at: new Date(2026, 6, 1),
-    reply_IDs: [],
-    replies: []},
-
-    {recipe_ID: "123",
-      id: "333",
-    creator_ID: "Michael",
-    content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam facilisis, nunc sed feugiat euismod, mi ante pulvinar velit, facilisis commodo massa massa egestas nulla. Donec id leo sed turpis mollis malesuada. Phasellus posuere semper molestie. Praesent quis tincidunt nisl. Duis fringilla metus risus, ac tempor nunc dignissim a. Nulla vitae ornare ligula. Morbi facilisis facilisis nulla, in rutrum odio maximus at.",
-    likes: ["rachel"], //array of user_IDs who liked the comment
-    created_at: new Date(2024, 1, 1),
-    reply_IDs: [],
-    replies: [
-       {recipe_ID: "123",
-        id: "222",
-      creator_ID: "Lucinda",
-      content: "needs butter",
-      likes: [], //array of user_IDs who liked the comment
-      created_at: new Date(2026, 6, 1),
-      reply_IDs: [],
-      replies: []}
-    ]}
-]
-
 const BASE_URL = import.meta.env.VITE_API_URL;
 
 export default function RecipeDetail() {
@@ -132,7 +95,7 @@ export default function RecipeDetail() {
         });
 
         console.log(response.data);
-        setAllPosts(comments);
+        setAllPosts(response.data);
         setDone(new Array(recipeData.ingredients.length).fill(false));
         
         // determine average rating
