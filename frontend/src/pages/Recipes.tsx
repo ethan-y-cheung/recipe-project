@@ -41,7 +41,7 @@ import {
 
 import RecipeCard from '../components/RecipeCard';
 
-import type { Recipe } from '../../../shared/types/index.ts';
+import type { Recipe, User as AppUser } from '../../../shared/types/index.ts';
 
 
 
@@ -92,12 +92,39 @@ export default function Recipes() {
 
   const [refresh, setRefresh] = useState<boolean>(false);
 
-  // ids of current user's saved recipes - if user saves/unsaves, re-fetch
-  const [savedRecipes, setSavedRecipes] = useState([]);
-
   const API_URL = import.meta.env.VITE_API_URL
 
   const { currentUser, userData, refreshUser } = useAuth();
+  const [localUserData, setLocalUserData] = useState<AppUser | null>(userData);
+
+  useEffect(() => {
+    setLocalUserData(userData);
+  }, [userData]);
+
+  const handleSave = async (recipeId: string, currentlySaved: boolean) => {
+    if (!currentUser) return;
+
+    const token = await currentUser.getIdToken();
+    try {
+      const response = await fetch(`${API_URL}/users/saved-recipes/${recipeId}`, {
+        method: currentlySaved ? 'DELETE' : 'POST',
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        console.error('Failed to update saved recipe:', await response.text());
+        return;
+      }
+
+      const updatedUser = await response.json();
+      setLocalUserData(updatedUser);
+    } catch (err) {
+      console.error('Save toggle failed:', err);
+    }
+  }
 
   // Fetch recipes on first load--------------------------------------
   useEffect(() => {
@@ -116,26 +143,6 @@ export default function Recipes() {
         setFilteredRecipes(data.slice(page - 1, page * recipesPerPage)); // load recipe list on **1st** page
 
         console.log(currentUser, userData);
-        if (userData) {
-
-          userData.my_recipes = [
-            {
-              'recipe_id': '3',
-              'notes': 'notenotoene'
-            }
-          ];
-        }
-
-        const token = await currentUser?.getIdToken();
-        const response2 = await fetch(`${API_URL}/users`, {
-           method: 'POST',
-           headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-           },
-           body: JSON.stringify(userData)
-         }
-         );
       }
       catch (err) {
         console.log(`An error occured Recipes.tsx while fetching recipe data: ${err}`)
@@ -189,10 +196,6 @@ export default function Recipes() {
     setTotalPages(Math.ceil(filteredRecipes.length/recipesPerPage));
     setFilteredRecipes(filteredRecipes.slice((currentPage - 1) * recipesPerPage, (currentPage * recipesPerPage)));
   }, [activeFilter, searchFilter, tagFilter, page])
-
-
-
-
 
   // Helper: Returns array with page from start (inlcude) to stop (exclusive)-----------
   // ------- within bounds of 1 and totalPages (state)
@@ -318,7 +321,11 @@ export default function Recipes() {
       <section className="recipe-catalog">
         {filteredRecipes.map(recipeData => (
           <div key={recipeData.id}>
-            <RecipeCard recipeData={recipeData} isSaved={true}/>
+            <RecipeCard
+              recipeData={recipeData}
+              isSaved={localUserData ? localUserData.saved_recipes.some(recipe => recipe.recipe_id === recipeData.id) : false}
+              onSave={handleSave}
+            />
           </div>
         ))}
         {filteredRecipes.length === 0 &&

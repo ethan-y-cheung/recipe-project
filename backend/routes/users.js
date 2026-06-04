@@ -43,27 +43,82 @@ router.post("/sync", requireAuth, async (req, res) => {
   }
 });
 
-// Update user data (my_recipes, saved_recipes) - creates document if not exists
-router.post("/", requireAuth, async (req, res) => {
+// Add recipe to saved_recipes
+router.post("/saved-recipes/:recipe_id", requireAuth, async (req, res) => {
   const { uid, email, username } = req.user;
-  const { my_recipes, saved_recipes } = req.body;
+  const { recipe_id } = req.params
 
   try {
     const userRef = await ensureUserDoc(uid, email, username);
+    const userSnap = await userRef.get();
+
+    const userData = userSnap.data() || {};
+    const savedRecipes = userData.saved_recipes || [];
+
+    const alreadyExists = savedRecipes.some(
+      (savedRecipe) => savedRecipe.recipe_id === recipe_id
+    );
+
+    if (alreadyExists) {
+      return res.status(400).json({
+        error: "Recipe already exists in saved",
+      });
+    }
 
     await userRef.set(
       {
-        ...(my_recipes !== undefined && { my_recipes }),
-        ...(saved_recipes !== undefined && { saved_recipes }),
+        saved_recipes: [...savedRecipes, { recipe_id, notes: '' }],
       },
       { merge: true }
     );
 
-    return res.json({
-      message: "User updated",
-    });
+    const updatedSnap = await userRef.get();
+    return res.json({ id: updatedSnap.id, ...updatedSnap.data() });
   } catch (err) {
-    console.error("User update error:", err);
+    console.error("Save recipe error:", err);
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+});
+
+// Delete recipe from saved_recipes
+router.delete("/saved-recipes/:recipe_id", requireAuth, async (req, res) => {
+  const { uid, email, username } = req.user;
+  const { recipe_id } = req.params;
+
+  try {
+    const userRef = await ensureUserDoc(uid, email, username);
+    const userSnap = await userRef.get();
+
+    const userData = userSnap.data() || {};
+    const savedRecipes = userData.saved_recipes || [];
+
+    const recipeExists = savedRecipes.some(
+      (recipe) => recipe.recipe_id === recipe_id
+    );
+
+    if (!recipeExists) {
+      return res.status(404).json({
+        error: "Recipe not found",
+      });
+    }
+
+    const updatedSavedRecipes = savedRecipes.filter(
+      (recipe) => recipe.recipe_id !== recipe_id
+    );
+
+    await userRef.set(
+      {
+        saved_recipes: updatedSavedRecipes,
+      },
+      { merge: true }
+    );
+
+    const updatedSnap = await userRef.get();
+    return res.json({ id: updatedSnap.id, ...updatedSnap.data() });
+  } catch (err) {
+    console.error("Delete recipe error:", err);
     return res.status(500).json({
       error: "Internal server error",
     });

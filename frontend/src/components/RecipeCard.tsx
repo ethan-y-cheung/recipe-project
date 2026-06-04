@@ -3,8 +3,7 @@ import './RecipeCard.css'
 import type { Recipe, Rating } from '../../../shared/types/index.ts'
 import { BookmarkIcon, StarIcon } from './IconExports.tsx';
 
-const RecipeCard = ({ recipeData, isSaved }: { recipeData: Recipe, isSaved: boolean }) => {
-
+const RecipeCard = ({ recipeData, isSaved, onSave }: { recipeData: Recipe, isSaved: boolean, onSave: (recipeId: string, currentlySaved: boolean) => Promise<void> }) => {
   const ratingsArray : Rating[] = recipeData.rating || [];
   let avgRating : number;
 
@@ -13,6 +12,10 @@ const RecipeCard = ({ recipeData, isSaved }: { recipeData: Recipe, isSaved: bool
     avgRating = (total / ratingsArray.length);
   } else {
     avgRating = 0;
+  }
+
+  const handleToggleSaved = async () => {
+    await onSave(recipeData.id, isSaved);
   }
 
   return (
@@ -27,7 +30,8 @@ const RecipeCard = ({ recipeData, isSaved }: { recipeData: Recipe, isSaved: bool
           <p className="recipe-card__author-name">{recipeData.creator_ID}</p>
         </div>
 
-        <button className={`recipe-card__save-button${isSaved ? ' recipe-card__save-button--active':''}`}>
+        <button className={`recipe-card__save-button${isSaved ? ' recipe-card__save-button--active':''}`}
+          onClick={handleToggleSaved}>
           {/* Save icon */}
           <BookmarkIcon className={`recipe-card__save-button-icon${isSaved ? ' recipe-card__save-button-icon--active':''}`} />
         </button>
@@ -41,7 +45,6 @@ const RecipeCard = ({ recipeData, isSaved }: { recipeData: Recipe, isSaved: bool
         </div>
         {/* for testing... user generated vs. official */}
         {!recipeData.user_generated && <div className="recipe-card-tag recipe-card-tag--official">
-          {/* Star/ratings icon */}
            <p className="recipe-card-tag__text">Official</p>
         </div>}
         {recipeData.tags.slice(0, 1).map(tag => (
