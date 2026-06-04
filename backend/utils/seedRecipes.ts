@@ -1,7 +1,5 @@
 import "dotenv/config";
-import { doc, setDoc } from "firebase/firestore";
 import { db } from "../firebase.ts";
-import admin from "firebase-admin";
 import { Recipe, Tag } from "../../shared/types/index.ts";
 
 const DUMMY_RECIPES: Recipe[] = [

@@ -7,7 +7,6 @@ import {
     removeSavedRecipe,
 } from "../db/userService.ts";
 import { fetchMultipleRecipes } from "../services/recipeService.ts";
-// import { requireAuth } from "../middleware/auth.js"
 
 const router = Router();
 

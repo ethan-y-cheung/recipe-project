@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Star, Search } from "lucide-react";
 import "../styles/MyRecipes.css";
-import type { Recipe, User, Tag } from "../../../shared/types/index.ts";
+import type { Recipe, Tag } from "../../../shared/types/index.ts";
 import { useAuth } from "@/contexts/AuthContext.tsx";
 
 export default function MyRecipes() {
@@ -16,7 +16,6 @@ export default function MyRecipes() {
     const [searchQuery, setSearchQuery] = useState<string>("");
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
-    // const [fetchError, setFetchError] = useState<string | null>(null)
 
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editTitle, setEditTitle] = useState("");
@@ -111,14 +110,12 @@ export default function MyRecipes() {
             currentRecipe.tags?.map((t: Tag) => t.name).join(", ") || "",
         );
 
-        // Format ingredients: "Quantity - Name" (one per line)
         const ingredientsFormatted =
             currentRecipe.ingredients
                 ?.map((item) => `${item.quantity || ""} - ${item.name || ""}`)
                 .join("\n") || "";
         setEditIngredientsText(ingredientsFormatted);
 
-        // Format instructions: simple newline separation
         setEditInstructionsText(currentRecipe.instructions?.join("\n") || "");
         setEditTotalTime(currentRecipe.total_time || "");
         setEditServings(currentRecipe.servings || 1);
@@ -131,14 +128,12 @@ export default function MyRecipes() {
 
         setIsUpdating(true);
         try {
-            // Parse tags
             const parsedTags: Tag[] = editTags
                 .split(",")
                 .map((t) => t.trim())
                 .filter((t) => t !== "")
                 .map((t) => ({ name: t, type: "tag" }));
 
-            // Parse ingredients textarea: split lines by " - "
             const parsedIngredients = editIngredientsText
                 .split("\n")
                 .map((line) => {
@@ -152,7 +147,6 @@ export default function MyRecipes() {
                 })
                 .filter((item) => item.name !== "");
 
-            // Parse instructions textarea
             const parsedInstructions = editInstructionsText
                 .split("\n")
                 .map((step) => step.trim())
@@ -186,7 +180,6 @@ export default function MyRecipes() {
                 { headers },
             );
 
-            // Reload collections and close modal
             await fetchRecipes();
             setIsEditModalOpen(false);
         } catch (err: unknown) {
@@ -213,14 +206,12 @@ export default function MyRecipes() {
             };
 
             if (activeView === "created") {
-                // DELETE Created Recipe: uses query parameter for username verification
                 const encodedUser = encodeURIComponent(username);
                 await axios.delete(
                     `${BASE_URL}/userrecipe/recipes/${currentRecipe.id}?username=${encodedUser}`,
                     { headers },
                 );
             } else {
-                // DELETE Saved Recipe (Unsave): removes map matching document from saved array
                 const encodedUser = encodeURIComponent(username);
                 await axios.delete(
                     `${BASE_URL}/userrecipe/${encodedUser}/saved/${currentRecipe.id}`,
@@ -228,7 +219,6 @@ export default function MyRecipes() {
                 );
             }
 
-            // Reset selected states and reload
             setIsPreviewOpen(false);
             setActiveIndex(null);
             await fetchRecipes();
@@ -333,7 +323,6 @@ export default function MyRecipes() {
                                 </div>
                             ) : (
                                 filteredRecipes.map((recipe, idx) => {
-                                    // Calculate average preview rating stars
                                     const cardTotal =
                                         recipe.rating?.reduce<number>(
                                             (sum, r) => sum + (r.value ?? 0),
@@ -801,9 +790,6 @@ export default function MyRecipes() {
                 </div>
             )}
 
-            {/* ==========================================
-               CHANGE: NEW DELETE / UNSAVE CONFIRMATION DIALOG (IFRAME SAFE)
-               ========================================== */}
             {isDeleteModalOpen && currentRecipe && (
                 <div className="modal-overlay">
                     <div className="modal-box" style={{ maxWidth: "450px" }}>

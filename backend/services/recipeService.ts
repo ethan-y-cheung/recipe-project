@@ -69,7 +69,7 @@ export const fetchRecipeById = async (id: string): Promise<Recipe | null> => {
             ingredients,
             instructions,
             images,
-            rating: [], // The MealDB does not natively track consumer reviews
+            rating: [],
             total_time: null,
             servings: null,
             approved: true,

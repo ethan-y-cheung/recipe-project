@@ -1,17 +1,5 @@
-// import {
-//     collection,
-//     doc,
-//     getDoc,
-//     getDocs,
-//     updateDoc,
-//     deleteDoc,
-//     query,
-//     where,
-// } from "firebase/firestore";
-
 import { db } from "../firebase.ts";
 import { FieldValue } from "firebase-admin/firestore";
-// import admin from "firebase-admin";
 import { Recipe } from "../../shared/types/index.ts";
 
 export const getCreatedRecipes = async (
