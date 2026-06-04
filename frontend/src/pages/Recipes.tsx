@@ -44,6 +44,8 @@ import RecipeCard from '../components/RecipeCard';
 import { recipes } from './recipeData';
 import type { RecipeType } from './recipeData';
 
+import type { Recipe } from '../../../shared/types/index.ts';
+
 const FILTER_OPTIONS = ['All Recipes', 'Official Only', 'User-Generated'] as const
 type RecipeFilter = (typeof FILTER_OPTIONS)[number]
 
@@ -87,7 +89,7 @@ export default function Recipes() {
   const [searchFilter, setSearchFilter] = useState<string>("");
   const [tagFilter, setTagFilter] = useState<string[]>([]);
 
-  const [filteredRecipes, setFilteredRecipes] = useState<RecipeType[]>([]);
+  const [filteredRecipes, setFilteredRecipes] = useState<Recipe[]>([]);
 
   // Runs side effects for filtering displayed recipes
   useEffect(() => {
@@ -99,7 +101,8 @@ export default function Recipes() {
       console.log("data", data);
 
       if(noFiltersApplied) {
-        setFilteredRecipes(recipes);
+        setFilteredRecipes(data);
+        // setFilteredRecipes(recipes);
         return;
       }
 
@@ -242,7 +245,7 @@ export default function Recipes() {
     <section className="recipe-catalog">
       {filteredRecipes.map(recipeData => (
         <div key={recipeData.id}>
-          <RecipeCard recipeData={recipeData}/>
+          <RecipeCard recipeData={recipeData} isSaved={true}/>
         </div>
       ))}
       {filteredRecipes.length === 0 &&
