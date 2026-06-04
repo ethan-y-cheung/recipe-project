@@ -8,17 +8,18 @@ import {
     query,
     where,
 } from "firebase/firestore";
-import db from "../firebase.js";
+
+import { db } from "../firebase.ts";
+import admin from "firebase-admin";
 import { Recipe } from "../../shared/types/index.ts";
 
 export const getCreatedRecipes = async (
     username: string,
 ): Promise<Recipe[]> => {
-    const q = query(
-        collection(db, "recipes"),
-        where("creator_ID", "==", username),
-    );
-    const snapshot = await getDocs(q);
+    const snapshot = await db
+        .collection("recipes")
+        .where("creator_ID", "==", username)
+        .get();
 
     return snapshot.docs.map((doc) => ({
         id: doc.id,
@@ -29,12 +30,19 @@ export const getCreatedRecipes = async (
 export const getSavedRecipes = async (
     username: string,
 ): Promise<string[] | null> => {
-    const snapshot = await getDoc(doc(db, "users", username));
+    const snapshot = await db
+        .collection("users")
+        .where("username", "==", username)
+        .get();
 
-    if (!snapshot.exists()) return null;
+    if (snapshot.empty) {
+        console.warn(`No user found with : ${username}`);
+        return null;
+    }
 
-    const userData = snapshot.data();
+    const userDoc = snapshot.docs[0];
+    const userData = userDoc.data();
     const savedRecipes = userData?.saved_recipes || [];
 
-    return savedRecipes.map((item: any) => item.recipe_id);
+    return savedRecipes.map((item: { recipe_id: string }) => item.recipe_id);
 };
