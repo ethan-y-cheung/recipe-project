@@ -14,7 +14,7 @@ router.post('/sync', requireAuth, async (req, res) => {
     const userRef = db.collection('users').doc(uid);
     const snap = await userRef.get();
 
-    if (!snap.exists()) {
+    if (!snap.exists) {
       await userRef.set({
         username: username || email?.split('@')[0],
         email,
@@ -39,7 +39,7 @@ router.get('/me', requireAuth, async (req, res) => {
     const db = admin.firestore();
     const snap = await db.collection('users').doc(uid).get();
 
-    if (!snap.exists()) {
+    if (!snap.exists) {
       return res.status(404).json({ error: 'User not found' });
     }
 

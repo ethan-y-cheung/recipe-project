@@ -10,17 +10,20 @@ import {
   type User,
 } from "firebase/auth";
 import { auth } from "../firebase";
+import type { User as AppUser } from "../../../shared/types/index";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 interface AuthContextType {
   currentUser: User | null;
+  userData: AppUser | null;
   isAdmin: boolean;
   loading: boolean;
   signUp: (email: string, password: string, username: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -43,8 +46,18 @@ async function syncUserWithBackend(user: User, username?: string) {
   });
 }
 
+async function fetchUserData(user: User): Promise<AppUser | null> {
+  const token = await user.getIdToken();
+  const res = await fetch(`${API_URL}/users/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [userData, setUserData] = useState<AppUser | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -53,20 +66,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (user) {
         try {
           await syncUserWithBackend(user);
-          const tokenResult = await user.getIdTokenResult();
+          const [tokenResult, data] = await Promise.all([
+            user.getIdTokenResult(),
+            fetchUserData(user),
+          ]);
           setIsAdmin(tokenResult.claims.admin === true);
+          setUserData(data);
         } catch (err) {
           console.error("Failed to sync user:", err);
           setIsAdmin(false);
+          setUserData(null);
         }
       } else {
         setIsAdmin(false);
+        setUserData(null);
       }
       setCurrentUser(user);
       setLoading(false);
     });
     return unsubscribe;
   }, []);
+
+  async function refreshUser() {
+    if (!currentUser) return;
+    const data = await fetchUserData(currentUser);
+    setUserData(data);
+  }
 
   async function signUp(email: string, password: string, username: string) {
     const { user } = await createUserWithEmailAndPassword(
@@ -95,12 +120,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider
       value={{
         currentUser,
+        userData,
         isAdmin,
         loading,
         signUp,
         signIn,
         signInWithGoogle,
         signOut,
+        refreshUser,
       }}
     >
       {!loading && children}
