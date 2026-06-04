@@ -7,8 +7,6 @@ import testRouter from "./routes/test.js";
 import awsRouter from "./routes/aws.js";
 
 dotenv.config();
-
-dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
