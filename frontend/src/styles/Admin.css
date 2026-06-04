@@ -1,10 +1,17 @@
 @import "./common.css";
 
 .admin-title {
-    text-align: center;
+    text-align: left;
     color: var(--text);
     font-size: 2rem;
+    margin-bottom: 0.6rem;
+}
+
+.admin-subtitle {
+    text-align: left;
+    color: var(--muted-text);
     margin-bottom: 1.5rem;
+    font-size: 0.95rem;
 }
 
 .admin-empty {
@@ -34,13 +41,17 @@
 
 /* List */
 
+.recipe-list-wrapper {
+    overflow-x: auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
 .recipe-list {
     display: flex;
     flex-direction: column;
     background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    min-width: 700px;
 }
 
 .recipe-list-header {

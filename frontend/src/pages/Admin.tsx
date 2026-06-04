@@ -78,14 +78,6 @@ export default function Admin() {
   };
   return <>
 
-      <header>
-          <h1 className="admin-title">Admin Panel</h1>
-      </header>
-      {error && (
-        <div className="admin-error" onClick={() => setError(null)}>
-          {error}
-        </div>
-      )}
       {
         selectedRecipe && (
             <AdminRecipeDetailModal
@@ -99,7 +91,16 @@ export default function Admin() {
         )
       }
       <div className="admin-page">
-        <div className="recipe-list">
+        <header>
+            <h1 className="admin-title">Admin Panel</h1>
+            <p className="admin-subtitle">Click a recipe to review it, then approve or deny it.</p>
+        </header>
+        {error && (
+          <div className="admin-error" onClick={() => setError(null)}>
+            {error}
+          </div>
+        )}
+        <div className="recipe-list-wrapper"><div className="recipe-list">
           <div className="recipe-list-header">
               <span>Date</span>
               <span>Title</span>
@@ -147,10 +148,9 @@ export default function Admin() {
               </div>
           ))}
       </div>
-    </div>  
+    </div></div>
 
     {totalPages > 1 && <div className="pgn-container">
-
       <button
           className= "pgn-btn"
           disabled = {currentPage === 1}
