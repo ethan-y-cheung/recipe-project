@@ -17,50 +17,61 @@ export default function MyRecipes() {
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     // const [fetchError, setFetchError] = useState<string | null>(null)
+
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editTitle, setEditTitle] = useState("");
+    const [editTags, setEditTags] = useState("");
+    const [editIngredientsText, setEditIngredientsText] = useState("");
+    const [editInstructionsText, setEditInstructionsText] = useState("");
+    const [editTotalTime, setEditTotalTime] = useState("");
+    const [editServings, setEditServings] = useState<number>(1);
+    const [isUpdating, setIsUpdating] = useState(false);
+
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+
     const { currentUser, userData } = useAuth();
+    const username = userData?.username || currentUser?.displayName || "";
 
     const BASE_URL = import.meta.env.VITE_API_URL;
 
+    const fetchRecipes = async () => {
+        setIsLoading(true);
+        if (!currentUser || !userData) {
+            setIsLoading(false);
+            return;
+        }
+        try {
+            const token = await currentUser.getIdToken();
+
+            const headers = {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            };
+            const encodedUserId = encodeURIComponent(username);
+
+            const [createdResponse, savedResponse] = await Promise.all([
+                axios.get(`${BASE_URL}/userrecipe/${encodedUserId}/created`, {
+                    headers,
+                }),
+                axios.get(`${BASE_URL}/userrecipe/${encodedUserId}/saved`, {
+                    headers,
+                }),
+            ]);
+
+            const createdData: Recipe[] = createdResponse.data;
+            const savedData: Recipe[] = savedResponse.data;
+
+            setCreatedRecipes(createdData);
+            setSavedRecipes(savedData);
+        } catch (error: unknown) {
+            console.error("Recipe retrieval failure:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchRecipes = async () => {
-            setIsLoading(true);
-            if (!currentUser || !userData) {
-                setIsLoading(false);
-                return;
-            }
-            try {
-                const username = userData?.username;
-
-                const token = await currentUser.getIdToken();
-
-                const headers = {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                };
-                const encodedUserId = encodeURIComponent(username);
-
-                const [createdResponse, savedResponse] = await Promise.all([
-                    axios.get(
-                        `${BASE_URL}/userrecipe/${encodedUserId}/created`,
-                        { headers },
-                    ),
-                    axios.get(`${BASE_URL}/userrecipe/${encodedUserId}/saved`, {
-                        headers,
-                    }),
-                ]);
-
-                const createdData: Recipe[] = createdResponse.data;
-                const savedData: Recipe[] = savedResponse.data;
-
-                setCreatedRecipes(createdData);
-                setSavedRecipes(savedData);
-            } catch (error: unknown) {
-                console.error("Recipe retrieval failure:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
         fetchRecipes();
     }, [currentUser, userData]);
 
@@ -89,6 +100,146 @@ export default function MyRecipes() {
     const averageRating = currentRecipe?.rating?.length
         ? Math.round(totalRatingScore / currentRecipe.rating.length)
         : 0;
+
+    const isOwner =
+        currentRecipe?.user_generated && currentRecipe?.creator_ID === username;
+
+    const handleOpenEditModal = () => {
+        if (!currentRecipe) return;
+        setEditTitle(currentRecipe.title);
+        setEditTags(
+            currentRecipe.tags?.map((t: Tag) => t.name).join(", ") || "",
+        );
+
+        // Format ingredients: "Quantity - Name" (one per line)
+        const ingredientsFormatted =
+            currentRecipe.ingredients
+                ?.map((item) => `${item.quantity || ""} - ${item.name || ""}`)
+                .join("\n") || "";
+        setEditIngredientsText(ingredientsFormatted);
+
+        // Format instructions: simple newline separation
+        setEditInstructionsText(currentRecipe.instructions?.join("\n") || "");
+        setEditTotalTime(currentRecipe.total_time || "");
+        setEditServings(currentRecipe.servings || 1);
+        setIsEditModalOpen(true);
+    };
+
+    const handleUpdateRecipe = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!currentRecipe) return;
+
+        setIsUpdating(true);
+        try {
+            // Parse tags
+            const parsedTags: Tag[] = editTags
+                .split(",")
+                .map((t) => t.trim())
+                .filter((t) => t !== "")
+                .map((t) => ({ name: t, type: "tag" }));
+
+            // Parse ingredients textarea: split lines by " - "
+            const parsedIngredients = editIngredientsText
+                .split("\n")
+                .map((line) => {
+                    const separatorIdx = line.indexOf(" - ");
+                    if (separatorIdx === -1) {
+                        return { quantity: "", name: line.trim() };
+                    }
+                    const qty = line.substring(0, separatorIdx).trim();
+                    const name = line.substring(separatorIdx + 3).trim();
+                    return { quantity: qty, name: name };
+                })
+                .filter((item) => item.name !== "");
+
+            // Parse instructions textarea
+            const parsedInstructions = editInstructionsText
+                .split("\n")
+                .map((step) => step.trim())
+                .filter((step) => step !== "");
+
+            let token = "MOCK_DEVELOPMENT_TOKEN";
+            if (currentUser) {
+                token = await currentUser.getIdToken();
+            }
+
+            const headers = {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            };
+
+            const payload = {
+                username,
+                updatedFields: {
+                    title: editTitle,
+                    tags: parsedTags,
+                    ingredients: parsedIngredients,
+                    instructions: parsedInstructions,
+                    total_time: editTotalTime || null,
+                    servings: editServings || null,
+                },
+            };
+
+            await axios.put(
+                `${BASE_URL}/userrecipe/recipes/${currentRecipe.id}`,
+                payload,
+                { headers },
+            );
+
+            // Reload collections and close modal
+            await fetchRecipes();
+            setIsEditModalOpen(false);
+        } catch (err: unknown) {
+            console.error("Failed to update recipe:", err);
+            alert("Error: Failed to save recipe edits.");
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    const handleDeleteOrUnsave = async () => {
+        if (!currentRecipe || !username) return;
+
+        setIsDeleting(true);
+        try {
+            let token = "MOCK_DEVELOPMENT_TOKEN";
+            if (currentUser) {
+                token = await currentUser.getIdToken();
+            }
+
+            const headers = {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            };
+
+            if (activeView === "created") {
+                // DELETE Created Recipe: uses query parameter for username verification
+                const encodedUser = encodeURIComponent(username);
+                await axios.delete(
+                    `${BASE_URL}/userrecipe/recipes/${currentRecipe.id}?username=${encodedUser}`,
+                    { headers },
+                );
+            } else {
+                // DELETE Saved Recipe (Unsave): removes map matching document from saved array
+                const encodedUser = encodeURIComponent(username);
+                await axios.delete(
+                    `${BASE_URL}/userrecipe/${encodedUser}/saved/${currentRecipe.id}`,
+                    { headers },
+                );
+            }
+
+            // Reset selected states and reload
+            setIsPreviewOpen(false);
+            setActiveIndex(null);
+            await fetchRecipes();
+            setIsDeleteModalOpen(false);
+        } catch (err: unknown) {
+            console.error("Failed to delete/unsave recipe:", err);
+            alert("Error: Failed to execute removal request.");
+        } finally {
+            setIsDeleting(false);
+        }
+    };
 
     return (
         <>
@@ -168,7 +319,15 @@ export default function MyRecipes() {
                             </div>
                         </div>
                         <div className="preview-grid">
-                            {filteredRecipes.length === 0 ? (
+                            {isLoading ? (
+                                <div className="sidebar-empty">
+                                    Loading recipes...
+                                </div>
+                            ) : !currentUser ? (
+                                <div className="sidebar-empty">
+                                    Please log in to view recipes.
+                                </div>
+                            ) : filteredRecipes.length === 0 ? (
                                 <div className="sidebar-empty">
                                     No recipes found
                                 </div>
@@ -300,6 +459,7 @@ export default function MyRecipes() {
                                             className="icon-btn"
                                             title="Edit Recipe"
                                             disabled={activeView === "saved"}
+                                            onClick={handleOpenEditModal}
                                         >
                                             <svg
                                                 fill="none"
@@ -318,6 +478,9 @@ export default function MyRecipes() {
                                         <button
                                             className="icon-btn"
                                             title="Delete Recipe"
+                                            onClick={() =>
+                                                setIsDeleteModalOpen(true)
+                                            }
                                         >
                                             <svg
                                                 fill="none"
@@ -503,6 +666,197 @@ export default function MyRecipes() {
                     </main>
                 </div>
             </div>
+            {isEditModalOpen && currentRecipe && (
+                <div className="modal-overlay">
+                    <div className="modal-box">
+                        <div className="modal-header">
+                            <h2>Edit Recipe</h2>
+                            <button
+                                className="btn-close"
+                                onClick={() => setIsEditModalOpen(false)}
+                            >
+                                &times;
+                            </button>
+                        </div>
+                        <form onSubmit={handleUpdateRecipe}>
+                            <div className="form-group">
+                                <label htmlFor="editTitle">Recipe Name</label>
+                                <input
+                                    type="text"
+                                    id="editTitle"
+                                    className="form-control"
+                                    value={editTitle}
+                                    onChange={(e) =>
+                                        setEditTitle(e.target.value)
+                                    }
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-row-grid">
+                                <div className="form-group">
+                                    <label htmlFor="editTags">
+                                        Tags (comma-separated)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="editTags"
+                                        className="form-control"
+                                        placeholder="baking, sweet, breakfast"
+                                        value={editTags}
+                                        onChange={(e) =>
+                                            setEditTags(e.target.value)
+                                        }
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label htmlFor="editTotalTime">
+                                        Total Time
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="editTotalTime"
+                                        className="form-control"
+                                        placeholder="e.g. 45 mins"
+                                        value={editTotalTime}
+                                        onChange={(e) =>
+                                            setEditTotalTime(e.target.value)
+                                        }
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label htmlFor="editServings">
+                                        Servings
+                                    </label>
+                                    <input
+                                        type="number"
+                                        id="editServings"
+                                        className="form-control"
+                                        min={1}
+                                        value={editServings}
+                                        onChange={(e) =>
+                                            setEditServings(
+                                                parseInt(e.target.value) || 1,
+                                            )
+                                        }
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="editIngredients">
+                                    Ingredients (Format: Quantity - Ingredient
+                                    Name, One Per Line)
+                                </label>
+                                <textarea
+                                    id="editIngredients"
+                                    className="form-control"
+                                    rows={5}
+                                    placeholder={
+                                        "e.g.\n2 cups - Flour\n1 tsp - Salt"
+                                    }
+                                    value={editIngredientsText}
+                                    onChange={(e) =>
+                                        setEditIngredientsText(e.target.value)
+                                    }
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="editInstructions">
+                                    Instructions (One Step Per Line)
+                                </label>
+                                <textarea
+                                    id="editInstructions"
+                                    className="form-control"
+                                    rows={5}
+                                    placeholder="Add recipe step instructions..."
+                                    value={editInstructionsText}
+                                    onChange={(e) =>
+                                        setEditInstructionsText(e.target.value)
+                                    }
+                                    required
+                                />
+                            </div>
+
+                            <div className="modal-actions">
+                                <button
+                                    type="button"
+                                    className="btn-cancel"
+                                    onClick={() => setIsEditModalOpen(false)}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="btn-primary"
+                                    disabled={isUpdating}
+                                >
+                                    {isUpdating ? "Saving..." : "Save Changes"}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* ==========================================
+               CHANGE: NEW DELETE / UNSAVE CONFIRMATION DIALOG (IFRAME SAFE)
+               ========================================== */}
+            {isDeleteModalOpen && currentRecipe && (
+                <div className="modal-overlay">
+                    <div className="modal-box" style={{ maxWidth: "450px" }}>
+                        <div className="modal-header">
+                            <h2>
+                                {activeView === "saved"
+                                    ? "Remove Saved Recipe"
+                                    : "Delete Recipe"}
+                            </h2>
+                            <button
+                                className="btn-close"
+                                onClick={() => setIsDeleteModalOpen(false)}
+                            >
+                                &times;
+                            </button>
+                        </div>
+                        <div className="delete-modal-text">
+                            {activeView === "saved" ? (
+                                <>
+                                    Are you sure you want to remove{" "}
+                                    <strong>"{currentRecipe.title}"</strong>{" "}
+                                    from your saved bookmarks list?
+                                </>
+                            ) : (
+                                <>
+                                    Are you sure you want to permanently delete{" "}
+                                    <strong>"{currentRecipe.title}"</strong>?
+                                    This action cannot be undone.
+                                </>
+                            )}
+                        </div>
+                        <div className="modal-actions">
+                            <button
+                                className="btn-cancel"
+                                onClick={() => setIsDeleteModalOpen(false)}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="btn-primary btn-danger"
+                                onClick={handleDeleteOrUnsave}
+                                disabled={isDeleting}
+                            >
+                                {isDeleting
+                                    ? "Processing..."
+                                    : activeView === "saved"
+                                      ? "Yes, Remove"
+                                      : "Yes, Delete"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 }
