@@ -64,9 +64,7 @@ export default function RecipeDetail() {
     const fetchRecipeData = async() => {
       setIsLoading(true);
       try {
-        if (!currentUser || !userData) return;
         // database or api call here
-        const token = await currentUser.getIdToken();
         const { data } = await axios.get(`${BASE_URL}/recipes/single/${recipeData.id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -93,9 +91,6 @@ export default function RecipeDetail() {
 
         const response = await axios.get(`${BASE_URL}/comments`, {
           params: { recipe_ID: recipeData.id},
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
         });
         setAllPosts(response.data);
         setDone(new Array(recipeData.ingredients.length).fill(false));
@@ -110,11 +105,15 @@ export default function RecipeDetail() {
         }
 
         // determine if the user rated this recipe previously
-        const userRating = ratingsArray.find(r => r.user_ID === userData.username);
-        setRating(userRating?.value ?? null);
+        if (userData) {
+          const userRating = ratingsArray.find(r => r.user_ID === userData.username);
+          setRating(userRating?.value ?? null);
 
-        // determine if this recipe is saved
-        setBookmarked(userData.saved_recipes.some(recipe => recipe.recipeID === recipeData.id))
+          // determine if this recipe is saved
+          setBookmarked(userData.saved_recipes.some(recipe => recipe.recipeID === recipeData.id))
+        } else {
+          setRating(null);
+        }
 
       } catch (error) {
         console.error("unable to fetch recipe data:", error);
@@ -220,7 +219,7 @@ export default function RecipeDetail() {
   }
 
   // guard clause
-  if (!recipe || !userData) {
+  if (!recipe) {
     return <></>;
   }
 
@@ -318,11 +317,11 @@ export default function RecipeDetail() {
                   <Star fill={(rating ? rating : 0) >= 5 ? "#FFDF00" : "transparent"} onClick={() => handleRating(5)} className="header-icon"/>
                 </div>
               </div>
-              <CommentForm recipe_ID={recipe.id} username={userData.username} createComment={handleComment}/>
+              <CommentForm recipe_ID={recipe.id} username={userData?.username??""} createComment={handleComment}/>
             </section>
 
             {/* Discussion Section */}
-            <Discussion createComment={handleComment} handleDelete={handleDelete} recipe_ID = {recipe.id} username={userData.username} comments={allPosts}/>
+            <Discussion createComment={handleComment} handleDelete={handleDelete} recipe_ID = {recipe.id} username={userData?.username??""} comments={allPosts}/>
           </div>
       
           {/* similar recipe section */}
