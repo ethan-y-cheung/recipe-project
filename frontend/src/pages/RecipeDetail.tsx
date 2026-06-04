@@ -13,7 +13,7 @@ import "../styles/RecipeDetail.css";
 
 const recipeData: Recipe = {
   id: "123",
-  user_generated: true,
+  user_generated: false,
   creator_ID: "Allison",
   title : "generic ramen",
   created_at: new Date(),
@@ -121,8 +121,8 @@ export default function RecipeDetail() {
           recipeData.imageUrls = recipeData.images;
         }
 
-        // const {data} = await axios.get(`${BASE_URL}comments`, {params: {recipe_ID: fakeData.id}}); // This becomes req.query.recipe_ID on the server
-
+        const {data} = await axios.get(`${BASE_URL}comments`, {params: {recipe_ID: recipeData.id}}); // This becomes req.query.recipe_ID on the server
+        console.log(data);
         setAllPosts(comments);
         setDone(new Array(recipeData.ingredients.length).fill(false));
         
