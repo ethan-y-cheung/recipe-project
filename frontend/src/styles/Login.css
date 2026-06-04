@@ -1,0 +1,139 @@
+.login-page {
+  min-height: calc(100vh - 60px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f6f4e8;
+}
+
+.login-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 40px 36px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+}
+
+.login-title {
+  font-family: 'Gelasio', serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #3f4a45;
+  margin: 0 0 24px 0;
+  text-align: center;
+}
+
+.login-error {
+  background-color: #fdecea;
+  color: #c0392b;
+  font-size: 13px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin: 0 0 16px 0;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.login-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #e0ddd4;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #3f4a45;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.login-input:focus {
+  border-color: #dc9b9b;
+}
+
+.login-btn-primary {
+  background-color: #dc9b9b;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 11px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+.login-btn-primary:hover:not(:disabled) {
+  background-color: #cc8a8a;
+}
+
+.login-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.login-divider {
+  text-align: center;
+  color: #9a9a9a;
+  font-size: 13px;
+  margin: 16px 0;
+  position: relative;
+}
+
+.login-divider::before,
+.login-divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 42%;
+  height: 1px;
+  background-color: #e0ddd4;
+}
+
+.login-divider::before { left: 0; }
+.login-divider::after { right: 0; }
+
+.login-btn-google {
+  width: 100%;
+  background: #fff;
+  border: 1.5px solid #e0ddd4;
+  border-radius: 8px;
+  padding: 11px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #3f4a45;
+  cursor: pointer;
+}
+
+.login-btn-google:hover:not(:disabled) {
+  background-color: #f9f9f7;
+}
+
+.login-btn-google:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.login-switch {
+  text-align: center;
+  font-size: 13px;
+  color: #6b7c75;
+  margin: 20px 0 0 0;
+}
+
+.login-switch-btn {
+  background: none;
+  border: none;
+  color: #dc9b9b;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+}
+
+.login-switch-btn:hover {
+  text-decoration: underline;
+}
