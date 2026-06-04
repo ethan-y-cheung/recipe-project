@@ -23,8 +23,6 @@ router.post("/", async(req : Request, res : Response): Promise<void> => {
   }
 
   try {
-    console.log("Incoming messages:", messages);
-
     const messagesWithSystem = [
       { role: "system", content: "You are a concise, helpful cooking assistant." },
       ...messages, // Spread operator to take multiple messages at once
@@ -38,8 +36,6 @@ router.post("/", async(req : Request, res : Response): Promise<void> => {
 
     // Extract AI's response - just the first if there are multiple
     const aiMessage = response.choices[0].message;
-
-    console.log("AI response:", aiMessage);
 
     res.status(200).json({
       role: aiMessage.role,

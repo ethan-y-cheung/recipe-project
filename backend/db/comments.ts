@@ -1,6 +1,6 @@
-import db from '../firebase.js';
+import db from '../firebase.ts';
 import { doc, collection, getDocs, where, deleteField, writeBatch, addDoc, query, Timestamp, updateDoc } from 'firebase/firestore';
-import { Comments } from '../../shared/types/index';
+import { Comments } from '../types/index.ts';
 
 const fetchRecipeComments = async (recipe_ID : string) => {
   // fetch all comments for a given recipe

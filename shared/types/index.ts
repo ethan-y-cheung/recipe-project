@@ -26,6 +26,7 @@ export interface Recipe{
     }[];
     instructions: string[];
     images: string[]; //first index is always thumbnail
+    imageUrls?: (string | null)[];
     rating: Rating[];
     total_time?: string | null;
     servings?: number | null; // potentially null because api doesn't include these fields

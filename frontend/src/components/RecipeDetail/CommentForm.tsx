@@ -13,7 +13,7 @@ const CommentForm = ( {recipe_ID, username, updatePosts} : CommentProps) => {
   const [formError, setFormError] = useState<boolean>(false);
 
   const [commentData, setCommentData] = useState<Comments>({
-    id: "", recipe_ID: recipe_ID, creator_ID: username, content: "", likes: [], created_at: new Date(), replies: []
+    id: "", recipe_ID: recipe_ID, creator_ID: username, content: "", likes: [], created_at: new Date(), replies: [], reply_IDs: [],
   });
 
   const submitForm = async () => {

@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import express, { Request, Response} from 'express';
-import { Comments } from '../../shared/types/index.ts';
+import { Comments } from '../types/index.ts';
 import { createComment, fetchRecipeComments, deleteComment, updateComment } from "../db/comments.ts";
 
 const router = express.Router();

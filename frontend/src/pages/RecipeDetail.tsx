@@ -11,14 +11,15 @@ import Discussion from '../components/RecipeDetail/Discussion.tsx';
 import axios from 'axios';
 import "../styles/RecipeDetail.css";
 
-const fakeData: Recipe = {
+const recipeData: Recipe = {
   id: "123",
-  user_generated: false,
+  user_generated: true,
   creator_ID: "Allison",
-  title : "ramen",
+  title : "generic ramen",
   created_at: new Date(),
   approved: true,
   tags: [{name: "quick", type: "difficulty"}],
+  approved: true,
   ingredients: [
     {name: "ramen", quantity: "one package"}, 
     {name: "water", quantity: "2 cups"},
@@ -36,34 +37,37 @@ const user: User = {
   password: "password123",
   admin: false,
   my_recipes: [],
-  saved_recipes: [],
+  saved_recipes: [{recipeID: "123", user_tags: [], notes: ""}],
 }
 
-// const comments: Comments[] = [
-//     {recipe_ID: "123",
-//     id: "111",
-//     creator_ID: "Lucinda",
-//     content: "needs butter",
-//     likes: [], //array of user_IDs who liked the comment
-//     created_at: new Date(2026, 6, 1),
-//     replies: []},
+const comments: Comments[] = [
+    {recipe_ID: "123",
+    id: "111",
+    creator_ID: "Lucinda",
+    content: "needs butter",
+    likes: [], //array of user_IDs who liked the comment
+    created_at: new Date(2026, 6, 1),
+    reply_IDs: [],
+    replies: []},
 
-//     {recipe_ID: "123",
-//       id: "333",
-//     creator_ID: "Michael",
-//     content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam facilisis, nunc sed feugiat euismod, mi ante pulvinar velit, facilisis commodo massa massa egestas nulla. Donec id leo sed turpis mollis malesuada. Phasellus posuere semper molestie. Praesent quis tincidunt nisl. Duis fringilla metus risus, ac tempor nunc dignissim a. Nulla vitae ornare ligula. Morbi facilisis facilisis nulla, in rutrum odio maximus at.",
-//     likes: ["rachel"], //array of user_IDs who liked the comment
-//     created_at: new Date(2024, 1, 1),
-//     replies: [
-//        {recipe_ID: "123",
-//         id: "222",
-//       creator_ID: "Lucinda",
-//       content: "needs butter",
-//       likes: [], //array of user_IDs who liked the comment
-//       created_at: new Date(2026, 6, 1),
-//       replies: []}
-//     ]}
-// ]
+    {recipe_ID: "123",
+      id: "333",
+    creator_ID: "Michael",
+    content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam facilisis, nunc sed feugiat euismod, mi ante pulvinar velit, facilisis commodo massa massa egestas nulla. Donec id leo sed turpis mollis malesuada. Phasellus posuere semper molestie. Praesent quis tincidunt nisl. Duis fringilla metus risus, ac tempor nunc dignissim a. Nulla vitae ornare ligula. Morbi facilisis facilisis nulla, in rutrum odio maximus at.",
+    likes: ["rachel"], //array of user_IDs who liked the comment
+    created_at: new Date(2024, 1, 1),
+    reply_IDs: [],
+    replies: [
+       {recipe_ID: "123",
+        id: "222",
+      creator_ID: "Lucinda",
+      content: "needs butter",
+      likes: [], //array of user_IDs who liked the comment
+      created_at: new Date(2026, 6, 1),
+      reply_IDs: [],
+      replies: []}
+    ]}
+]
 
 const BASE_URL = "http://localhost:5001/";
 
@@ -73,36 +77,71 @@ export default function RecipeDetail() {
   const [allPosts, setAllPosts] = useState<Comments[]>([]);
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [done, setDone] = useState<boolean[] | null>(null);
-  const [bookmarked, setBookmarked] = useState<boolean>(false); // idk how to do this :(
+  const [bookmarked, setBookmarked] = useState<boolean>(false); 
   const [avgRating, setAverageRating] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false)
-  
   const [showChat, setShowChat] = useState<boolean>(false);
   // pull old rating if it exists
   const [rating, setRating] = useState<null | 1 | 2 | 3 | 4 | 5>(null);
 
+  // grab a temporary viewing url for user uploaded images
+  const viewPhoto = async (fileKey : string) => {
+    try {
+      const { data } = await axios.post(`${BASE_URL}aws/get-view-url`, { fileKey });
+      console.log(data.viewUrl);
+      return data.viewUrl;
+    } catch (error) {
+      console.error("Error loading image from S3:", error);
+    }
+  }
+
   // fetch recipe data
   useEffect(() => {
+  
     const fetchRecipeData = async() => {
       setIsLoading(true);
       try {
         // database or api call here
-        setRecipe(fakeData);
+        // const {data} = await axios.get(`${BASE_URL}comments`, {params: {recipe_ID: fakeData.id}}); // This becomes req.query.recipe_ID on the server
+        setRecipe(recipeData);
 
-        const {data} = await axios.get(`${BASE_URL}comments`, {params: {recipe_ID: fakeData.id}}); // This becomes req.query.recipe_ID on the server
+        // requires aws calls
+        if (recipeData.user_generated) {
+          // grabs viewing urls for recipe images
+          // Creates an array of promises by marking the map callback as async
+          const imagePromises = recipeData.images.map(async (fileKey) => {
+            if (fileKey) {
+              return await viewPhoto("recipes/1780519947700-Screenshot 2026-06-02 at 3.22.27 PM.png"); // Added 'await'
+            } else {
+              return null;
+            }
+          });
+          recipeData.imageUrls = await Promise.all(imagePromises);
+        } else {
+          recipeData.imageUrls = recipeData.images;
+        }
 
-        setAllPosts(data);
-        setDone(new Array(fakeData.ingredients.length).fill(false));
+        // const {data} = await axios.get(`${BASE_URL}comments`, {params: {recipe_ID: fakeData.id}}); // This becomes req.query.recipe_ID on the server
 
-        const ratingsArray = fakeData.rating || [];
+        setAllPosts(comments);
+        setDone(new Array(recipeData.ingredients.length).fill(false));
+        
+        // determine average rating
+        const ratingsArray = recipeData.rating || [];
         if (ratingsArray.length > 0) {
           const total = ratingsArray.reduce((score, r) => score + (r.value ?? 0), 0);
+          console.log(total / ratingsArray.length)
           setAverageRating(total / ratingsArray.length);
         } else {
           setAverageRating(0);
         }
+
+        // determine if the user rated this recipe previously
         const userRating = ratingsArray.find(r => r.user_ID === user.username);
         setRating(userRating?.value ?? null);
+
+        // determine if this recipe is saved
+        setBookmarked(user.saved_recipes.some(recipe => recipe.recipeID === recipeData.id))
 
       } catch (error) {
         console.error("unable to fetch recipe data:", error);
@@ -115,7 +154,21 @@ export default function RecipeDetail() {
 
   const handleComment = (newComment:Comments) => {
     console.log(newComment);
+    // optimistic ui update
     setAllPosts([...allPosts, newComment]);
+    try {
+      // await axios.delete("http://localhost:5001/comments", {
+      //   params: {comment_id: comment_id}
+      // });
+
+      // get new comment id / comment object from backend
+      setAllPosts([...allPosts, newComment]);
+
+    } catch (error) {
+      // undo optimistic change
+      setAllPosts([...allPosts.filter(post => post.id != newComment.id)])
+      console.error("error posting comment: ", error);
+    }
   }
 
   const handleDelete = async (comment_id : string) => {
@@ -211,8 +264,8 @@ export default function RecipeDetail() {
 
           <img
               className="header-image"
-              src={recipe.images[0]}
-              alt={recipe.title}
+              src={recipe.imageUrls?.[0] ?? undefined}
+              alt={`image of ${recipe.title}`}
           />
           
         </header>
