@@ -295,7 +295,6 @@ export default function RecipeDetail() {
               src={recipe.imageUrls?.[0] ?? undefined}
               alt={`image of ${recipe.title}`}
           />
-          
         </header>
           
         <section className="detail-page">

@@ -69,8 +69,6 @@ const Discussion = ( {createComment, handleDelete, updateComment, recipe_ID, use
     }
   };
 
-  
-
   const options: FilterOption[] = [
     { label: "Most Likes", value: "likes" },
     { label: "Most Recent", value: "created_at" }
@@ -156,7 +154,9 @@ const Discussion = ( {createComment, handleDelete, updateComment, recipe_ID, use
                 <p className="comment-content">{comment.content}</p>
                 <div className="comment-footer"> 
                   <p>{comment.likes.length}</p>
-                  <ThumbsUp onClick={() => handleLike(comment)} className="icon-button"/>
+                  <ThumbsUp 
+                  fill={(username !== "" ? comment.likes.includes(username) : false) ? 'rgb(189, 189, 189)' : "transparent"}
+                  onClick={() => handleLike(comment)} className="icon-button"/>
                   <button onClick={() => handleOpenReply(comment.id)} className="reply-button"> <Reply/>reply </button>
 
                    {username === comment.creator_ID ? 
@@ -194,7 +194,9 @@ const Discussion = ( {createComment, handleDelete, updateComment, recipe_ID, use
                   <p className="comment-content">{reply.content}</p>
                   <div className="comment-footer"> 
                     <p>{reply.likes.length}</p>
-                    <ThumbsUp onClick={() => handleLike(reply)} className="icon-button" />
+                    <ThumbsUp 
+                    fill={(username !== "" ? reply.likes.includes(username) : false) ? 'rgb(189, 189, 189)' : "transparent"}
+                    onClick={() => handleLike(reply)} className="icon-button" />
                     <button className="reply-button"> <Reply/>reply </button>
                     {username === reply.creator_ID ? 
                     <>
