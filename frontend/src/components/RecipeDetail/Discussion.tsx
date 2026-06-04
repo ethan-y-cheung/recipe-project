@@ -110,7 +110,7 @@ const Discussion = ( {handleDelete, recipe_ID, username, comments} : DiscussionP
     if (replyContent === "") return;
     
     // create a reply object
-    const reply : Comments = {creator_ID: username, recipe_ID: recipe_ID, id: "", content: replyContent, likes: [], created_at: new Date(), replies: [] };
+    const reply : Comments = {creator_ID: username, recipe_ID: recipe_ID, id: "", content: replyContent, likes: [], created_at: new Date(), replies: [], reply_IDs: [] };
 
     // add to the comment replies
     originalPost.replies.push(reply);
