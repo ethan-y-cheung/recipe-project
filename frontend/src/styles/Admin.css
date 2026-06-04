@@ -46,27 +46,60 @@
 .recipe-list-header {
     display: grid;
     grid-template-columns: 1fr 2fr 1fr 1.5fr 2fr;
-    align-items: center;
-    padding: 1rem 1.5rem;
+    align-items: stretch;
     background: var(--Header);
     color: var(--text);
     font-weight: 600;
     border-bottom: 2px solid #a8d4c2;
+    gap: 0;
+}
+
+.recipe-list-header span {
+    display: flex;
+    align-items: center;
+    padding: 1rem 0.75rem;
+    border-right: 1px solid #a8d4c2;
+}
+
+.recipe-list-header span:first-child {
+    padding-left: 1.5rem;
 }
 
 .recipe-list-header span:last-child {
-    text-align: center;
-    margin-left: 3rem;
+    border-right: none;
+    padding-right: 1.5rem;
+    justify-content: center;
 }
+
 
 .recipe-row {
     display: grid;
     grid-template-columns: 1fr 2fr 1fr 1.5fr 2fr;
-    align-items: center;
-    padding: 1rem 1.5rem;
+    align-items: stretch;
     border-bottom: 1px solid #e8ede8;
     color: var(--text);
     transition: background-color 0.2s ease;
+    gap: 0;
+}
+
+.recipe-row > * {
+    display: flex;
+    align-items: center;
+    padding: 1rem 0.75rem;
+    border-right: 1px solid #e8ede8;
+}
+
+.recipe-row > *:first-child {
+    padding-left: 1.5rem;
+}
+
+.recipe-row > *:last-child {
+    border-right: none;
+    padding-right: 1.5rem;
+}
+
+.recipe-row {
+    cursor: pointer;
 }
 
 .recipe-row:hover {
@@ -89,13 +122,12 @@
 
 .action-buttons {
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
     gap: 0.75rem;
 }
 
 /* Buttons */
 
-.review-btn,
 .approve-btn,
 .deny-btn {
     border-width: 2px;
@@ -106,17 +138,6 @@
     font-size: 0.85rem;
     font-weight: 600;
     transition: background-color 0.15s ease, color 0.15s ease;
-}
-
-.review-btn {
-    color: #3b7a6b;
-    border-color: var(--Header);
-    background-color: white;
-}
-
-.review-btn:hover {
-    background-color: var(--Header);
-    color: var(--text);
 }
 
 .approve-btn {
@@ -227,4 +248,49 @@
     color: var(--muted-text);
     border-color: #d0d8d4;
     cursor: not-allowed;
+}
+
+/* Mobile */
+
+@media (max-width: 640px) {
+    .admin-page {
+        padding: 1rem;
+    }
+
+    .recipe-list-header {
+        grid-template-columns: 2fr 1fr 1.5fr;
+    }
+
+    .recipe-list-header span:first-child,
+    .recipe-list-header span:nth-child(4) {
+        display: none;
+    }
+
+    .recipe-list-header span:last-child {
+        margin-left: 0;
+    }
+
+    .recipe-row {
+        grid-template-columns: 2fr 1fr 1.5fr;
+        gap: 0.5rem;
+    }
+
+    .recipe-row > span:first-child,
+    .recipe-row > .admin-tags {
+        display: none;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.4rem;
+    }
+
+    .review-btn,
+    .approve-btn,
+    .deny-btn {
+        font-size: 0.75rem;
+        padding: 0.35rem 0.5rem;
+        text-align: center;
+    }
 }

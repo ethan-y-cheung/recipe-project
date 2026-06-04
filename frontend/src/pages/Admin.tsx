@@ -116,6 +116,7 @@ export default function Admin() {
               <div
                   key={recipe.id}
                   className="recipe-row"
+                  onClick={() => setSelectedRecipe(recipe)}
               >
                   <span>{recipe.created_at instanceof Date ? recipe.created_at.toLocaleDateString() : "n/a"}</span>
 
@@ -130,22 +131,15 @@ export default function Admin() {
                   </div>
 
                   <div className="action-buttons">
-                      <button 
-                        className="review-btn"
-                        onClick={() => setSelectedRecipe(recipe)}
-                      >
-                        Review
-                      </button>
-
-                      <button 
+                      <button
                         className="approve-btn"
-                        onClick={() => approveRecipe(recipe.id)}
+                        onClick={(e) => { e.stopPropagation(); approveRecipe(recipe.id); }}
                       >
                         Approve
                       </button>
 
                       <button className="deny-btn"
-                        onClick={() => denyRecipe(recipe.id)}
+                        onClick={(e) => { e.stopPropagation(); denyRecipe(recipe.id); }}
                       >
                           Deny
                       </button>
