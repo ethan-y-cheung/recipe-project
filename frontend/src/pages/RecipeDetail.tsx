@@ -121,11 +121,6 @@ export default function RecipeDetail() {
   }, [currentUser, userData])
 
   const handleComment = async (newComment:Comments, parent_id : string) => {
-    // optimistic ui update
-    if (parent_id === "") {
-      setAllPosts([...allPosts, newComment]);
-    }
- 
     try {
       const token = await currentUser?.getIdToken();
       const response = await axios.post(
@@ -153,8 +148,6 @@ export default function RecipeDetail() {
       }
 
     } catch (error) {
-      // undo optimistic change
-      setAllPosts([...allPosts.filter(post => post.id != newComment.id)])
       console.error("error posting comment: ", error);
     }
   }
