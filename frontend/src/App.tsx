@@ -4,6 +4,7 @@ import Navbar from "./components/Navbar";
 import PrivateRoute from "./components/auth/PrivateRoute";
 import AdminRoute from "./components/auth/AdminRoute";
 import Home from "./pages/Home";
+import Login from "./pages/Login";
 import Recipes from "./pages/Recipes";
 import RecipeDetail from "./pages/RecipeDetail";
 import MyRecipes from "./pages/MyRecipes";
@@ -19,6 +20,7 @@ function App() {
         <main className="page-content">
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
             <Route path="/recipes" element={<Recipes />} />
             <Route
               path="/recipes/:recipeType/:recipeId"
