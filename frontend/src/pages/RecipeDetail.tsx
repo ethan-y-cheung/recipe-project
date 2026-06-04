@@ -3,7 +3,7 @@ import { Star, Bookmark, MessageCircle} from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import { formatDistanceToNow } from 'date-fns';
-import type { Recipe, Comments, Rating, User, UserRecipeNotes } from "../../../shared/types/index.ts";
+import type { Recipe, Comments, Rating, UserRecipeNotes, User } from "../../../shared/types/index.ts";
 import Chatbot from '../components/RecipeDetail/Chatbot.tsx';
 import CommentForm from '../components/RecipeDetail/CommentForm.tsx';
 import Discussion from '../components/RecipeDetail/Discussion.tsx';
@@ -30,6 +30,7 @@ export default function RecipeDetail() {
   const [showChat, setShowChat] = useState<boolean>(false);
   // pull old rating if it exists
   const [rating, setRating] = useState<null | 1 | 2 | 3 | 4 | 5>(null);
+  // const { currentUser, userData, refreshUser } = useAuth();
 
   // grab a temporary viewing url for user uploaded images
   const viewPhoto = async (fileKey : string) => {
@@ -132,7 +133,7 @@ export default function RecipeDetail() {
           setRating(userRating?.value ?? null);
 
           // determine if this recipe is saved
-          setBookmarked(userData.saved_recipes.some(recipe => recipe.recipe_id === data.id))
+          setBookmarked(userData.saved_recipes.some((recipe: UserRecipeNotes) => recipe.recipe_id=== data.id))
         } else {
           setRating(null);
         }
@@ -222,7 +223,7 @@ export default function RecipeDetail() {
       const token = await currentUser.getIdToken();
       let newSaved : UserRecipeNotes[] = [];
       if (bookmarked) {
-        newSaved = [...userData.saved_recipes.filter(saved => saved.recipe_id !== recipe?.id)]
+        newSaved = [...userData.saved_recipes.filter((saved: UserRecipeNotes) => saved.recipe_id !== recipe?.id)]
       } else {
         newSaved = [...userData.saved_recipes, {recipe_id: recipe?.id || "", notes: "", user_tags: []}];
       }

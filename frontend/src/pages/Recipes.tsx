@@ -122,7 +122,9 @@ export default function Recipes() {
       }
 
       if (currentlySaved) {
-        toast.success("Removed recipe from saved");
+        toast.success("Removed recipe from saved", {
+          icon: '🗑️',
+        });
       }
       else {
         toast.success("Added recipe to saved");
