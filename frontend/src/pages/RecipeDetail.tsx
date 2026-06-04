@@ -125,6 +125,9 @@ export default function RecipeDetail() {
   }, [currentUser, userData])
 
   const handleComment = async (newComment:Comments, parent_id : string) => {
+    // no commenting if not logged in
+    if (!currentUser) return;
+
     try {
       const token = await currentUser?.getIdToken();
       const response = await axios.post(
@@ -188,6 +191,33 @@ export default function RecipeDetail() {
     }
   }
 
+  const handleBookmark = () => {
+    // not logged in == no bookmarking
+    if (!userData) return;
+
+  }
+
+  const updateComment = async (comment : Comments) => {
+    try {
+      const token = await currentUser?.getIdToken();
+      // update comment
+      await axios.put(
+        `${BASE_URL}/comments`, 
+        { 
+          comment: comment, 
+        }, 
+        { 
+          headers: { 
+            Authorization: `Bearer ${token}`, 
+          }, 
+        }
+      );
+
+    } catch (error) {
+      console.error("error updating comment: ", error);
+    }
+  }
+
   const handleRating = (userRating : 1 | 2 | 3 | 4 | 5) => {
     if (!userData) return;
     setRating(userRating);
@@ -246,7 +276,7 @@ export default function RecipeDetail() {
             </div>
             
             <div className="detail-header-row">
-              <Bookmark fill={bookmarked ? "#FFDF00" : "transparent"} className="header-icon" onClick={() => setBookmarked(prevState => !prevState)}/> 
+              <Bookmark fill={bookmarked ? "#FFDF00" : "transparent"} className="header-icon" onClick={() => handleBookmark()}/> 
               <div className="star-container">
                 {recipe.tags.map((tag, index) => (
                   <div key={index} className="tag"> {`${tag.type} : ${tag.name}`}</div>
@@ -321,7 +351,7 @@ export default function RecipeDetail() {
             </section>
 
             {/* Discussion Section */}
-            <Discussion createComment={handleComment} handleDelete={handleDelete} recipe_ID = {recipe.id} username={userData?.username??""} comments={allPosts}/>
+            <Discussion updateComment={updateComment} createComment={handleComment} handleDelete={handleDelete} recipe_ID = {recipe.id} username={userData?.username??""} comments={allPosts}/>
           </div>
       
           {/* similar recipe section */}

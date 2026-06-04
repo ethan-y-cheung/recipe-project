@@ -11,6 +11,7 @@ interface DiscussionProps {
   comments: Comments[];
   handleDelete: (comment : Comments | null, parent_id: string) => void;
   createComment: (newComment : Comments, parent_id: string) => void;
+  updateComment: (newComment : Comments) => void;
 }
 
 type FilterValue = 'likes' | 'created_at';
@@ -20,18 +21,8 @@ interface FilterOption {
   label: string;
 }
 
-// mock api
-const api = {
-  toggleLike: async (): Promise<{ success: boolean }> => {
-    // Mimic network latency
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    if (Math.random() < 0.05) throw new Error('Network error'); // 5% failure chance
-    return { success: true };
-  }
-}
 
-
-const Discussion = ( {createComment, handleDelete, recipe_ID, username, comments} : DiscussionProps) => {
+const Discussion = ( {createComment, handleDelete, updateComment, recipe_ID, username, comments} : DiscussionProps) => {
   const [openReply, setOpenReply] = useState<string>("");
   const [isMutating, setIsMutating] = useState<boolean>(false);
   const [allPosts, setAllPosts] = useState<Comments[]>(comments);
@@ -50,6 +41,8 @@ const Discussion = ( {createComment, handleDelete, recipe_ID, username, comments
 
 
   const handleLike = async (comment : Comments) => {
+    // no liking comments if you're not logged in
+    if (username === "") return; 
     if (isMutating) return; // no double clicking
     setIsMutating(true);
 
@@ -60,13 +53,12 @@ const Discussion = ( {createComment, handleDelete, recipe_ID, username, comments
     prevComment.likes = newLikes;
 
     // update posts on the page
-
     const updatedPosts : Comments[] = allPosts.map(post => post.id === prevComment.id ? newPost : post); // either remove or add user id for liking the post
     setAllPosts([...updatedPosts]);
 
     try {
       // mocked update database
-      await api.toggleLike();
+      updateComment(newPost);
     } catch (error) {
       // undo change if db call fails
       console.error(`Failed to like post:`, error);
