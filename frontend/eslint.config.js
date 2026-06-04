@@ -20,6 +20,7 @@ export default defineConfig([
     },
     rules: {
       "@typescript-eslint/no-unused-vars": "warn",
+      "react-hooks/set-state-in-effect": "warn",
     },
   },
   {
