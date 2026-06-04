@@ -63,13 +63,16 @@ router.post("/delete", async (req : Request<{}, {}, RequestBody>, res : Response
 // endpoint to grab all comments by recipe id
 // Request<Params, ResBody, ReqBody, ReqQuery>
 router.get("/", async (req : Request<{}, {}, {}, {recipe_ID? : string}>, res : Response): Promise<void> => {
+  console.log("Entered endpoint")
   try {
     const { recipe_ID } = req.query;
+    console.log("Entered try")
     if (typeof recipe_ID !== 'string') {
       res.status(400).json({ message: "recipe_ID query parameter is required" });
       return; 
     }
     const posts = await fetchRecipeComments(recipe_ID);
+    console.log("After await");
     res.status(200).json(posts)
   } catch (error) {
     res.status(500).json({message: "Error retrieving posts"});

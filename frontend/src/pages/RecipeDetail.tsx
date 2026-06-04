@@ -19,7 +19,6 @@ const recipeData: Recipe = {
   created_at: new Date(),
   approved: true,
   tags: [{name: "quick", type: "difficulty"}],
-  approved: true,
   ingredients: [
     {name: "ramen", quantity: "one package"}, 
     {name: "water", quantity: "2 cups"},

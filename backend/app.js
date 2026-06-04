@@ -1,14 +1,13 @@
+import "dotenv/config";
 import cors from "cors";
 import express from "express";
 import adminRouter from "./routes/admin.js";
 import usersRouter from "./routes/users.js";
-import dotenv from "dotenv";
 import testRouter from "./routes/test.js";
 import awsRouter from "./routes/aws.js";
 import commentRouter from "./routes/comments.js";
 import chatRouter from "./routes/openai.js";
 
-dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
