@@ -1,12 +1,12 @@
 import { useParams } from 'react-router-dom'
 import { Star, Bookmark, MessageCircle} from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext.tsx';
 import { formatDistanceToNow } from 'date-fns';
-import type { Recipe, Comments, Rating, UserRecipeNotes } from "../../../shared/types/index.ts";
+import type { Recipe, Comments, Rating, UserRecipeNotes, User } from "../../../shared/types/index.ts";
 import Chatbot from '../components/RecipeDetail/Chatbot.tsx';
 import CommentForm from '../components/RecipeDetail/CommentForm.tsx';
 import Discussion from '../components/RecipeDetail/Discussion.tsx';
-import { useAuth } from '@/contexts/AuthContext.tsx';
 // import RecipeCard from '@/components/RecipeCard.tsx';
 
 import axios from 'axios';
@@ -20,23 +20,71 @@ export default function RecipeDetail() {
   const [allPosts, setAllPosts] = useState<Comments[]>([]);
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [done, setDone] = useState<boolean[] | null>(null);
-  const [bookmarked, setBookmarked] = useState<boolean>(false); 
+  const { currentUser, userData: authUserData } = useAuth();
+  const [bookmarked, setBookmarked] = useState<boolean>(false);
   const [avgRating, setAverageRating] = useState<number>(0);
-  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [userData, setUserData] = useState<User | null>(null);
+  const API_URL = import.meta.env.VITE_API_URL;
+
   const [showChat, setShowChat] = useState<boolean>(false);
   // pull old rating if it exists
   const [rating, setRating] = useState<null | 1 | 2 | 3 | 4 | 5>(null);
-  const { currentUser, userData, refreshUser } = useAuth();
+  // const { currentUser, userData, refreshUser } = useAuth();
 
   // grab a temporary viewing url for user uploaded images
   const viewPhoto = async (fileKey : string) => {
     try {
       const { data } = await axios.post(`${BASE_URL}/aws/get-view-url`, { fileKey });
+      console.log(data.viewUrl);
       return data.viewUrl;
     } catch (error) {
       console.error("Error loading image from S3:", error);
     }
   }
+
+  const isRecipeSaved = (recipeId: string, sourceUserData: User | null) =>
+    !!sourceUserData?.saved_recipes?.some(
+      (savedRecipe) => savedRecipe.recipe_id === recipeId || savedRecipe.recipe_id === recipeId
+    );
+
+  useEffect(() => {
+    setUserData(authUserData);
+  }, [authUserData]);
+
+  useEffect(() => {
+    if (recipe) {
+      setBookmarked(isRecipeSaved(recipe.id, userData));
+    }
+  }, [recipe, userData]);
+
+  const handleSave = async () => {
+    if (!currentUser || !recipe) return;
+
+    try {
+      const token = await currentUser.getIdToken();
+      const method = bookmarked ? 'DELETE' : 'POST';
+      const response = await fetch(`${API_URL}/users/saved-recipes/${recipe.id}`, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: method === 'POST' ? JSON.stringify({ recipe_id: recipe.id }) : undefined,
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Unable to save recipe');
+      }
+
+      const updatedUser = await response.json();
+      setUserData(updatedUser);
+      setBookmarked(isRecipeSaved(recipe.id, updatedUser));
+    } catch (error) {
+      console.error('handleSave error:', error);
+    }
+  };
 
   // fetch recipe data
   useEffect(() => {
@@ -65,6 +113,8 @@ export default function RecipeDetail() {
           data.imageUrls = data.images;
         }
 
+        console.log(data.imageUrls);
+
         const response = await axios.get(`${BASE_URL}/comments`, {
           params: { recipe_ID: data.id},
         });
@@ -86,7 +136,7 @@ export default function RecipeDetail() {
           setRating(userRating?.value ?? null);
 
           // determine if this recipe is saved
-          setBookmarked(userData.saved_recipes.some(recipe => recipe.recipe_id === data.id))
+          setBookmarked(userData.saved_recipes.some((recipe: UserRecipeNotes) => recipe.recipe_id=== data.id))
         } else {
           setRating(null);
         }
@@ -176,7 +226,7 @@ export default function RecipeDetail() {
       const token = await currentUser.getIdToken();
       let newSaved : UserRecipeNotes[] = [];
       if (bookmarked) {
-        newSaved = [...userData.saved_recipes.filter(saved => saved.recipe_id !== recipe?.id)]
+        newSaved = [...userData.saved_recipes.filter((saved: UserRecipeNotes) => saved.recipe_id !== recipe?.id)]
       } else {
         newSaved = [...userData.saved_recipes, {recipe_id: recipe?.id || "", notes: "", user_tags: []}];
       }
@@ -294,8 +344,8 @@ export default function RecipeDetail() {
               <p>created: {recipe.created_at ? formatDistanceToNow(recipe.created_at, { addSuffix: true }) : "Unknown"}</p>
             </div>
             
-            <div className="detail-header-row">
-              <Bookmark fill={bookmarked ? "#FFDF00" : "transparent"} className="header-icon" onClick={() => handleBookmark()}/> 
+            <div className="recipe-header-row">
+              <Bookmark fill={bookmarked ? "#FFDF00" : "transparent"} className="header-icon" onClick={handleSave}/> 
               <div className="star-container">
                 {recipe.tags.map((tag, index) => (
                   <div key={index} className="tag"> {`${tag.type} : ${tag.name}`}</div>
