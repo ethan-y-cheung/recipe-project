@@ -9,7 +9,9 @@ interface DiscussionProps {
   username: string;
   recipe_ID: string;
   comments: Comments[];
-  handleDelete: (comment_id : string) => void;
+  handleDelete: (comment : Comments | null, parent_id: string) => void;
+  createComment: (newComment : Comments, parent_id: string) => void;
+  updateComment: (newComment : Comments) => void;
 }
 
 type FilterValue = 'likes' | 'created_at';
@@ -19,18 +21,8 @@ interface FilterOption {
   label: string;
 }
 
-// mock api
-const api = {
-  toggleLike: async (): Promise<{ success: boolean }> => {
-    // Mimic network latency
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    if (Math.random() < 0.05) throw new Error('Network error'); // 5% failure chance
-    return { success: true };
-  }
-}
 
-
-const Discussion = ( {handleDelete, recipe_ID, username, comments} : DiscussionProps) => {
+const Discussion = ( {createComment, handleDelete, updateComment, recipe_ID, username, comments} : DiscussionProps) => {
   const [openReply, setOpenReply] = useState<string>("");
   const [isMutating, setIsMutating] = useState<boolean>(false);
   const [allPosts, setAllPosts] = useState<Comments[]>(comments);
@@ -38,6 +30,7 @@ const Discussion = ( {handleDelete, recipe_ID, username, comments} : DiscussionP
   const [replyText, setReplyText] = useState<string>("");
   const [openConfirmation, setOpenConfirmation] = useState<boolean>(false);
   const [currentComment, setCurrentComment] = useState<Comments>();
+  const [parentId, setParentId] = useState<string>("");
 
   useEffect(() => {
     const updatePosts = () => {
@@ -48,6 +41,8 @@ const Discussion = ( {handleDelete, recipe_ID, username, comments} : DiscussionP
 
 
   const handleLike = async (comment : Comments) => {
+    // no liking comments if you're not logged in
+    if (username === "") return; 
     if (isMutating) return; // no double clicking
     setIsMutating(true);
 
@@ -58,13 +53,12 @@ const Discussion = ( {handleDelete, recipe_ID, username, comments} : DiscussionP
     prevComment.likes = newLikes;
 
     // update posts on the page
-
     const updatedPosts : Comments[] = allPosts.map(post => post.id === prevComment.id ? newPost : post); // either remove or add user id for liking the post
     setAllPosts([...updatedPosts]);
 
     try {
       // mocked update database
-      await api.toggleLike();
+      updateComment(newPost);
     } catch (error) {
       // undo change if db call fails
       console.error(`Failed to like post:`, error);
@@ -74,8 +68,6 @@ const Discussion = ( {handleDelete, recipe_ID, username, comments} : DiscussionP
       setIsMutating(false);
     }
   };
-
-  
 
   const options: FilterOption[] = [
     { label: "Most Likes", value: "likes" },
@@ -110,27 +102,14 @@ const Discussion = ( {handleDelete, recipe_ID, username, comments} : DiscussionP
     if (replyContent === "") return;
     
     // create a reply object
-    const reply : Comments = {creator_ID: username, recipe_ID: recipe_ID, id: "", content: replyContent, likes: [], created_at: new Date(), replies: [] };
-
-    // add to the comment replies
-    originalPost.replies.push(reply);
-
-    // update posts on the page
-
-    const updatedPosts : Comments[] = allPosts.map(post => post.id === originalPost.id ? originalPost : post); 
-    setAllPosts([...updatedPosts]);
+    const reply : Comments = {creator_ID: username, recipe_ID: recipe_ID, id: "", content: replyContent, likes: [], created_at: new Date(), replies: [], reply_IDs: [] };
 
     try {
-      // mocked update database
-      await api.toggleLike();
+      // database interaction, optimistic ui update in RecipeDetail.tsx
+      await createComment(reply, originalPost.id);
 
-      // retrieve new post doc for reply and update og comment to include that instead for unique ids
     } catch (error) {
-      // undo change if db call fails
       console.error(`Failed to reply to post:`, error);
-      originalPost.replies.filter(reply => reply.id !== "");
-      const updatedPosts : Comments[] = allPosts.map(post => post.id === originalPost.id ? originalPost : post); // either remove or add user id for liking the post
-      setAllPosts(updatedPosts);
     } finally {
       setOpenReply("");
       setReplyText("");
@@ -175,13 +154,15 @@ const Discussion = ( {handleDelete, recipe_ID, username, comments} : DiscussionP
                 <p className="comment-content">{comment.content}</p>
                 <div className="comment-footer"> 
                   <p>{comment.likes.length}</p>
-                  <ThumbsUp onClick={() => handleLike(comment)} className="icon-button"/>
+                  <ThumbsUp 
+                  fill={(username !== "" ? comment.likes.includes(username) : false) ? 'rgb(189, 189, 189)' : "transparent"}
+                  onClick={() => handleLike(comment)} className="icon-button"/>
                   <button onClick={() => handleOpenReply(comment.id)} className="reply-button"> <Reply/>reply </button>
 
                    {username === comment.creator_ID ? 
                     <>
-                      <SquarePen className="icon-button"/>
-                      <Trash onClick={() => {setCurrentComment(comment) ; setOpenConfirmation(prevState=>!prevState)}} className="icon-button"/>
+                      {/* <SquarePen className="icon-button"/> */}
+                      <Trash onClick={() => {setParentId("") ; setCurrentComment(comment) ; setOpenConfirmation(prevState=>!prevState)}} className="icon-button"/>
                     </> : null }
                   
                 </div>
@@ -213,12 +194,14 @@ const Discussion = ( {handleDelete, recipe_ID, username, comments} : DiscussionP
                   <p className="comment-content">{reply.content}</p>
                   <div className="comment-footer"> 
                     <p>{reply.likes.length}</p>
-                    <ThumbsUp onClick={() => handleLike(reply)} className="icon-button" />
-                    <button className="reply-button"> <Reply/>reply </button>
+                    <ThumbsUp 
+                    fill={(username !== "" ? reply.likes.includes(username) : false) ? 'rgb(189, 189, 189)' : "transparent"}
+                    onClick={() => handleLike(reply)} className="icon-button" />
+                    {/* <button className="reply-button"> <Reply/>reply </button> */}
                     {username === reply.creator_ID ? 
                     <>
-                      <SquarePen className="icon-button"/>
-                      <Trash onClick={() => {setCurrentComment(comment) ; setOpenConfirmation(prevState=>!prevState)}} className="icon-button"/>
+                      {/* <SquarePen className="icon-button"/> */}
+                      <Trash onClick={() => {setParentId(comment.id) ; setCurrentComment(reply) ; setOpenConfirmation(prevState=>!prevState)}} className="icon-button"/>
                     </> : null }
                   </div>
                 </div>))}
@@ -228,7 +211,7 @@ const Discussion = ( {handleDelete, recipe_ID, username, comments} : DiscussionP
             
           ))}
       </div>
-      {openConfirmation ? <ConfirmDelete comment_id={currentComment?.id ?? ""} confirmDelete={handleDelete} closeForm={setOpenConfirmation}/> : null}
+      {openConfirmation ? <ConfirmDelete comment={currentComment??null} confirmDelete={handleDelete} closeForm={setOpenConfirmation} parent_id={parentId}/> : null}
     </>
   );
 }

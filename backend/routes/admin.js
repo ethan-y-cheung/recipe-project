@@ -21,4 +21,43 @@ router.post('/set-admin', requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
+// GET /admin/pending-recipes — fetch all unapproved recipes
+router.get('/pending-recipes', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const db = admin.firestore();
+    const snapshot = await db.collection('recipes').where('approved', '==', false).get();
+    const recipes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    res.json(recipes);
+  } catch (err) {
+    console.error('Fetch pending recipes error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// PATCH /admin/recipes/:id/approve — approve a recipe
+router.patch('/recipes/:id/approve', requireAuth, requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const db = admin.firestore();
+    await db.collection('recipes').doc(id).update({ approved: true });
+    res.json({ message: 'Recipe approved' });
+  } catch (err) {
+    console.error('Approve recipe error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// DELETE /admin/recipes/:id — deny and delete a recipe
+router.delete('/recipes/:id', requireAuth, requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const db = admin.firestore();
+    await db.collection('recipes').doc(id).delete();
+    res.json({ message: 'Recipe deleted' });
+  } catch (err) {
+    console.error('Deny recipe error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export default router;

@@ -32,7 +32,18 @@ function LoginForm() {
       }
       navigate("/");
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      const code = (err as { code?: string })?.code;
+      if (code === "auth/invalid-credential" || code === "auth/wrong-password" || code === "auth/user-not-found") {
+        setError("Incorrect email or password.");
+      } else if (code === "auth/email-already-in-use") {
+        setError("An account with this email already exists.");
+      } else if (code === "auth/weak-password") {
+        setError("Password must be at least 6 characters.");
+      } else if (code === "auth/invalid-email") {
+        setError("Please enter a valid email address.");
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -44,7 +55,12 @@ function LoginForm() {
       await signInWithGoogle();
       navigate("/");
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      const code = (err as { code?: string })?.code;
+      if (code === "auth/popup-closed-by-user") {
+        setError("Sign-in was cancelled.");
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
     }
   }
 

@@ -55,9 +55,10 @@
   aspect-ratio: 1;
 }
 
-.recipe-header-row {
+.detail-header-row {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 1rem;
 }
 
@@ -151,7 +152,7 @@
 }
 
 .icon-button {
-  color: gray;
+  color: rgb(98, 98, 98);
   cursor: pointer;
 }
 
@@ -283,6 +284,10 @@
   margin-bottom: 1rem;
 }
 
+.detail-title {
+  line-height: normal;
+}
+
 .comment-footer {
   display: flex;
   gap: 1rem;
@@ -294,6 +299,20 @@
   padding-left: 1rem;
   margin: 0 1rem;
 }
+
+.step-image {
+  max-height: 20rem;
+  width: auto;
+  border-radius: 1rem;
+  margin: 1rem;
+}
+
+.step-image-container {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
+
 .step::marker {
   font-weight: bold;
 }

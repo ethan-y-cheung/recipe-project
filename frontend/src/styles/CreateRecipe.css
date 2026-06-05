@@ -56,11 +56,6 @@
 }
 
 .combo__list {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  z-index: 20;
-  min-width: 100%;
   list-style: none;
   margin: 0;
   padding: 6px;
@@ -111,29 +106,31 @@
   height: 7px;
 }
 
-/* Break out of the shared .page-content max-width wrapper and fill the viewport */
 .create-recipe {
-  position: relative;
-  left: 50%;
-  right: 50%;
-  width: 100vw;
-  margin-left: -50vw;
-  margin-right: -50vw;
   box-sizing: border-box;
-  padding: 24px 32px 32px;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 3rem 2rem 3rem;
   color: var(--text);
   display: flex;
   flex-direction: column;
-  /* Fill remaining viewport height below the 56px navbar and the
-     .page-content wrapper's vertical padding (32px top + 32px bottom) */
-  min-height: calc(100vh - 56px - 64px);
+  min-height: calc(100vh - 60px);
 }
 
 .create-recipe__title {
-  font-size: 48px;
+  font-family: "Gelasio", serif;
+  font-size: 2.5rem;
   font-weight: 700;
+  color: var(--color-text);
   margin: 0 0 24px;
   text-align: left;
+}
+
+.create-recipe__subtitle {
+  font-size: 1rem;
+  color: var(--muted-text);
+  margin: 0.25rem 0 1.75rem 0;
+  line-height: 1.5;
 }
 
 /* Large card that fills the width and remaining height of the page */
@@ -142,16 +139,33 @@
   flex: 1;
   background-color: var(--Background);
   border-radius: 24px;
-  padding: 32px;
+  padding: 2.5rem 2.5rem;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 2rem;
   min-height: 0;
   box-shadow: 0 2px 12px rgba(63, 74, 69, 0.08);
 }
 
-/* Title form row + create button */
+/* Bottom submit row */
+.create-card__bottom {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border, rgba(63, 74, 69, 0.12));
+}
+
+.create-card__bottom-hint {
+  flex: 1;
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted-text);
+}
+
+/* Title + cover row (no longer contains the submit button) */
 .create-card__top {
   display: flex;
   gap: 16px;
@@ -259,6 +273,9 @@
 }
 
 .meta-field__label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 15px;
   font-weight: 600;
   color: var(--text);
@@ -423,8 +440,6 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
-  flex: 1;
-  min-height: 0;
 }
 
 .section-card {
@@ -435,7 +450,6 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  min-height: 0;
 }
 
 .section-card__heading {
@@ -445,21 +459,17 @@
   flex-shrink: 0;
 }
 
-/* Scrollable list area; add button stays pinned at the bottom */
+/* List of rows */
 .section-card__list {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  padding-right: 4px;
 }
 
 /* Shared row layout for ingredient + direction entries */
 .list-entry {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   background-color: #E1EBE1;
   border-radius: 16px;
@@ -506,6 +516,39 @@
   background-color: var(--Header);
 }
 
+/* Drag handle for sortable rows */
+.drag-handle {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--muted-text);
+  cursor: grab;
+  touch-action: none;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.drag-handle:hover {
+  color: var(--text);
+  background-color: rgba(63, 74, 69, 0.08);
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.list-entry--dragging {
+  background-color: var(--Header);
+  box-shadow: 0 8px 24px rgba(63, 74, 69, 0.2);
+  border-radius: 16px;
+}
+
 /* Round × control shared by ingredient and direction rows */
 .entry-remove-button {
   flex-shrink: 0;
@@ -548,12 +591,18 @@
   flex: 1;
   padding: 10px 14px;
   font-size: 15px;
+  font-family: inherit;
   border: 1px solid var(--muted-text);
-  border-radius: 999px;
+  border-radius: 14px;
   background-color: #fff;
   color: var(--text);
   outline: none;
   min-width: 0;
+  resize: none;
+  overflow: hidden;
+  line-height: 1.5;
+  min-height: 42px;
+  field-sizing: content;
 }
 
 .add-button {
@@ -607,6 +656,17 @@
   font-size: 15px;
   line-height: 1.5;
   color: var(--muted-text);
+}
+
+.modal__error {
+  margin: -8px 0 20px;
+  padding: 10px 14px;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #8a1c1c;
+  background-color: #fdecec;
+  border: 1px solid #f3c0c0;
+  border-radius: 12px;
 }
 
 .modal__actions {

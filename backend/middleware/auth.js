@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import admin from 'firebase-admin';
 
 if (!admin.apps.length) {
@@ -30,7 +31,7 @@ export async function requireAuth(req, res, next) {
     const decoded = await admin.auth().verifyIdToken(token, true);
     req.user = decoded;
     next();
-  } catch {
-    res.status(401).json({ error: 'Invalid or expired token' });
+  } catch (err) {
+    res.status(401).json(` error: 'Invalid or expired token ${err}`);
   }
 }

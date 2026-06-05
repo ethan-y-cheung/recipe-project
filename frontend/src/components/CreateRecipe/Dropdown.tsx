@@ -36,6 +36,11 @@ export default function Dropdown({
     setOpen(true)
   }
 
+  const openDropdown = () => {
+    if (ref.current) setListStyle(getFixedStyle(ref.current))
+    setOpen(true)
+  }
+
   useEffect(() => {
     if (!open) return
 
