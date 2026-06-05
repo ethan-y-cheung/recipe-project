@@ -6,7 +6,7 @@ router.get('/', (req, res) => {
 router.get('/recipes', (req, res) => {
     const sampleRecipes = [
         {   //base sample recipe
-            recipe_ID: '1', //id should key into database, maybe we append source or recipe to front
+            id: '1', //id should key into database, maybe we append source or recipe to front
             creator_ID: "Janet",
             user_generated: true,
             title: "Sample Recipe 1",

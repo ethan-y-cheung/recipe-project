@@ -272,12 +272,14 @@ export default function Recipes() {
         },
       });
 
+      // error
       if (!response.ok) {
-        toast.error("Failed to saved recipe");
+        toast.error(`Failed to saved recipe: ${await response.text()}`);
         console.error('Failed to update saved recipe:', await response.text());
         return;
       }
 
+      // success - removed/added
       if (currentlySaved) {
         toast.success("Removed recipe from saved", {
           icon: '🗑️',
@@ -286,6 +288,7 @@ export default function Recipes() {
       else {
         toast.success("Added recipe to saved");
       }
+      
       const updatedUser = await response.json();
       setLocalUserData(updatedUser);
       refreshUser();
