@@ -79,7 +79,7 @@ function convertMealDBRecipe(
 
         user_generated: false,
 
-        creator_ID: null,
+        creator_ID: 'TheMealDB',
 
         title: meal.strMeal,
 

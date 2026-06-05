@@ -11,7 +11,7 @@ import type { Tag, User } from "../../shared/types/index.ts";
 const router = express.Router();
 console.log("[recipe.ts] router module loaded");
 
-const MAX_RECIPES_TMDB = 20;
+const MAX_RECIPES_TMDB = 50;
 
 
 
@@ -48,23 +48,6 @@ router.get("/mealdb", async (req, res) => {
     const recipes = await getRecipesTheMealDB(1);
     res.json(recipes);
 });
-// Unified get ALL Recipes
-// router.get("/", requireAuth, async (req, res): Promise<void> => {
-//     console.log("[GET /recipes] handler reached");
-//     // try {
-//     //     console.log("[GET /recipes] calling firebase + mealdb...");
-//     //     const [firebaseRes, theMealDBRes] = await Promise.all([
-//     //         getRecipesFirebase(),
-//     //         getRecipesTheMealDB(MAX_RECIPES_TMDB)
-//     //     ]);
-//     //     console.log(`[GET /recipes] got ${firebaseRes.length} firebase, ${theMealDBRes.length} mealdb`);
-//     //     res.json([...firebaseRes, ...theMealDBRes]);
-
-//     // } catch (err) {
-//     //     console.error("[GET /recipes] FAILED:", err);
-//     //     res.status(500).json({ error: "Failed to fetch recipes" });
-//     // }
-// });
 
 
 // Unified get ALL Recipes

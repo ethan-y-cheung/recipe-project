@@ -32,7 +32,7 @@ import {
 import {
   Pagination,
   PaginationContent,
-  // PaginationEllipsis,
+  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -85,6 +85,8 @@ export default function Recipes() {
 
   const { currentUser, userData, refreshUser } = useAuth(); // for: retrieving user auth token, laoding initial saved recipe list
   const [localUserData, setLocalUserData] = useState<AppUser | null>(userData);
+
+  const [refresh, setRefresh] = useState(false);
 
   useEffect(() => {
     setLocalUserData(userData);
@@ -211,7 +213,7 @@ export default function Recipes() {
     }
 
     fetchData();
-  }, [currentUser])
+  }, [currentUser, refresh])
 
 
 
@@ -444,6 +446,7 @@ export default function Recipes() {
         {filteredRecipes.length === 0 &&
           <div className="recipe-catalog__empty">
             <p className="recipe-catalog__empty-text">No matching recipes found.</p>
+            <p onClick={() => setRefresh(prev => !prev)} className="recipe-catalog__empty-text">Recipes not loading? <span className="recipe-catalog__refresh-text">Try Refreshing</span></p>
           </div>}
       </section>
 
@@ -455,6 +458,19 @@ export default function Recipes() {
             <PaginationPrevious onClick={() => {if(page - 1 > 0) setPage(page - 1)}}/>
             {/* href="#" */}
           </PaginationItem>
+
+          {/* quicklink to first page */}
+          {page > 3 && <PaginationItem>
+              <PaginationLink 
+                onClick={() => setPage(1)}
+                >
+                  {1}
+              </PaginationLink>
+            </PaginationItem>}
+
+          {page - 2 > 0 && <PaginationItem>
+            <PaginationEllipsis />
+          </PaginationItem>}
 
           {/* maps page numbers to button links */}
 
@@ -470,9 +486,17 @@ export default function Recipes() {
             </PaginationItem>)
           )}
           
-          {/* <PaginationItem>
+          {page + 2 <= totalPages && <PaginationItem>
             <PaginationEllipsis />
-          </PaginationItem> */}
+          </PaginationItem>}
+
+          {page < totalPages - 2 && <PaginationItem>
+            <PaginationLink 
+              onClick={() => setPage(totalPages)}
+              >
+                {totalPages}
+            </PaginationLink>
+          </PaginationItem>}
           
           <PaginationItem className={page < totalPages ? '': 'recipe-catalog__pagination--disabled'}> {/*next button*/}
             <PaginationNext onClick={() => {if(page + 1 <= totalPages) setPage(page + 1)}}/>

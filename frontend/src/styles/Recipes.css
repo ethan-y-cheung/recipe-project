@@ -86,9 +86,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
+
+  flex-direction: column;
 }
 .recipe-catalog__empty-text {
   color: rgb(143, 143, 143);
+}
+
+.recipe-catalog__refresh-text {
+  text-decoration: underline;
+  color: rgb(143, 143, 143);  
+}
+
+.recipe-catalog__refresh-text:hover {
+  cursor: pointer;
 }
 
 /* ----------------------3-state toggle */
