@@ -23,7 +23,5 @@ dist-ssr
 *.sln
 *.sw?
 
-package-lock.json
-
 # ignore API keys
 .env
