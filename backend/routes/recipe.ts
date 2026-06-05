@@ -1,4 +1,5 @@
 import express, { Request, Response} from 'express';
+import { FieldValue } from "firebase-admin/firestore";
 
 import type {Recipe} from "../../shared/types/index.js"
 import { requireAuth } from '../middleware/auth.js';
@@ -148,7 +149,6 @@ router.post("/", requireAuth, async (req : Request<{}, {}, {recipe: Recipe}>, re
         const { recipe } = req.body;
         const {
             title,
-            creator_ID,
             ingredients,
             instructions,
             tags,
@@ -162,6 +162,10 @@ router.post("/", requireAuth, async (req : Request<{}, {}, {recipe: Recipe}>, re
         // guarantees req.user is populated here. We store the username (not the
         // uid) as creator_ID because that's what getCreatedRecipes queries by
         // and how seeded recipes are keyed; the users doc id is the uid.
+        const { uid, email } = (req as any).user;
+        const userSnap = await db.collection("users").doc(uid).get();
+        const creator_ID =
+            userSnap.data()?.username || email?.split("@")[0] || uid;
 
         // required fields
         if (typeof title !== "string" || title.trim() === "") {
@@ -196,7 +200,7 @@ router.post("/", requireAuth, async (req : Request<{}, {}, {recipe: Recipe}>, re
 
         // build a document that conforms to the Recipe interface
         const newRecipe = {
-            recipe_ID: "", // filled in with the Firestore doc id below
+            id: "", // filled in with the Firestore doc id below
             user_generated: true,
             creator_ID,
             title: title.trim(),
@@ -221,8 +225,27 @@ router.post("/", requireAuth, async (req : Request<{}, {}, {recipe: Recipe}>, re
         };
 
         const ref = await db.collection("recipes").add(newRecipe);
+        // use the Firestore doc id as the recipe's id so the field matches the doc
+        await ref.update({ id: ref.id });
+        newRecipe.id = ref.id;
 
-        res.status(201).json({ recipe: { ...recipe, id: ref.id } });
+        // Record the new recipe on the creator's user document. UserRecipeNotes
+        // is the per-user wrapper around a recipe reference (the user's own tags
+        // and notes), so seed an entry with empty tags/notes the user can later
+        // fill in. arrayUnion keeps this idempotent. The users doc is keyed by uid.
+        const userRecipeNotes = {
+            recipeID: ref.id,
+            user_tags: [],
+            notes: "",
+        };
+        await db
+            .collection("users")
+            .doc(uid)
+            .update({
+                my_recipes: FieldValue.arrayUnion(userRecipeNotes),
+            });
+
+        res.status(201).json({ recipe: newRecipe });
     } catch (err) {
         console.error("Failed to create recipe:", err);
         res.status(500).json({ error: "Failed to create recipe" });

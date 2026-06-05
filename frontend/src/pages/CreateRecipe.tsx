@@ -274,7 +274,7 @@ export default function CreateRecipe() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(recipe),
+        body: JSON.stringify({ recipe }),
       })
       if (!res.ok) {
         const data = await res.json().catch(() => null)
