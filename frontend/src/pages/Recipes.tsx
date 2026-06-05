@@ -157,8 +157,7 @@ export default function Recipes() {
           // user generated - await the fetch for image links from AWS
           const imageUrls = await Promise.all(
             recipe.images.map((fileKey) =>
-              viewPhoto("recipes/1780519947700-Screenshot 2026-06-02 at 3.22.27 PM.png")
-              // fileKey ? viewPhoto(fileKey) : null
+              fileKey ? viewPhoto(fileKey) : ''
             )
           );
           return {
@@ -191,12 +190,12 @@ export default function Recipes() {
         });
 
         let data: Recipe[] = response.data
-        // console.log("full recipe list", data);
+        console.log("full recipe list", data);
 
         data = await plantPhotos(data);
         data = await shuffleArray(data);
 
-        // console.log("full recipe list after planting photos", data);
+        console.log("full recipe list after planting photos", data);
 
         setRecipeTags(buildRecipeFilters(data));
         setTotalPages(Math.ceil(data.length/recipesPerPage));
