@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Users, Clock, Tag } from 'lucide-react'
 import '../styles/common.css'
 import '../styles/CreateRecipe.css'
 
@@ -6,6 +7,8 @@ import Dropdown from '../components/CreateRecipe/Dropdown'
 import EditableList from '../components/CreateRecipe/EditableList'
 import SortableEditableList from '../components/CreateRecipe/SortableEditableList'
 import TagPicker from '../components/CreateRecipe/TagPicker'
+import { useAuth } from '../contexts/AuthContext'
+import type { Recipe } from '../../../shared/types/index.ts'
 
 // Defaults
 const DEFAULT_TAGS = [
@@ -17,16 +20,91 @@ const TIME_PRESETS = ['15 min', '30 min', '45 min', '1 hour', '2+ hours']
 const QTY_PRESETS = ['1', '2', '3', '1/2', '1/3', '1/4']
 const UNIT_PRESETS = ['g', 'ml', 'cup', 'tbsp', 'oz']
 
+const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:5000'
+
 type Ingredient = { id: number; name: string; qty: string; units: string }
-type Direction = { id: number; text: string; imageUrl: string | null }
+// imageUrl is a local blob: preview; file is the actual bytes we upload to S3.
+type Direction = { id: number; text: string; imageUrl: string | null; file: File | null }
+
+// Downscale an image to fit within maxDim (longest side) and re-encode as JPEG
+// so we never upload full-resolution phone photos. Big images make uploads,
+// storage, and later <img> rendering slow; capping the dimension fixes all
+// three. Images already within the cap pass through untouched (no upscaling, no
+// pointless re-encode). Falls back to the original file if anything goes wrong
+// so a decode quirk never blocks an upload.
+async function downscaleImage(file: File, maxDim = 1600, quality = 0.8): Promise<File> {
+  // Only attempt to downscale raster images; leave anything else (e.g. SVG) be.
+  if (!file.type.startsWith('image/')) return file
+  try {
+    const bitmap = await createImageBitmap(file)
+    const scale = Math.min(1, maxDim / Math.max(bitmap.width, bitmap.height))
+    if (scale === 1) {
+      bitmap.close()
+      return file // already small enough
+    }
+
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.round(bitmap.width * scale)
+    canvas.height = Math.round(bitmap.height * scale)
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return file
+    ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
+    bitmap.close()
+
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, 'image/jpeg', quality)
+    )
+    if (!blob) return file
+    const name = file.name.replace(/\.[^.]+$/, '') + '.jpg'
+    return new File([blob], name, { type: 'image/jpeg' })
+  } catch {
+    return file
+  }
+}
+
+// Upload a single file to S3 via a presigned URL and return its permanent
+// fileKey, which is what we persist on the recipe. Throws on any failure so the
+// caller can surface a single "upload failed" message.
+async function uploadImage(file: File): Promise<string> {
+  // Shrink oversized images before they ever leave the browser.
+  const upload = await downscaleImage(file)
+
+  const signRes = await fetch(`${API_BASE}/aws/generate-upload-url`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ fileName: upload.name, fileType: upload.type }),
+  })
+  if (!signRes.ok) {
+    const data = await signRes.json().catch(() => null)
+    throw new Error(data?.error ?? 'Could not get an upload URL')
+  }
+  const { uploadUrl, fileKey } = (await signRes.json()) as {
+    uploadUrl: string
+    fileKey: string
+  }
+
+  // PUT the (possibly downscaled) bytes straight to S3. Content-Type must match
+  // what the URL was signed with above, or S3 rejects the request.
+  const putRes = await fetch(uploadUrl, {
+    method: 'PUT',
+    headers: { 'Content-Type': upload.type },
+    body: upload,
+  })
+  if (!putRes.ok) {
+    throw new Error('Image upload to storage failed')
+  }
+  return fileKey
+}
 
 // Monotonic id generators for list rows
 let nextId = 0
 const newId = () => (nextId += 1)
 
 export default function CreateRecipe() {
+  const { currentUser } = useAuth()
   const [title, setTitle] = useState('')
   const [coverUrl, setCoverUrl] = useState<string | null>(null)
+  const [coverFile, setCoverFile] = useState<File | null>(null)
   const [servings, setServings] = useState('')
   const [totalTime, setTotalTime] = useState('')
   const [availableTags, setAvailableTags] = useState<string[]>(DEFAULT_TAGS)
@@ -35,9 +113,11 @@ export default function CreateRecipe() {
     { id: newId(), name: '', qty: '', units: '' },
   ])
   const [directions, setDirections] = useState<Direction[]>([
-    { id: newId(), text: '', imageUrl: null },
+    { id: newId(), text: '', imageUrl: null, file: null },
   ])
   const [confirmOpen, setConfirmOpen] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const coverInputRef = useRef<HTMLInputElement>(null)
   const dirInputRefs = useRef<Record<number, HTMLInputElement | null>>({})
@@ -49,12 +129,14 @@ export default function CreateRecipe() {
       if (prev) URL.revokeObjectURL(prev)
       return URL.createObjectURL(file)
     })
+    setCoverFile(file)
   }
   const removeCover = () => {
     setCoverUrl((prev) => {
       if (prev) URL.revokeObjectURL(prev)
       return null
     })
+    setCoverFile(null)
     if (coverInputRef.current) coverInputRef.current.value = ''
   }
 
@@ -68,7 +150,7 @@ export default function CreateRecipe() {
     setIngredients((p) => p.filter((i) => i.id !== id))
   
   const addDirection = () =>
-    setDirections((p) => [...p, { id: newId(), text: '', imageUrl: null }])
+    setDirections((p) => [...p, { id: newId(), text: '', imageUrl: null, file: null }])
   
   const updateDirection = (id: number, text: string) =>
     setDirections((p) => p.map((d) => (d.id === id ? { ...d, text } : d)))
@@ -79,7 +161,7 @@ export default function CreateRecipe() {
       p.map((d) => {
         if (d.id !== id) return d
         if (d.imageUrl) URL.revokeObjectURL(d.imageUrl)
-        return { ...d, imageUrl: URL.createObjectURL(file) }
+        return { ...d, imageUrl: URL.createObjectURL(file), file }
       })
     )
   }
@@ -89,7 +171,7 @@ export default function CreateRecipe() {
       p.map((d) => {
         if (d.id !== id) return d
         if (d.imageUrl) URL.revokeObjectURL(d.imageUrl)
-        return { ...d, imageUrl: null }
+        return { ...d, imageUrl: null, file: null }
       })
     )
     const input = dirInputRefs.current[id]
@@ -124,27 +206,92 @@ export default function CreateRecipe() {
   }
 
   // Create
-  const handleConfirm = () => {
-    // TODO: persist once Firebase is configured. Assembles the document in the
-    // Firestore schema; the save flow still needs to upload images, swap in
-    // download URLs, then stamp created_at server-side.
-    const images = [coverUrl, ...directions.map((d) => d.imageUrl)]
-    const recipe = {
-      title: title.trim(),
-      ingredients: ingredients
-        .filter((i) => i.name.trim() || i.qty.trim() || i.units.trim())
-        .map((i) => ({
-          name: i.name.trim(),
-          quantity: [i.qty.trim(), i.units.trim()].filter(Boolean).join(' '),
-        })),
-      instructions: directions.map((d) => d.text.trim()).filter(Boolean),
-      tags,
-      user_generated: true,
-      approved: false,
-      images: images.filter((url): url is string => Boolean(url)),
+  // Images are uploaded to S3 first, then the recipe is saved with a positional
+  // array of fileKeys: index 0 is the cover, indices 1..N align to the direction
+  // steps. Entries are null where the cover/step has no image so the alignment
+  // never drifts. created_at is stamped server-side; the backend normalizes tags.
+  const handleConfirm = async () => {
+    // Each listed ingredient needs a name plus both a qty and units.
+    const incompleteIngredient = ingredients.some(
+      (i) =>
+        (i.name.trim() || i.qty.trim() || i.units.trim()) &&
+        !(i.name.trim() && i.qty.trim() && i.units.trim())
+    )
+    if (incompleteIngredient) {
+      setSubmitError('Each ingredient needs a name, quantity, and units.')
+      return
     }
-    void recipe
-    setConfirmOpen(false)
+
+    // Total time, if given, must include a unit like sec, min(s), or hour(s).
+    const TIME_UNIT = /\b(sec|secs|second|seconds|min|mins|minute|minutes|hr|hrs|hour|hours)\b/i
+    if (totalTime.trim() && !TIME_UNIT.test(totalTime)) {
+      setSubmitError('Total time needs a unit, e.g. "30 min" or "1 hour".')
+      return
+    }
+
+    // The create endpoint requires auth, so we need a signed-in user's token.
+    if (!currentUser) {
+      setSubmitError('You must be signed in to create a recipe.')
+      return
+    }
+
+    setSubmitting(true)
+    setSubmitError(null)
+    try {
+      const token = await currentUser.getIdToken()
+
+      // Upload every image (cover first, then each step) in parallel. The array
+      // stays positional: a step with no image resolves to null. One file's
+      // failure rejects the whole batch so we never persist a partial image set.
+      const images = await Promise.all(
+        [coverFile, ...directions.map((d) => d.file)].map((file) =>
+          file ? uploadImage(file) : Promise.resolve(null)
+        )
+      )
+
+      // The fields the create form is responsible for. The server stamps the
+      // rest of the Recipe (id, creator_ID, created_at, approved, rating,
+      // user_generated) from the verified token, so we only send this subset.
+      const recipe: Pick<Recipe, 'title' | 'ingredients' | 'instructions' | 'images'> & {
+        tags: string[]
+        servings?: number
+        total_time?: string
+      } = {
+        title: title.trim(),
+        ingredients: ingredients
+          .filter((i) => i.name.trim() || i.qty.trim() || i.units.trim())
+          .map((i) => ({
+            name: i.name.trim(),
+            quantity: [i.qty.trim(), i.units.trim()].filter(Boolean).join(' '),
+          })),
+        instructions: directions.map((d) => d.text.trim()).filter(Boolean),
+        tags,
+        servings: servings.trim() ? Number(servings.trim()) : undefined,
+        total_time: totalTime.trim() || undefined,
+        images,
+      }
+
+      const res = await fetch(`${API_BASE}/recipes`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ recipe }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        throw new Error(data?.error ?? `Request failed (${res.status})`)
+      }
+      // The backend returns the persisted recipe; surface it as a typed Recipe.
+      const { recipe: createdRecipe } = (await res.json()) as { recipe: Recipe }
+      console.log('Created recipe:', createdRecipe)
+      setConfirmOpen(false)
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Failed to create recipe')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   useEffect(() => {
@@ -202,15 +349,24 @@ export default function CreateRecipe() {
         {/* Meta: servings, total time, tags */}
         <div className="create-meta">
           <div className="meta-field">
-            <label className="meta-field__label">Servings</label>
+            <label className="meta-field__label">
+              <Users size={16} aria-hidden="true" />
+              Servings
+            </label>
             <Dropdown value={servings} onChange={setServings} options={SERVING_PRESETS} placeholder="Select or type" />
           </div>
           <div className="meta-field">
-            <label className="meta-field__label">Total time</label>
+            <label className="meta-field__label">
+              <Clock size={16} aria-hidden="true" />
+              Total time
+            </label>
             <Dropdown value={totalTime} onChange={setTotalTime} options={TIME_PRESETS} placeholder="Select or type" />
           </div>
           <div className="meta-field meta-field--tags">
-            <label className="meta-field__label">Tags</label>
+            <label className="meta-field__label">
+              <Tag size={16} aria-hidden="true" />
+              Tags
+            </label>
             <TagPicker
               availableTags={availableTags}
               selectedTags={tags}
@@ -325,12 +481,23 @@ export default function CreateRecipe() {
               Once created, your recipe will be saved. You can keep editing if
               you’re not ready yet.
             </p>
+            {submitError && <p className="modal__error" role="alert">{submitError}</p>}
             <div className="modal__actions">
-              <button type="button" className="modal__button modal__button--secondary" onClick={() => setConfirmOpen(false)}>
+              <button
+                type="button"
+                className="modal__button modal__button--secondary"
+                onClick={() => setConfirmOpen(false)}
+                disabled={submitting}
+              >
                 Keep editing
               </button>
-              <button type="button" className="modal__button modal__button--primary" onClick={handleConfirm}>
-                Create recipe
+              <button
+                type="button"
+                className="modal__button modal__button--primary"
+                onClick={handleConfirm}
+                disabled={submitting}
+              >
+                {submitting ? 'Creating…' : 'Create recipe'}
               </button>
             </div>
           </div>

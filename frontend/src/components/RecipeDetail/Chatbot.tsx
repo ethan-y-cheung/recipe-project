@@ -14,7 +14,7 @@ interface ChatbotMessage {
 
 const Chatbot = ( { setClose } : ChatbotProps ) => {
   const baseURL : string = import.meta.env.VITE_BASE_URL || 'http://localhost:5001';
-  const [messages, setMessages] = useState<ChatbotMessage[]>([{role: "bot", content: "ask any cooking questions here!"}]);
+  const [messages, setMessages] = useState<ChatbotMessage[]>([{role: "assistant", content: "ask any cooking questions here!"}]);
   const [search, setSearch] = useState<string>("");
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -76,6 +76,7 @@ const Chatbot = ( { setClose } : ChatbotProps ) => {
         {/* searchbar */}
         <input placeholder="substitutes for onions..." 
           type="text" 
+          value={search}
           onChange={(e) => setSearch(e.target.value)}
           onKeyDown={(e) => {if (e.key === "Enter") sendMessage()}}
           className="chat-searchbar">

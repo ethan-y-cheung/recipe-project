@@ -539,12 +539,7 @@
 }
 
 .star-icon {
-    cursor: pointer;
     transition: transform 0.25s ease;
-}
-
-.star-icon:hover {
-    transform: scale(1.2);
 }
 
 .star-icon.active {
@@ -654,6 +649,7 @@
     align-items: center;
     z-index: 100;
     backdrop-filter: blur(4px);
+    overflow-y: auto;
 }
 
 .modal-box {
@@ -661,9 +657,24 @@
     border-radius: 2rem;
     width: 90%;
     max-width: 600px;
+    max-height: 85vh;
     padding: 2rem;
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
     animation: modalSlide 0.3s ease-out;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-box form {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+    margin-right: -0.5rem;
+}
+.modal-header,
+.modal-actions {
+    flex-shrink: 0;
 }
 
 @keyframes modalSlide {

@@ -5,15 +5,14 @@ import "../../styles/RecipeDetail.css";
 interface CommentProps {
   username: string;
   recipe_ID: string;
-  // updatePosts: React.Dispatch<React.SetStateAction<Comments[]>>;
-  updatePosts: (newComment : Comments) => void;
+  createComment: (newComment : Comments, parent_id: string) => void;
 }
 
-const CommentForm = ( {recipe_ID, username, updatePosts} : CommentProps) => {
+const CommentForm = ( {recipe_ID, username, createComment} : CommentProps) => {
   const [formError, setFormError] = useState<boolean>(false);
 
   const [commentData, setCommentData] = useState<Comments>({
-    id: "", recipe_ID: recipe_ID, creator_ID: username, content: "", likes: [], created_at: new Date(), replies: []
+    id: "", recipe_ID: recipe_ID, creator_ID: username, content: "", likes: [], created_at: new Date(), replies: [], reply_IDs: [],
   });
 
   const submitForm = async () => {
@@ -25,12 +24,8 @@ const CommentForm = ( {recipe_ID, username, updatePosts} : CommentProps) => {
     
     try {
       // database interaction here
-      console.log(tempComment);
-      updatePosts(tempComment);
-      // updatePosts([...allPosts, tempComment]);
+      createComment(tempComment, "");
     } catch (error) {
-      // undo state change
-      // updatePosts([...allPosts]);
       console.error("Error in submitting comment: ", error);
     } finally {
       // clear out text
