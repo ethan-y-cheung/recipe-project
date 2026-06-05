@@ -55,7 +55,7 @@ type RecipeFilter = (typeof FILTER_OPTIONS)[number]
 const recipesPerPage = 8 as const; // default # recipes shown per page
 
 // any pre-populated filters -> can be pulled from firebase as desired
-let recipeFilters: { value: string; items: string[] }[] = []
+const recipeFilters: { value: string; items: string[] }[] = []
 //   {
 //     value: "Meal Type",
 //     items: ["Breakfast", "Lunch", "Dinner", "Snack", "Dessert"],
