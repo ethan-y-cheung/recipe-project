@@ -31,7 +31,7 @@ const RecipeCard = ({ recipeData, isSaved, onSave }:
   return (
     <article className="recipe-card-original" onClick={(e: React.MouseEvent) => navigate(`/recipes/${recipeData.id}`)}>
       <div className="recipe-card__image-mask">
-        {<img className="recipe-card__image" src={recipeData.imageUrls?.[0] ? recipeData.imageUrls?.[0] : ''} />}
+        {<img className="recipe-card__image" src={recipeData.imageUrls?.[0] ? recipeData.imageUrls?.[0] : 'https://images.ctfassets.net/kugm9fp9ib18/3aHPaEUU9HKYSVj1CTng58/d6750b97344c1dc31bdd09312d74ea5b/menu-default-image_220606_web.png'} />}
       </div>
       <div className="recipe-card__top-row">
 

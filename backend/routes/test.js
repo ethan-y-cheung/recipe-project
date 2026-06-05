@@ -52,7 +52,7 @@ router.get('/recipes', (req, res) => {
             //sample without image
             id: "2",
             creator_ID: "Mark",
-            user_generated: true,
+            user_generated: false,
             title: "Sample Recipe 2",
             created_at: new Date("2026-06-02"),
             approved: false,
@@ -93,7 +93,7 @@ router.get('/recipes', (req, res) => {
             //sample no tags
             id: "3",
             creator_ID: "michael",
-            user_generated: true,
+            user_generated: false,
             title: "Sample Recipe 2",
             created_at: new Date("2026-06-02"),
             approved: false,
