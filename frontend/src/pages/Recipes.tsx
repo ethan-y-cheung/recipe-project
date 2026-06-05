@@ -54,9 +54,7 @@ type RecipeFilter = (typeof FILTER_OPTIONS)[number]
 
 const recipesPerPage = 8 as const; // default # recipes shown per page
 
-// todo: fetch from main
-// if time: change color
-const recipeFilters = [
+let recipeFilters = [
   {
     value: "Meal Type",
     items: [
@@ -91,17 +89,114 @@ export default function Recipes() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [filteredRecipes, setFilteredRecipes] = useState<Recipe[]>([]);
 
-  const [refresh, setRefresh] = useState<boolean>(false);
-
   const API_URL = import.meta.env.VITE_API_URL
 
-  const { currentUser, userData, refreshUser } = useAuth();
+  const { currentUser, userData } = useAuth(); // for: retrieving user auth token, laoding initial saved recipe list
   const [localUserData, setLocalUserData] = useState<AppUser | null>(userData);
 
   useEffect(() => {
     setLocalUserData(userData);
   }, [userData]);
 
+
+  // Fetch recipes on first load--------------------------------------
+  useEffect(() => {
+
+    // helper - extracts and populates tag options for dropdown filter
+    const populateTags = (recipeList: Recipe[]) => {
+      recipeList.forEach(recipe => {
+
+      })
+    }
+
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/test/recipes`);
+        let data = response.data; // full, unfiltered list of recipes
+        console.log("full recipe list", data);
+
+        setRecipes(data); // load full recipe list
+        populateTags(data);
+        setTotalPages(Math.ceil(data.length/recipesPerPage));
+        setFilteredRecipes(data.slice(page - 1, page * recipesPerPage)); // load recipe list on **1st** page
+
+      }
+      catch (err) {
+        console.log(`An error occured Recipes.tsx while fetching recipe data: ${err}`)
+      }
+    }
+
+    fetchData();
+  }, [])
+
+
+
+  // Filter displayed recipes--------------------------------------
+  // dependencies: active page (ex. Official Recipes Only, search string, tags selected, page #
+  useEffect(() => {
+
+    let filteredRecipes = recipes;
+    let currentPage = page;
+
+    // helper - filter by active page (ex. Official Recipes Only)
+    const filterByActivePage = (recipeList: Recipe[], activeFilter: string) => {
+      if(activeFilter !== 'All Recipes') {
+        const filteredList = recipeList.filter(recipe => (
+          activeFilter === 'Official Only' ? 
+            (recipe.user_generated === false)
+            :
+            (recipe.user_generated === true)
+        ));
+        return filteredList;
+      }
+      return recipeList;
+    }
+
+    // helper - filter by search string
+    const filterBySearchQuery = (recipeList: Recipe[], searchFilter: string) => {
+      const filteredList = recipeList.filter(recipe => (
+        [recipe.creator_ID, recipe.title].join('').replace(/\s/g, '').toLowerCase().includes(searchFilter.toLowerCase())
+      ));
+      return filteredList;
+    }
+
+    // ----------------------------------------------
+    // Call helper functions to perform filters - skip if not filters applyed
+    const noFiltersApplied = activeFilter === 'All Recipes' && !searchFilter && tagFilter.length === 0;
+    if (!noFiltersApplied) {
+
+      filteredRecipes = filterByActivePage(filteredRecipes, activeFilter);
+      filteredRecipes = filterBySearchQuery(filteredRecipes, searchFilter);
+
+      // todo: get all tags
+      // .filter() by tags includes chosen tags...
+
+      setFilteredRecipes(filteredRecipes);
+    }
+
+    setTotalPages(Math.ceil(filteredRecipes.length/recipesPerPage));
+    const recipesOnCurrentPage = filteredRecipes.slice((currentPage - 1) * recipesPerPage, (currentPage * recipesPerPage))
+    setFilteredRecipes(recipesOnCurrentPage);
+
+  }, [activeFilter, searchFilter, tagFilter, page])
+
+
+
+
+  // Helper (for pagination): Returns array with page #s from start (inlcude) to stop (exclusive)-----------
+  // ------- within bounds of 1 and totalPages (useState)
+  const loadAdjacentPageNumbers = (start: number, stop: number) => {
+    const length = (stop - start) + 1;
+    const range: number[] = [];
+    for (let i = 0; i < length; i++) {
+      if (start + i > totalPages) continue; // prevent adding invalid page numbers
+      range.push(start + i);
+    }
+    return range;
+  };
+
+
+  // Handle saving and deleting saved recipes
   const handleSave = async (recipeId: string, currentlySaved: boolean) => {
     if (!currentUser) return;
 
@@ -136,97 +231,7 @@ export default function Recipes() {
     }
   }
 
-  // Fetch recipes on first load--------------------------------------
-  useEffect(() => {
-
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(`${API_URL}/test/recipes`);
-        let data = response.data;
-        console.log("full recipe list", data);
-
-
-        setRecipes(data); // load full recipe list
-        // console.log('number of recipes loaded: ', data.length);
-        setTotalPages(Math.ceil(data.length/recipesPerPage));
-        setFilteredRecipes(data.slice(page - 1, page * recipesPerPage)); // load recipe list on **1st** page
-
-        console.log(currentUser, userData);
-      }
-      catch (err) {
-        console.log(`An error occured Recipes.tsx while fetching recipe data: ${err}`)
-      }
-    }
-
-    fetchData();
-  }, [])
-
-
-
-  // console.log('current page: ', page);
-  // console.log(searchFilter);
-
-  // Filter displayed recipes--------------------------------------
-  useEffect(() => {
-
-    let filteredRecipes = recipes;
-    let currentPage = page;
-
-    // check if need to filter
-    const noFiltersApplied = activeFilter === 'All Recipes' && !searchFilter && tagFilter.length === 0;
-    if (!noFiltersApplied) {
-
-      // .filter() by active page filter 
-      if(activeFilter !== 'All Recipes') {
-        filteredRecipes = filteredRecipes.filter(recipe => (
-          activeFilter === 'Official Only' ? 
-            (recipe.user_generated === false)
-            :
-            (recipe.user_generated === true)
-        ));
-      }
-
-      // .filter() by recipe or author name, includes search query
-      // ------- if time: also search by ingredients, tag, instructions
-      filteredRecipes = filteredRecipes.filter(recipe => (
-        [recipe.creator_ID, recipe.title].join('').replace(/\s/g, '').toLowerCase().includes(searchFilter.toLowerCase())
-      ));
-
-      // todo: get all tags
-      // .filter() by tags includes chosen tags...
-
-      setFilteredRecipes(filteredRecipes);
-    }
-
-    // Always calculate total pages
-    // console.log('filtered recipes', filteredRecipes);
-    // console.log('number of recipes after filtering: ', filteredRecipes.length);
-
-    setTotalPages(Math.ceil(filteredRecipes.length/recipesPerPage));
-    setFilteredRecipes(filteredRecipes.slice((currentPage - 1) * recipesPerPage, (currentPage * recipesPerPage)));
-  }, [activeFilter, searchFilter, tagFilter, page])
-
-  // Helper: Returns array with page from start (inlcude) to stop (exclusive)-----------
-  // ------- within bounds of 1 and totalPages (state)
-  const loadAdjacentPageNumbers = (start: number, stop: number) => {
-    if (start < 1) {
-      // console.log('Error loading adjacent page numbers (pagination): Start number invalid');
-    }
-    const length = (stop - start) + 1;
-    const range: number[] = [];
-    for (let i = 0; i < length; i++) {
-      if (start + i > totalPages) continue; // prevent adding invalid page numbers
-      range.push(start + i);
-    }
-    return range;
-  };
-
-
-
-
-  // console.log('total pages', totalPages);
-
-  const anchor = useComboboxAnchor()
+  const anchor = useComboboxAnchor() // for positioning tags dropdown filter
 
   return (
     <main className="recipes-page-main">
@@ -286,8 +291,7 @@ export default function Recipes() {
           />
         </InputGroup>
 
-        {/* add mobile dimension for tag filter */}
-        {/* Tags dropdown filter      if time, limit to X tags */}
+        {/* Tags dropdown filter */}
         <Combobox items={recipeFilters} value={tagFilter} onValueChange={(newValue: string[]) => {setTagFilter(newValue); setPage(1)}}
           multiple aria-label="Tag Filtering Dropdwon">
 
@@ -376,10 +380,10 @@ export default function Recipes() {
             <PaginationNext onClick={() => {if(page + 1 <= totalPages) setPage(page + 1)}}/>
           </PaginationItem>
 
+          <p style={{'color': 'gray'}}>of {totalPages} pages</p>
+
         </PaginationContent>
       </Pagination>
-
-      <p style={{'color': 'gray'}}>of {totalPages} pages</p>
 
     </main>
   )
