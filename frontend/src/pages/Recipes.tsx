@@ -97,7 +97,7 @@ export default function Recipes() {
 
     // helper - extracts and populates tag options for dropdown filter
     const buildRecipeFilters = (recipeList: Recipe[]) => {
-      console.log('calling .map and .forEach on: ', recipeList);
+      // console.log('calling .map and .forEach on: ', recipeList);
       try {
         const filterMap = new Map<string, Set<string>>(
           recipeFilters.map((filter) => [
@@ -123,7 +123,7 @@ export default function Recipes() {
         }));
       }
       catch (err) {
-        console.log(`Error building recipe filters: ${err}`);
+        // console.log(`Error building recipe filters: ${err}`);
         return [];
       }
     };
@@ -132,7 +132,7 @@ export default function Recipes() {
     const viewPhoto = async (fileKey : string) => {
       try {
         const { data } = await axios.post(`${API_URL}/aws/get-view-url`, { fileKey });
-        console.log(data.viewUrl);
+        // console.log(data.viewUrl);
         return data.viewUrl;
       } catch (error) {
         console.error("Error loading image from S3:", error);
@@ -146,14 +146,14 @@ export default function Recipes() {
           // console.log('aws recipe: ', recipe);
           // not user generated - can use directly, are photo links
           if (!recipe.user_generated) {
-            console.log('official recipe');
+            // console.log('official recipe');
             return {
               ...recipe,
               imageUrls: recipe.images,
             };
           }
 
-          console.log('loading user gen image');
+          // console.log('loading user gen image');
           // user generated - await the fetch for image links from AWS
           const imageUrls = await Promise.all(
             recipe.images.map((fileKey) =>
@@ -184,23 +184,19 @@ export default function Recipes() {
     const fetchData = async () => {
       try {
 
-        console.log('calling /recipes');
-
         const response = await axios.get(`${API_URL}/recipes`, {
           headers: {
             "Content-Type": "application/json",
           },
         });
 
-        console.log('called /recipes in backend');
-
         let data: Recipe[] = response.data
-        console.log("full recipe list", data);
+        // console.log("full recipe list", data);
 
         data = await plantPhotos(data);
         data = await shuffleArray(data);
 
-        console.log("full recipe list after planting photos", data);
+        // console.log("full recipe list after planting photos", data);
 
         setRecipeTags(buildRecipeFilters(data));
         setTotalPages(Math.ceil(data.length/recipesPerPage));
@@ -254,7 +250,7 @@ export default function Recipes() {
       filteredRecipes = recipeList.filter(recipe => (
         recipe.tags.some(tag => (tagString.includes(tag.name.toLowerCase().replace(/\s/g, ''))))
       ));
-      console.log(tagFilter);
+      // console.log(tagFilter);
       return filteredRecipes;
     }
 
