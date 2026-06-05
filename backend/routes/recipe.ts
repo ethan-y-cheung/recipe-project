@@ -102,8 +102,7 @@ router.get("/mealdb/:id", async (req, res) => {
 });
 
 //Unified get recipe by id
-
-router.get("/:id", requireAuth, async (req, res): Promise<void> => {
+router.get("/single/:id", requireAuth, async (req, res): Promise<void> => {
     try {
         const { id } = req.params;
 
@@ -116,7 +115,7 @@ router.get("/:id", requireAuth, async (req, res): Promise<void> => {
 
         res.json(recipe);
     } catch (err) {
-        console.error("Route /recipes/:id failed:", err);
+        console.error("Route /recipes/single/:id failed:", err);
         res.status(500).json({ error: "Failed to fetch recipe" });
     }
 });
