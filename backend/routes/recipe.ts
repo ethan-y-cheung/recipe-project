@@ -1,16 +1,17 @@
 import express, { Request, Response} from 'express';
 import { FieldValue } from "firebase-admin/firestore";
 
-import type {Recipe} from "../../shared/types/index.js"
+import type {Recipe} from "../../shared/types/index.ts"
 import { requireAuth } from '../middleware/auth.js';
 import { db } from "../firebase.ts";
 
-import { getRecipesFirebase, getRecipesFirebaseByID } from "../db/recipe.js";
-import { getRecipesTheMealDB, getRecipeMealDBById} from "../services/recipe.js"
+import { getRecipesFirebase, getRecipesFirebaseByID } from "../db/recipe.ts";
+import { getRecipesTheMealDB, getRecipeMealDBById} from "../services/recipe.ts"
 import type { Tag, User } from "../../shared/types/index.ts";
 const router = express.Router();
+console.log("[recipe.ts] router module loaded");
 
-const MAX_RECIPES_TMDB = 10;
+const MAX_RECIPES_TMDB = 50;
 
 
 
@@ -47,23 +48,24 @@ router.get("/mealdb", async (req, res) => {
     const recipes = await getRecipesTheMealDB(1);
     res.json(recipes);
 });
+
+
 // Unified get ALL Recipes
-router.get("/", requireAuth, async (req, res): Promise<void> => {
+// note: removed auth - no auth needed to view recipes
+router.get("/", async (req, res): Promise<void> => {
     try {
         const [firebaseRes, theMealDBRes] = await Promise.all([
             getRecipesFirebase(),
             getRecipesTheMealDB(MAX_RECIPES_TMDB)
         ]);
-        // console.log("firebaseRes", firebaseRes);
-        // console.log("theMealDBRes", theMealDBRes)
+        console.log(`[GET /recipes] got ${firebaseRes.length} firebase, ${theMealDBRes.length} mealdb`);
+        console.log('returning from /recipes backend', [...firebaseRes, ...theMealDBRes])
         res.json([...firebaseRes, ...theMealDBRes]);
-        
+
     } catch (err) {
-        console.error("Failed to fetch recipes:", err);
         res.status(500).json({ error: "Failed to fetch recipes" });
     }
 });
-
 
 
 //get by id just from firebase (for testing)
@@ -120,6 +122,35 @@ router.get("/single/:id", async (req, res): Promise<void> => {
         console.error("Route /recipes/single/:id failed:", err);
         res.status(500).json({ error: "Failed to fetch recipe" });
     }
+});
+
+// save recipe rating in db / update recipe record
+router.put("/", requireAuth, async (req, res) => {
+  try {
+    const { recipe } = req.body;
+    // const updatedData = req.body; // The Recipe object passed into the request body
+
+    // Finds by ID, applies updates, and returns the modified document
+    const docRef = await db.collection("recipes").doc(recipe.id);
+    const docSnap = await docRef.get();
+
+    // 2. Check if the recipe exists before trying to update it
+    if (!docSnap.exists) {
+      return res.status(404).json({ error: "Recipe not found" });
+    }
+
+    // 3. Update the document with the new recipe data
+    await docRef.update(recipe);
+
+    // 4. Fetch the fresh, updated document data to send back
+    const updatedSnap = await docRef.get();
+    const updatedRecipe = { id: updatedSnap.id, ...updatedSnap.data() };
+
+    res.json(updatedRecipe);
+  } catch (err) {
+    console.error("Failed to update recipe:", err);
+    res.status(500).json({ error: "Failed to update recipe record" });
+  }
 });
 
 export async function getRecipeById(id: string): Promise<Recipe | null> {

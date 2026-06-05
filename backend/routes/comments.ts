@@ -66,7 +66,7 @@ router.post("/delete", requireAuth, async (req : Request<{}, {}, RequestBody>, r
 
 // endpoint to grab all comments by recipe id
 // Request<Params, ResBody, ReqBody, ReqQuery>
-router.get("/", requireAuth, async (req : Request<{}, {}, {}, {recipe_ID? : string}>, res : Response): Promise<void> => {
+router.get("/", async (req : Request<{}, {}, {}, {recipe_ID? : string}>, res : Response): Promise<void> => {
   try {
     const { recipe_ID } = req.query;
     if (typeof recipe_ID !== 'string') {
