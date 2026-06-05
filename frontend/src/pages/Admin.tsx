@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import type { Recipe } from "../../../shared/types";
 import { useAuth } from "../contexts/AuthContext";
@@ -31,6 +32,22 @@ export default function Admin() {
     pendingRecipes.length / RECIPES_PER_PAGE
   );
 
+  const navigate = useNavigate();
+  const { recipeId } = useParams();
+
+  useEffect(() => {
+    if (!recipeId) {
+        setSelectedRecipe(null);
+        return;
+    }
+
+    const recipe = pendingRecipes.find(r => r.id === recipeId);
+
+    if (recipe) {
+        setSelectedRecipe(recipe);
+    }
+    }, [recipeId, pendingRecipes]);
+
   useEffect(() => {
     const fetchRecipes = async () => {
       if (!currentUser) return;
@@ -55,7 +72,7 @@ export default function Admin() {
         headers: { Authorization: `Bearer ${token}` },
       });
       setPendingRecipes(prev => prev.filter(r => r.id !== id));
-      setSelectedRecipe(null);
+      navigate("/admin");
     } catch (error) {
       console.error("Error approving recipe:", error);
       setError("Failed to approve recipe. Please try again.");
@@ -70,12 +87,19 @@ export default function Admin() {
         headers: { Authorization: `Bearer ${token}` },
       });
       setPendingRecipes(prev => prev.filter(r => r.id !== id));
-      setSelectedRecipe(null);
+      navigate("/admin");
     } catch (error) {
       console.error("Error denying recipe:", error);
       setError("Failed to deny recipe. Please try again.");
     }
   };
+
+  const viewDetails = (recipe: Recipe) =>
+  {
+    console.log("viewing details of: ", recipe)
+
+    navigate(`/admin/${recipe.id}`)
+  }
   return <>
 
       {
@@ -83,7 +107,7 @@ export default function Admin() {
             <AdminRecipeDetailModal
                 recipe={selectedRecipe}
                 onClose={() =>
-                    setSelectedRecipe(null)
+                    navigate("/admin")
                 }
                 onApprove={approveRecipe}
                 onDeny={denyRecipe}
@@ -117,7 +141,7 @@ export default function Admin() {
               <div
                   key={recipe.id}
                   className="recipe-row"
-                  onClick={() => setSelectedRecipe(recipe)}
+                  onClick={() => viewDetails(recipe)}
               >
                   <span>{recipe.created_at instanceof Date ? recipe.created_at.toLocaleDateString() : "n/a"}</span>
 
