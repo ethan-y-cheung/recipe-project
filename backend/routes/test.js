@@ -14,8 +14,10 @@ router.get('/recipes', (req, res) => {
             created_at: new Date("2026-06-02"),
             approved: false,
             tags: [
-                { name: "lunch", type: "Meal Type" },
-                { name: "quick", type: "Difficulty" },
+                { name: "breakfast", type: "Meal Type" },
+                { name: "easy", type: "Difficulty" },
+                { name: "Italian", type: "Cuisine" },
+                { name: "Under 30 min", type: "Cooking Time" },
             ],
             ingredients: [
                 {
@@ -56,7 +58,9 @@ router.get('/recipes', (req, res) => {
             approved: false,
             tags: [
                 { name: "lunch", type: "Meal Type" },
-                { name: "quick", type: "Difficulty" },
+                { name: "medium", type: "Difficulty" },
+                { name: "Mexican", type: "Cuisine" },
+                { name: "30-60 min", type: "Cooking Time" },
             ],
             ingredients: [
                 {
