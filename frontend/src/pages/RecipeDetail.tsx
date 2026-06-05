@@ -352,7 +352,7 @@ export default function RecipeDetail() {
                     {step}
                     {recipe.imageUrls?.[index+1]? 
                     <div className="step-image-container">
-                      <img src={recipe.imageUrls?.[index+1]??""}  alt={"instruction image"}/>
+                      <img className="step-image" src={recipe.imageUrls?.[index+1]??""}  alt={"instruction image"}/>
                     </div> : null}
                   </li>
                 ))}
