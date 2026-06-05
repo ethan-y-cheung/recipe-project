@@ -43,6 +43,14 @@ function App() {
               }
             />
             <Route
+              path="/admin/:recipeId"
+              element={
+                <AdminRoute>
+                  <Admin />
+                </AdminRoute>
+              }
+            />
+            <Route
               path="/admin"
               element={
                 <AdminRoute>
@@ -50,6 +58,7 @@ function App() {
                 </AdminRoute>
               }
             />
+
           </Routes>
         </main>
       </AuthProvider>
