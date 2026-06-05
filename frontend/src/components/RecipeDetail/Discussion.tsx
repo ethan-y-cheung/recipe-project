@@ -161,7 +161,7 @@ const Discussion = ( {createComment, handleDelete, updateComment, recipe_ID, use
 
                    {username === comment.creator_ID ? 
                     <>
-                      <SquarePen className="icon-button"/>
+                      {/* <SquarePen className="icon-button"/> */}
                       <Trash onClick={() => {setParentId("") ; setCurrentComment(comment) ; setOpenConfirmation(prevState=>!prevState)}} className="icon-button"/>
                     </> : null }
                   
@@ -200,7 +200,7 @@ const Discussion = ( {createComment, handleDelete, updateComment, recipe_ID, use
                     <button className="reply-button"> <Reply/>reply </button>
                     {username === reply.creator_ID ? 
                     <>
-                      <SquarePen className="icon-button"/>
+                      {/* <SquarePen className="icon-button"/> */}
                       <Trash onClick={() => {setParentId(comment.id) ; setCurrentComment(reply) ; setOpenConfirmation(prevState=>!prevState)}} className="icon-button"/>
                     </> : null }
                   </div>
