@@ -23,7 +23,7 @@ const RecipeCard = ({ recipeData, isSaved, onSave }:
     avgRating = 0;
   }
 
-  const handleToggleSaved = async (e: MouseEvent) => {
+  const handleToggleSaved = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     await onSave(recipeData.id, isSaved);
   }
@@ -41,7 +41,7 @@ const RecipeCard = ({ recipeData, isSaved, onSave }:
         </div>
 
         <button className={`recipe-card__save-button${isSaved ? ' recipe-card__save-button--active':''}`}
-          onClick={handleToggleSaved}>
+          onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleToggleSaved(e)}>
           {/* Save icon */}
           <BookmarkIcon className={`recipe-card__save-button-icon${isSaved ? ' recipe-card__save-button-icon--active':''}`} />
         </button>
