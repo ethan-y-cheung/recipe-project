@@ -1,7 +1,7 @@
 import type { Recipe } from "../../../shared/types";
 import RecipeDetail from "../pages/RecipeDetail";
 
-// import "../styles/Admin.css";
+import "../styles/Admin.css";
 import "../styles/common.css";
 interface AdminRecipeDetailModalProps {
     recipe: Recipe;
