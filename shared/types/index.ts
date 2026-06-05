@@ -14,7 +14,6 @@ export interface User{
 }
 export interface Recipe{
     id: string;
-    recipe_ID?: string; // doc id mirrored onto the document by the backend on create
     user_generated: boolean;
     creator_ID?: string | null;
     title : string;

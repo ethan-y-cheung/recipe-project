@@ -34,6 +34,35 @@ export default function MyRecipes() {
 
     const BASE_URL = import.meta.env.VITE_API_URL;
 
+    // S3 stores a permanent fileKey on each user-uploaded recipe, not a URL.
+    // Exchange that fileKey for a short-lived signed view URL before rendering.
+    // Seeded recipes already carry real URLs, so pass those through untouched.
+    const resolveImageUrls = async (recipes: Recipe[]): Promise<Recipe[]> => {
+        return Promise.all(
+            recipes.map(async (recipe) => {
+                if (!recipe.user_generated) {
+                    return { ...recipe, imageUrls: recipe.images };
+                }
+                const imageUrls = await Promise.all(
+                    (recipe.images ?? []).map(async (fileKey) => {
+                        if (!fileKey) return null;
+                        try {
+                            const { data } = await axios.post(
+                                `${BASE_URL}/aws/get-view-url`,
+                                { fileKey },
+                            );
+                            return data.viewUrl as string;
+                        } catch (error) {
+                            console.error("Error loading image from S3:", error);
+                            return null;
+                        }
+                    }),
+                );
+                return { ...recipe, imageUrls };
+            }),
+        );
+    };
+
     const fetchRecipes = async () => {
         setIsLoading(true);
         if (!currentUser || !userData) {
@@ -58,11 +87,20 @@ export default function MyRecipes() {
                 }),
             ]);
 
-            const createdData: Recipe[] = createdResponse.data;
-            const savedData: Recipe[] = savedResponse.data;
+            const createdData: Recipe[] = Array.isArray(createdResponse.data)
+                ? createdResponse.data
+                : [];
+            const savedData: Recipe[] = Array.isArray(savedResponse.data)
+                ? savedResponse.data
+                : [];
 
-            setCreatedRecipes(createdData);
-            setSavedRecipes(savedData);
+            const [createdWithUrls, savedWithUrls] = await Promise.all([
+                resolveImageUrls(createdData),
+                resolveImageUrls(savedData),
+            ]);
+
+            setCreatedRecipes(createdWithUrls);
+            setSavedRecipes(savedWithUrls);
         } catch (error: unknown) {
             console.error("Recipe retrieval failure:", error);
         } finally {
@@ -344,9 +382,14 @@ export default function MyRecipes() {
                                             }}
                                         >
                                             <div className="preview-image-wrapper">
-                                                {recipe.images?.[0] ? (
+                                                {recipe.imageUrls?.[0] ??
+                                                recipe.images?.[0] ? (
                                                     <img
-                                                        src={recipe.images[0]}
+                                                        src={
+                                                            recipe.imageUrls?.[0] ??
+                                                            recipe.images?.[0] ??
+                                                            undefined
+                                                        }
                                                         alt={recipe.title}
                                                     />
                                                 ) : (
@@ -528,10 +571,15 @@ export default function MyRecipes() {
                                         </div>
 
                                         <div className="recipe-image-box">
-                                            {currentRecipe.images?.[0] ? (
+                                            {currentRecipe.imageUrls?.[0] ??
+                                            currentRecipe.images?.[0] ? (
                                                 <img
                                                     src={
-                                                        currentRecipe.images[0]
+                                                        currentRecipe
+                                                            .imageUrls?.[0] ??
+                                                        currentRecipe
+                                                            .images?.[0] ??
+                                                        undefined
                                                     }
                                                     alt={currentRecipe.title}
                                                 />

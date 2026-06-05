@@ -67,8 +67,13 @@ router.post("/", requireAuth, async (req, res) => {
 
         // Ownership comes from the verified token, never the request body, so a
         // client can't claim authorship of someone else's recipe. requireAuth
-        // guarantees req.user is populated here.
-        const creator_ID = req.user.uid;
+        // guarantees req.user is populated here. We store the username (not the
+        // uid) as creator_ID because that's what getCreatedRecipes queries by
+        // and how seeded recipes are keyed; the users doc id is the uid.
+        const { uid, email } = req.user;
+        const userSnap = await db.collection("users").doc(uid).get();
+        const creator_ID =
+            userSnap.data()?.username || email?.split("@")[0] || uid;
 
         // required fields
         if (typeof title !== "string" || title.trim() === "") {
