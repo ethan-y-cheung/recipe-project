@@ -124,6 +124,7 @@ export default function Recipes() {
       }
       catch (err) {
         console.log(`Error building recipe filters: ${err}`);
+        return [];
       }
     };
 

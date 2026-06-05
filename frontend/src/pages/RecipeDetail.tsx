@@ -113,7 +113,7 @@ export default function RecipeDetail() {
           data.imageUrls = data.images;
         }
 
-        console.log(recipeData.imageUrls);
+        console.log(data.imageUrls);
 
         const response = await axios.get(`${BASE_URL}/comments`, {
           params: { recipe_ID: data.id},
