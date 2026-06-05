@@ -284,6 +284,10 @@
   margin-bottom: 1rem;
 }
 
+.detail-title {
+  line-height: normal;
+}
+
 .comment-footer {
   display: flex;
   gap: 1rem;
@@ -300,6 +304,7 @@
   max-height: 20rem;
   width: auto;
   border-radius: 1rem;
+  margin: 1rem;
 }
 
 .step-image-container {

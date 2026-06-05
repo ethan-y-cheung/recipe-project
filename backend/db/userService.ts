@@ -2,6 +2,32 @@ import { db } from "../firebase.ts";
 import { FieldValue } from "firebase-admin/firestore";
 import { Recipe } from "../../shared/types/index.ts";
 
+export const getRecipeById = async (
+    recipeId: string,
+): Promise<Recipe | null> => {
+    try {
+        const doc = await db.collection("recipes").doc(recipeId).get();
+
+        if (!doc.exists) {
+            console.warn(
+                `⚠️ Custom recipe ID [${recipeId}] not found in Firestore.`,
+            );
+            return null;
+        }
+
+        return {
+            id: doc.id,
+            ...doc.data(),
+        } as Recipe;
+    } catch (error) {
+        console.error(
+            `Error fetching custom recipe document [${recipeId}]:`,
+            error,
+        );
+        return null;
+    }
+};
+
 export const getCreatedRecipes = async (
     username: string,
 ): Promise<Recipe[]> => {

@@ -280,7 +280,7 @@ export default function RecipeDetail() {
         <header className="recipe-header">
           <section className="recipe-header-info">
             <div className="detail-header-row">
-              <h1>{recipe.title}</h1>
+              <h1 className="detail-title">{recipe.title}</h1>
               <div className="star-container">
                 <Star fill={avgRating >= 1 ? "#FFDF00" : "transparent"} className="header-icon"/>
                 <Star fill={avgRating >= 2 ? "#FFDF00" : "transparent"} className="header-icon"/>
@@ -352,7 +352,7 @@ export default function RecipeDetail() {
                     {step}
                     {recipe.imageUrls?.[index+1]? 
                     <div className="step-image-container">
-                      <img src={recipe.imageUrls?.[index+1]??""}  alt={"instruction image"}/>
+                      <img className="step-image" src={recipe.imageUrls?.[index+1]??""}  alt={"instruction image"}/>
                     </div> : null}
                   </li>
                 ))}

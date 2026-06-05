@@ -5,8 +5,9 @@ import {
     updateCreatedRecipe,
     deleteCreatedRecipe,
     removeSavedRecipe,
+    getRecipeById,
 } from "../db/userService.ts";
-import { fetchMultipleRecipes } from "../services/recipeService.ts";
+import { fetchRecipeById } from "../services/recipeService.ts";
 
 const router = Router();
 
@@ -44,9 +45,23 @@ router.get("/:username/saved", async (req, res) => {
             return res.status(200).json([]);
         }
 
-        const savedRecipes = await fetchMultipleRecipes(savedIds);
+        const hydratedRecipes = await Promise.all(
+            savedIds.map(async (id) => {
+                const isMealDBId = /^\d{5}$/.test(id);
 
-        return res.status(200).json(savedRecipes);
+                if (isMealDBId) {
+                    return await fetchRecipeById(id);
+                } else {
+                    return await getRecipeById(id);
+                }
+            }),
+        );
+
+        const cleanRecipes = hydratedRecipes.filter(
+            (recipe): recipe is any => recipe !== null,
+        );
+
+        return res.status(200).json(cleanRecipes);
     } catch (error: any) {
         console.error("Failed to fetch saved recipes: ", error);
         return res.status(500).json({
