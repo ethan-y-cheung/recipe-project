@@ -318,35 +318,21 @@ export default function MyRecipes() {
                                     }}
                                 />
                             </div>
-                            <div className="filter-row">
-                                <label className="checkbox-container">
-                                    <input
-                                        type="checkbox"
-                                        checked={activeView === "created"}
-                                        onChange={() => {
-                                            setActiveView("created");
-                                            setActiveIndex(
-                                                isPreviewOpen ? 0 : null,
-                                            );
-                                        }}
-                                    />
-                                    <span className="checkmark"></span>
-                                    Created Recipes
-                                </label>
-                                <label className="checkbox-container">
-                                    <input
-                                        type="checkbox"
-                                        checked={activeView === "saved"}
-                                        onChange={() => {
-                                            setActiveView("saved");
-                                            setActiveIndex(
-                                                isPreviewOpen ? 0 : null,
-                                            );
-                                        }}
-                                    />
-                                    <span className="checkmark"></span>
-                                    Saved Recipes
-                                </label>
+                            <div className="view-toggle">
+                                <button
+                                    type="button"
+                                    className={`view-toggle__btn${activeView === "created" ? " view-toggle__btn--active" : ""}`}
+                                    onClick={() => { setActiveView("created"); setActiveIndex(isPreviewOpen ? 0 : null); }}
+                                >
+                                    Created
+                                </button>
+                                <button
+                                    type="button"
+                                    className={`view-toggle__btn${activeView === "saved" ? " view-toggle__btn--active" : ""}`}
+                                    onClick={() => { setActiveView("saved"); setActiveIndex(isPreviewOpen ? 0 : null); }}
+                                >
+                                    Saved
+                                </button>
                             </div>
                         </div>
                         <div className="preview-grid">
