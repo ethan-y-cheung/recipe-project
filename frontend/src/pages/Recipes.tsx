@@ -32,7 +32,7 @@ import {
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
+  // PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -134,11 +134,13 @@ export default function Recipes() {
     const plantPhotos = async (recipeList: Recipe[]): Promise<Recipe[]> => {
       return Promise.all(
         recipeList.map(async (recipe) => {
+          // console.log('aws recipe: ', recipe);
           // not user generated - can use directly, are photo links
           if (!recipe.user_generated) {
             console.log('official recipe');
             return {
               ...recipe,
+              id: recipe.recipe_ID,
               imageUrls: recipe.images,
             };
           }
@@ -153,6 +155,7 @@ export default function Recipes() {
           );
           return {
             ...recipe,
+            id: recipe.recipe_ID,
             imageUrls,
           };
         })
@@ -162,7 +165,11 @@ export default function Recipes() {
     const fetchData = async () => {
       try {
         const response = await axios.get(`${API_URL}/test/recipes`);
-        let data = response.data; // full, unfiltered list of recipes
+        
+        // check that returned data is an Arryay
+        let data: Recipe[] = Array.isArray(response.data)
+          ? response.data
+          : (response.data?.recipes ?? []);
         console.log("full recipe list", data);
 
         data = await plantPhotos(data);
@@ -297,6 +304,7 @@ export default function Recipes() {
     }
   }
 
+  console.log(currentUser, userData);
   const anchor = useComboboxAnchor() // for positioning tags dropdown filter
 
   return (

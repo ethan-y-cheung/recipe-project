@@ -28,6 +28,8 @@ const RecipeCard = ({ recipeData, isSaved, onSave }:
     await onSave(recipeData.id, isSaved);
   }
 
+  // console.log('recipeData: ', recipeData);
+
   return (
     <article className="recipe-card-original" onClick={() => navigate(`/recipes/${recipeData.id}`)}>
       <div className="recipe-card__image-mask">
