@@ -53,7 +53,10 @@ export default function MyRecipes() {
                             );
                             return data.viewUrl as string;
                         } catch (error) {
-                            console.error("Error loading image from S3:", error);
+                            console.error(
+                                "Error loading image from S3:",
+                                error,
+                            );
                             return null;
                         }
                     }),
@@ -382,12 +385,14 @@ export default function MyRecipes() {
                                             }}
                                         >
                                             <div className="preview-image-wrapper">
-                                                {recipe.imageUrls?.[0] ??
-                                                recipe.images?.[0] ? (
+                                                {(recipe.imageUrls?.[0] ??
+                                                recipe.images?.[0]) ? (
                                                     <img
                                                         src={
-                                                            recipe.imageUrls?.[0] ??
-                                                            recipe.images?.[0] ??
+                                                            recipe
+                                                                .imageUrls?.[0] ??
+                                                            recipe
+                                                                .images?.[0] ??
                                                             undefined
                                                         }
                                                         alt={recipe.title}
@@ -571,8 +576,8 @@ export default function MyRecipes() {
                                         </div>
 
                                         <div className="recipe-image-box">
-                                            {currentRecipe.imageUrls?.[0] ??
-                                            currentRecipe.images?.[0] ? (
+                                            {(currentRecipe.imageUrls?.[0] ??
+                                            currentRecipe.images?.[0]) ? (
                                                 <img
                                                     src={
                                                         currentRecipe
@@ -690,7 +695,7 @@ export default function MyRecipes() {
                                 </div>
 
                                 <div className="recipe-footer-link-row">
-                                    <Link to={`/recipe/${currentRecipe.title}`}>
+                                    <Link to={`/recipes/${currentRecipe.id}`}>
                                         <button className="btn-view-full">
                                             View Full Recipe &rarr;
                                         </button>
