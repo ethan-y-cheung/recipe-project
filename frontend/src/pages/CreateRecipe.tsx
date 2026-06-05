@@ -7,6 +7,7 @@ import Dropdown from '../components/CreateRecipe/Dropdown'
 import EditableList from '../components/CreateRecipe/EditableList'
 import TagPicker from '../components/CreateRecipe/TagPicker'
 import { useAuth } from '../contexts/AuthContext'
+import type { Recipe } from '../../../shared/types/index.ts'
 
 // Defaults
 const DEFAULT_TAGS = [
@@ -245,7 +246,14 @@ export default function CreateRecipe() {
         )
       )
 
-      const recipe = {
+      // The fields the create form is responsible for. The server stamps the
+      // rest of the Recipe (id, creator_ID, created_at, approved, rating,
+      // user_generated) from the verified token, so we only send this subset.
+      const recipe: Pick<Recipe, 'title' | 'ingredients' | 'instructions' | 'images'> & {
+        tags: string[]
+        servings?: number
+        total_time?: string
+      } = {
         title: title.trim(),
         ingredients: ingredients
           .filter((i) => i.name.trim() || i.qty.trim() || i.units.trim())
@@ -266,12 +274,15 @@ export default function CreateRecipe() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(recipe),
+        body: JSON.stringify({ recipe }),
       })
       if (!res.ok) {
         const data = await res.json().catch(() => null)
         throw new Error(data?.error ?? `Request failed (${res.status})`)
       }
+      // The backend returns the persisted recipe; surface it as a typed Recipe.
+      const { recipe: createdRecipe } = (await res.json()) as { recipe: Recipe }
+      console.log('Created recipe:', createdRecipe)
       setConfirmOpen(false)
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'Failed to create recipe')
