@@ -130,7 +130,7 @@ They will need to sign out and back in after for the change to take effect. Once
 | Admin moderation panel                                      | Complete                                                         |
 | My Recipes page                                             | In progress                                                      |
 
-## Auth Overview
+Built by the Launch @ HMC team:
 
 - Authentication is handled by Firebase Auth (email/password and Google)
 - On first sign-in, a user document is created in Firestore under `users/{uid}`

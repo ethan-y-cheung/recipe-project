@@ -1,84 +1,178 @@
+/* ── Design tokens ─────────────────────────────────── */
+
 :root {
-  --Background: #F6F4E8;
-  --Cards: #E5EEE4;
-  --Header: #C0E1D2;
-  --Button: #DC9B9B;
-  --text: #3F4A45;
-  --muted-text: #6E7A73;
+  /* Colors */
+  --color-cream:       #F6F4E8;
+  --color-sage-light:  #E5EEE4;
+  --color-sage-mid:    #C0E1D2;
+  --color-blush:       #DC9B9B;
+  --color-blush-hover: #CC8A8A;
+  --color-text:        #3F4A45;
+  --color-muted:       #6E7A73;
+  --color-border:      rgba(63, 74, 69, 0.15);
+  --color-white:       #FFFFFF;
+
+  /* Legacy aliases kept so existing pages don't break */
+  --Background:   #F6F4E8;
+  --Cards:        #E5EEE4;
+  --Header:       #C0E1D2;
+  --Button:       #DC9B9B;
+  --text:         #3F4A45;
+  --muted-text:   #6E7A73;
+  --accent-green: #C0E1D2;
+  --accent-red:   #DC9B9B;
+  --base-yellow:  #F6F4E8;
+  --base-green:   #E5EEE4;
 }
 
-/* ── Page Layout ───────────────────────────────────── */
+/* ── Page layout ───────────────────────────────────── */
 
 .page-content {
   width: 100%;
 }
 
-* {
-  --accent-green: #C0E1D2;
-  --accent-red: #DC9B9B;
-  --base-yellow: #F6F4E8;
-  --base-green: #E5EEE4;
+/* Shared centered page wrapper — use this on any page's <main> */
+.page-wrapper {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2.5rem 2rem;
+  box-sizing: border-box;
 }
+
+/* Breathing room under the navbar */
+.page-top-spacer {
+  margin-top: 2rem;
+}
+
+/* ── Shared typography ─────────────────────────────── */
+
+/* Serif page title matching the Home page style */
+.page-title {
+  font-family: "Gelasio", serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 0.25rem 0;
+  line-height: 1.15;
+}
+
+.page-title--pink span,
+.page-title span.accent {
+  color: var(--color-blush);
+}
+
+/* ── Shared buttons ────────────────────────────────── */
+
+/* Primary — blush pink */
+.btn-primary-theme {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--color-blush);
+  color: var(--color-white);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+}
+
+.btn-primary-theme:hover {
+  background-color: var(--color-blush-hover);
+}
+
+/* Secondary — outlined */
+.btn-secondary-theme {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: transparent;
+  color: var(--color-text);
+  border: 1.5px solid var(--color-text);
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+}
+
+.btn-secondary-theme:hover {
+  background-color: rgba(63, 74, 69, 0.06);
+}
+
+/* ── Shared card ───────────────────────────────────── */
+
+.card-theme {
+  background-color: var(--color-white);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 16px rgba(63, 74, 69, 0.08);
+}
+
+/* ── Admin / review buttons ────────────────────────── */
 
 .review-btn,
 .approve-btn,
 .deny-btn {
-    border-width: 2px;
-    border-radius: 6px;
-
-    padding: 0.5rem 0.9rem;
-
-    cursor: pointer;
-
-    font-size: 0.9rem;
-    font-weight: 600;
-    opacity: 0.7;
+  border-width: 2px;
+  border-style: solid;
+  border-radius: 6px;
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .review-btn {
-    color: blue;
-    border-color: blue;
-    background-color: white;
+  color: #3b7a6b;
+  border-color: var(--color-sage-mid);
+  background-color: white;
 }
 
 .review-btn:hover {
-    color: white;
-    border-color: white;
-    background-color: blue;
+  background-color: var(--color-sage-mid);
+  color: var(--color-text);
 }
 
 .approve-btn {
-    color: limegreen;
-    border-color: limegreen;
-    background-color: white;
+  color: #3b7a6b;
+  border-color: #7cbfac;
+  background-color: white;
 }
 
 .approve-btn:hover {
-    color: white;
-    border-color: white;
-    background-color: limegreen;
+  background-color: #7cbfac;
+  color: white;
 }
 
 .deny-btn {
-    color: red;
-    border-color: red;
-    background-color: white;
+  color: #b94a4a;
+  border-color: var(--color-blush);
+  background-color: white;
 }
 
 .deny-btn:hover {
-    color: white;
-    border-color: white;
-    background-color: red;
+  background-color: var(--color-blush);
+  color: white;
 }
 
 .close-btn {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--color-muted);
+}
 
-    background: transparent;
-    border: none;
-
-    font-size: 1.5rem;
-    cursor: pointer;
+.close-btn:hover {
+  color: var(--color-text);
 }

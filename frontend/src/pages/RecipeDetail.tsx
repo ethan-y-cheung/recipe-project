@@ -1,82 +1,90 @@
-// import { useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { Star, Bookmark, MessageCircle} from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext.tsx';
 import { formatDistanceToNow } from 'date-fns';
-import type { Recipe, Comments, User, Rating } from "../../../shared/types/index.ts";
+import type { Recipe, Comments, Rating, UserRecipeNotes, User } from "../../../shared/types/index.ts";
 import Chatbot from '../components/RecipeDetail/Chatbot.tsx';
 import CommentForm from '../components/RecipeDetail/CommentForm.tsx';
 import Discussion from '../components/RecipeDetail/Discussion.tsx';
 // import RecipeCard from '@/components/RecipeCard.tsx';
 
-// import axios from 'axios';
+import axios from 'axios';
 import "../styles/RecipeDetail.css";
 
-const fakeData: Recipe = {
-  id: "123",
-  user_generated: false,
-  creator_ID: "Allison",
-  title : "ramen",
-  created_at: new Date(),
-  approved: true,
-  tags: [{name: "quick", type: "difficulty"}],
-  ingredients: [
-    {name: "ramen", quantity: "one package"}, 
-    {name: "water", quantity: "2 cups"},
-    {name: "salt", quantity: "1 teaspoon"},
-    {name: "siracha", quantity: "1 lb"}],
-  instructions: ["cook ramen", "eat ramen", "clean kitchen"],
-  images: [ "https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=800&auto=format&fit=crop&q=60"],
-  servings: 1,
-  total_time: "20 minutes",
-  rating: [{user_ID: "Kaitlyn", value: 5}, {user_ID: "Michael", value: 2}]
-};
-
-const user: User = {
-  username: "Michael",
-  password: "password123",
-  admin: false,
-  my_recipes: [],
-  saved_recipes: [],
-}
-
-const comments: Comments[] = [
-    {recipe_ID: "123",
-    id: "111",
-    creator_ID: "Lucinda",
-    content: "needs butter",
-    likes: [], //array of user_IDs who liked the comment
-    created_at: new Date(2026, 6, 1),
-    replies: []},
-    {recipe_ID: "123",
-      id: "333",
-    creator_ID: "Michael",
-    content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam facilisis, nunc sed feugiat euismod, mi ante pulvinar velit, facilisis commodo massa massa egestas nulla. Donec id leo sed turpis mollis malesuada. Phasellus posuere semper molestie. Praesent quis tincidunt nisl. Duis fringilla metus risus, ac tempor nunc dignissim a. Nulla vitae ornare ligula. Morbi facilisis facilisis nulla, in rutrum odio maximus at.",
-    likes: ["rachel"], //array of user_IDs who liked the comment
-    created_at: new Date(2024, 1, 1),
-    replies: [
-       {recipe_ID: "123",
-        id: "222",
-      creator_ID: "Lucinda",
-      content: "needs butter",
-      likes: [], //array of user_IDs who liked the comment
-      created_at: new Date(2026, 6, 1),
-      replies: []}
-    ]}
-]
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 export default function RecipeDetail() {
   // used later when pulling data from firebase
-  // const { recipeId } = useParams<{recipeId: string}>();
-  const [allPosts, setAllPosts] = useState<Comments[]>(comments);
+  const { recipeId } = useParams<{recipeId: string}>();
+  const [allPosts, setAllPosts] = useState<Comments[]>([]);
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [done, setDone] = useState<boolean[] | null>(null);
-  const [bookmarked, setBookmarked] = useState<boolean>(false); // idk how to do this :(
+  const { currentUser, userData: authUserData } = useAuth();
+  const [bookmarked, setBookmarked] = useState<boolean>(false);
   const [avgRating, setAverageRating] = useState<number>(0);
-  const [isLoading, setIsLoading] = useState<boolean>(false)
-  
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [userData, setUserData] = useState<User | null>(null);
+  const API_URL = import.meta.env.VITE_API_URL;
+
   const [showChat, setShowChat] = useState<boolean>(false);
   // pull old rating if it exists
   const [rating, setRating] = useState<null | 1 | 2 | 3 | 4 | 5>(null);
+  // const { currentUser, userData, refreshUser } = useAuth();
+
+  // grab a temporary viewing url for user uploaded images
+  const viewPhoto = async (fileKey : string) => {
+    try {
+      const { data } = await axios.post(`${BASE_URL}/aws/get-view-url`, { fileKey });
+      console.log(data.viewUrl);
+      return data.viewUrl;
+    } catch (error) {
+      console.error("Error loading image from S3:", error);
+    }
+  }
+
+  const isRecipeSaved = (recipeId: string, sourceUserData: User | null) =>
+    !!sourceUserData?.saved_recipes?.some(
+      (savedRecipe) => savedRecipe.recipe_id === recipeId || savedRecipe.recipe_id === recipeId
+    );
+
+  useEffect(() => {
+    setUserData(authUserData);
+  }, [authUserData]);
+
+  useEffect(() => {
+    if (recipe) {
+      setBookmarked(isRecipeSaved(recipe.id, userData));
+    }
+  }, [recipe, userData]);
+
+  const handleSave = async () => {
+    if (!currentUser || !recipe) return;
+
+    try {
+      const token = await currentUser.getIdToken();
+      const method = bookmarked ? 'DELETE' : 'POST';
+      const response = await fetch(`${API_URL}/users/saved-recipes/${recipe.id}`, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: method === 'POST' ? JSON.stringify({ recipe_id: recipe.id }) : undefined,
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'Unable to save recipe');
+      }
+
+      const updatedUser = await response.json();
+      setUserData(updatedUser);
+      setBookmarked(isRecipeSaved(recipe.id, updatedUser));
+    } catch (error) {
+      console.error('handleSave error:', error);
+    }
+  };
 
   // fetch recipe data
   useEffect(() => {
@@ -84,18 +92,54 @@ export default function RecipeDetail() {
       setIsLoading(true);
       try {
         // database or api call here
-        setRecipe(fakeData);
-        setDone(new Array(fakeData.ingredients.length).fill(false));
+        const { data } = await axios.get(`${BASE_URL}/recipes/single/${recipeId}`);
+        // data.created_at = new Date(data.created_at.seconds * 1000)
+        data.created_at = new Date();
+        setRecipe(data);
 
-        const ratingsArray = fakeData.rating || [];
+        // requires aws calls
+        if (data.user_generated) {
+          // grabs viewing urls for recipe images
+          // Creates an array of promises by marking the map callback as async
+          const imagePromises = data.images.map(async (fileKey : string) => {
+            if (fileKey) {
+              return await viewPhoto(fileKey); // Added 'await'
+            } else {
+              return null;
+            }
+          });
+          data.imageUrls = await Promise.all(imagePromises);
+        } else {
+          data.imageUrls = data.images;
+        }
+
+        console.log(data.imageUrls);
+
+        const response = await axios.get(`${BASE_URL}/comments`, {
+          params: { recipe_ID: data.id},
+        });
+        setAllPosts(response.data);
+        setDone(new Array(data.ingredients.length).fill(false));
+        
+        // determine average rating
+        const ratingsArray = data.rating || [];
         if (ratingsArray.length > 0) {
-          const total = ratingsArray.reduce((score, r) => score + (r.value ?? 0), 0);
+          const total = ratingsArray.reduce((score : number, r : Rating) => score + (r.value ?? 0), 0);
           setAverageRating(total / ratingsArray.length);
         } else {
           setAverageRating(0);
         }
-        const userRating = ratingsArray.find(r => r.user_ID === user.username);
-        setRating(userRating?.value ?? null);
+
+        // determine if the user rated this recipe previously
+        if (userData) {
+          const userRating = ratingsArray.find((r : Rating)=> r.user_ID === userData.username);
+          setRating(userRating?.value ?? null);
+
+          // determine if this recipe is saved
+          setBookmarked(userData.saved_recipes.some((recipe: UserRecipeNotes) => recipe.recipe_id=== data.id))
+        } else {
+          setRating(null);
+        }
 
       } catch (error) {
         console.error("unable to fetch recipe data:", error);
@@ -104,25 +148,67 @@ export default function RecipeDetail() {
       }
     }
     fetchRecipeData();
-  }, [])
+  }, [recipeId, userData])
 
-  const handleComment = (newComment:Comments) => {
-    console.log(newComment);
-    setAllPosts([...allPosts, newComment]);
+  const handleComment = async (newComment:Comments, parent_id : string) => {
+    // no commenting if not logged in
+    if (!currentUser) return;
+
+    try {
+      const token = await currentUser?.getIdToken();
+      const response = await axios.post(
+        `${BASE_URL}/comments`, 
+        { 
+          comment: newComment, // This is the request body (req.body)
+          parent_id: parent_id
+        }, 
+        { 
+          headers: { 
+            Authorization: `Bearer ${token}`, // This is now correctly sent as a header
+          }, 
+        }
+      );
+      const newCommentId = response.data.id;
+      newComment.id = newCommentId;
+
+      // use new comment id / comment object from backend
+      if (parent_id === "") {
+        setAllPosts([...allPosts, newComment]);
+      } else {
+        setAllPosts([...allPosts.map(post => post.id === parent_id ? 
+        {...post, reply_IDs:[...post.reply_IDs, newComment.id], replies:[...post.replies, newComment]} 
+        : post)])
+      }
+
+    } catch (error) {
+      console.error("error posting comment: ", error);
+    }
   }
 
-  const handleDelete = async (comment_id : string) => {
+  const handleDelete = async (comment : Comments | null, parent_id: string) => {
+    if (!comment) return;
     try {
-      // await axios.delete("http://localhost:5001/comments", {
-      //   params: {comment_id: comment_id}
-      // });
+      const token = await currentUser?.getIdToken();
+      // delete comments
+      await axios.post(
+        `${BASE_URL}/comments/delete`, 
+        { 
+          comment: comment, // This is the request body (req.body)
+          parent_id: parent_id,
+        }, 
+        { 
+          headers: { 
+            Authorization: `Bearer ${token}`, 
+          }, 
+        }
+      );
 
-      const newPosts : Comments[] = allPosts.filter((post) => post.id !== comment_id)
+      const newPosts : Comments[] = allPosts.filter((post) => post.id !== comment.id)
 
       setAllPosts([
         ...newPosts.map(post => ({
           ...post, 
-          replies: post.replies.filter(reply => reply.id !== comment_id)
+          replies: post.replies.filter(reply => reply.id !== comment.id)
         }))
       ]);
 
@@ -131,16 +217,73 @@ export default function RecipeDetail() {
     }
   }
 
-  const handleRating = (userRating : 1 | 2 | 3 | 4 | 5) => {
+  const handleBookmark = async() => {
+    // not logged in == no bookmarking
+    if (!userData || !currentUser) return;
+    setBookmarked(prevState => !prevState); // optimistic update
+
+    try {
+      const token = await currentUser.getIdToken();
+      let newSaved : UserRecipeNotes[] = [];
+      if (bookmarked) {
+        newSaved = [...userData.saved_recipes.filter((saved: UserRecipeNotes) => saved.recipe_id !== recipe?.id)]
+      } else {
+        newSaved = [...userData.saved_recipes, {recipe_id: recipe?.id || "", notes: "", user_tags: []}];
+      }
+      const updatedBodyData = {
+        ...userData,
+        saved_recipes: newSaved
+      };
+
+      const res = await axios.put(
+        `${BASE_URL}/users/me`, 
+        updatedBodyData, // Data payload
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+      return res.data;
+    } catch (error) {
+      setBookmarked(prevState => !prevState);
+      console.error("Unable to update user information:", error);
+      return null;
+    }
+  }
+
+  const updateComment = async (comment : Comments) => {
+    try {
+      const token = await currentUser?.getIdToken();
+      // update comment
+      await axios.put(
+        `${BASE_URL}/comments`, 
+        { 
+          comment: comment, 
+        }, 
+        { 
+          headers: { 
+            Authorization: `Bearer ${token}`, 
+          }, 
+        }
+      );
+
+    } catch (error) {
+      console.error("error updating comment: ", error);
+    }
+  }
+
+  const handleRating = async (userRating : 1 | 2 | 3 | 4 | 5) => {
+    if (!userData || !currentUser) return;
     setRating(userRating);
     let newRatings: Rating[];
 
     // if you have already rated it, remove that value
-    if (recipe?.rating.some(rating => rating.user_ID === user.username)) {
-      newRatings = recipe.rating.filter(rating => rating.user_ID !== user.username);
+    if (recipe?.rating.some(rating => rating.user_ID === userData.username)) {
+      newRatings = recipe.rating.filter(rating => rating.user_ID !== userData.username);
     // otherwise add in the new rating
     } else {
-      newRatings = recipe ? [...recipe.rating, {user_ID: user.username, value: userRating}] : []; 
+      newRatings = recipe ? [...recipe.rating, {user_ID: userData.username, value: userRating}] : []; 
     }
     
     // update average rating
@@ -148,9 +291,23 @@ export default function RecipeDetail() {
     ? newRatings.reduce((score, rating) => score + (rating.value ?? 0), 0) / newRatings.length 
     : 0)
 
+
+    const updatedRecipePayload = {...recipe,rating: newRatings,};
+
     try {
-      // database interaction here
-      console.log(userRating);
+      const token = await currentUser?.getIdToken();
+      // make endpoint request
+      await axios.put(
+          `${BASE_URL}/recipes`, 
+          { 
+            recipe: updatedRecipePayload, // This is the request body (req.body)
+          }, 
+          { 
+            headers: { 
+              Authorization: `Bearer ${token}`, 
+            }, 
+          }
+        );
     } catch (error) {
       console.error("unable to process rating: ", error);
     }
@@ -171,8 +328,8 @@ export default function RecipeDetail() {
       <article className="detail-page-content">
         <header className="recipe-header">
           <section className="recipe-header-info">
-            <div className="recipe-header-row">
-              <h1>{recipe.title}</h1>
+            <div className="detail-header-row">
+              <h1 className="detail-title">{recipe.title}</h1>
               <div className="star-container">
                 <Star fill={avgRating >= 1 ? "#FFDF00" : "transparent"} className="header-icon"/>
                 <Star fill={avgRating >= 2 ? "#FFDF00" : "transparent"} className="header-icon"/>
@@ -182,13 +339,13 @@ export default function RecipeDetail() {
               </div>
             </div>
 
-            <div className="recipe-header-row">
+            <div className="detail-header-row">
               <p>author: {recipe.creator_ID ? recipe.creator_ID : "Unknown"}</p>
               <p>created: {recipe.created_at ? formatDistanceToNow(recipe.created_at, { addSuffix: true }) : "Unknown"}</p>
             </div>
             
             <div className="recipe-header-row">
-              <Bookmark fill={bookmarked ? "#FFDF00" : "transparent"} className="header-icon" onClick={() => setBookmarked(prevState => !prevState)}/> 
+              <Bookmark fill={bookmarked ? "#FFDF00" : "transparent"} className="header-icon" onClick={handleSave}/> 
               <div className="star-container">
                 {recipe.tags.map((tag, index) => (
                   <div key={index} className="tag"> {`${tag.type} : ${tag.name}`}</div>
@@ -204,10 +361,9 @@ export default function RecipeDetail() {
 
           <img
               className="header-image"
-              src={recipe.images[0]}
-              alt={recipe.title}
+              src={recipe.imageUrls?.[0] ?? undefined}
+              alt={`image of ${recipe.title}`}
           />
-          
         </header>
           
         <section className="detail-page">
@@ -241,7 +397,13 @@ export default function RecipeDetail() {
               <h2 className="section-title">Instructions</h2>
               <ol className="ingredients-container">
                 {recipe.instructions.map((step, index) => (
-                  <li className="step" key={index}>{step}</li>
+                  <li className="step" key={index}>
+                    {step}
+                    {recipe.imageUrls?.[index+1]? 
+                    <div className="step-image-container">
+                      <img className="step-image" src={recipe.imageUrls?.[index+1]??""}  alt={"instruction image"}/>
+                    </div> : null}
+                  </li>
                 ))}
               </ol>
             </section>
@@ -259,11 +421,11 @@ export default function RecipeDetail() {
                   <Star fill={(rating ? rating : 0) >= 5 ? "#FFDF00" : "transparent"} onClick={() => handleRating(5)} className="header-icon"/>
                 </div>
               </div>
-              <CommentForm recipe_ID={recipe.id} username={user.username} updatePosts={handleComment}/>
+              <CommentForm recipe_ID={recipe.id} username={userData?.username??""} createComment={handleComment}/>
             </section>
 
             {/* Discussion Section */}
-            <Discussion handleDelete={handleDelete} recipe_ID = {recipe.id} username={user.username} comments={allPosts}/>
+            <Discussion updateComment={updateComment} createComment={handleComment} handleDelete={handleDelete} recipe_ID = {recipe.id} username={userData?.username??""} comments={allPosts}/>
           </div>
       
           {/* similar recipe section */}
@@ -290,9 +452,6 @@ export default function RecipeDetail() {
       </button>
 
       {showChat ? <Chatbot setClose={setShowChat}/> : null }
-  
-      
-    
     </>
   )
 }

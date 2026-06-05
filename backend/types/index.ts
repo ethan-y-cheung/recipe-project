@@ -1,12 +1,11 @@
 export interface UserRecipeNotes
 {
-    recipe_id: string;
+    recipeID: string;
     user_tags: string[];
     notes:string;
 }
 export interface User{
     username: string;
-    email?: string;
     password: string;
     admin: boolean;
     my_recipes: UserRecipeNotes[];
@@ -25,8 +24,8 @@ export interface Recipe{
         quantity: string;
     }[];
     instructions: string[];
-    images: (string | null)[]; //first index is always thumbnail; null where a step has no image
-    imageUrls?: (string | null)[]; // resolved signed view URLs, populated at display time
+    images: string[]; //first index is always thumbnail
+    imageUrls?: (string | null)[];
     rating: Rating[];
     total_time?: string | null;
     servings?: number | null; // potentially null because api doesn't include these fields

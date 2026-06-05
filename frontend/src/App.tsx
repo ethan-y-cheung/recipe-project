@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import { AuthProvider } from "./contexts/AuthContext";
 import Navbar from "./components/Navbar";
 import PrivateRoute from "./components/auth/PrivateRoute";
@@ -12,10 +13,17 @@ import CreateRecipe from "./pages/CreateRecipe";
 import Admin from "./pages/Admin";
 import "./styles/common.css";
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  return null;
+}
+
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <ScrollToTop />
         <Navbar />
         <main className="page-content">
           <Routes>
@@ -23,7 +31,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/recipes" element={<Recipes />} />
             <Route
-              path="/recipes/:recipeType/:recipeId"
+              path="/recipes/:recipeId"
               element={<RecipeDetail />}
             />
             <Route

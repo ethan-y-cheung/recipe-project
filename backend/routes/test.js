@@ -1,22 +1,22 @@
 import express from "express";
-import { Recipe, Tag } from "../../shared/types/index";
 const router = express.Router();
-router.get("/", (req: express.Request, res: express.Response) => {
-    res.status(200).json({ message: "Test route is working!" });
+router.get('/', (req, res) => {
+    res.status(200).json({ message: 'Test route is working!' });
 });
-router.get("/recipes", (req: express.Request, res: express.Response) => {
-    const sampleRecipes: Recipe[] = [
-        {
-            //base sample recipe
-            id: "1", //id should key into database, maybe we append source or recipe to front
+router.get('/recipes', (req, res) => {
+    const sampleRecipes = [
+        {   //base sample recipe
+            id: '1', //id should key into database, maybe we append source or recipe to front
             creator_ID: "Janet",
             user_generated: true,
             title: "Sample Recipe 1",
             created_at: new Date("2026-06-02"),
             approved: false,
             tags: [
-                { name: "lunch", type: "Meal Type" },
-                { name: "quick", type: "Difficulty" },
+                { name: "breakfast", type: "Meal Type" },
+                { name: "easy", type: "Difficulty" },
+                { name: "Italian", type: "Cuisine" },
+                { name: "Under 30 min", type: "Cooking Time" },
             ],
             ingredients: [
                 {
@@ -51,13 +51,15 @@ router.get("/recipes", (req: express.Request, res: express.Response) => {
             //sample without image
             id: "2",
             creator_ID: "Mark",
-            user_generated: true,
+            user_generated: false,
             title: "Sample Recipe 2",
             created_at: new Date("2026-06-02"),
             approved: false,
             tags: [
                 { name: "lunch", type: "Meal Type" },
-                { name: "quick", type: "Difficulty" },
+                { name: "medium", type: "Difficulty" },
+                { name: "Mexican", type: "Cuisine" },
+                { name: "30-60 min", type: "Cooking Time" },
             ],
             ingredients: [
                 {
@@ -90,7 +92,7 @@ router.get("/recipes", (req: express.Request, res: express.Response) => {
             //sample no tags
             id: "3",
             creator_ID: "michael",
-            user_generated: true,
+            user_generated: false,
             title: "Sample Recipe 2",
             created_at: new Date("2026-06-02"),
             approved: false,
