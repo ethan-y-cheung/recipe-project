@@ -36,6 +36,7 @@ export default function RecipeDetail() {
   const viewPhoto = async (fileKey : string) => {
     try {
       const { data } = await axios.post(`${BASE_URL}/aws/get-view-url`, { fileKey });
+      console.log(data.viewUrl);
       return data.viewUrl;
     } catch (error) {
       console.error("Error loading image from S3:", error);
@@ -111,6 +112,8 @@ export default function RecipeDetail() {
         } else {
           data.imageUrls = data.images;
         }
+
+        console.log(recipeData.imageUrls);
 
         const response = await axios.get(`${BASE_URL}/comments`, {
           params: { recipe_ID: data.id},

@@ -3,11 +3,15 @@ import './RecipeCard.css'
 import type { Recipe, Rating } from '../../../shared/types/index.ts'
 import { BookmarkIcon, StarIcon } from './IconExports.tsx';
 
+import { useNavigate } from 'react-router';
+
 const RecipeCard = ({ recipeData, isSaved, onSave }: 
   { recipeData: Recipe, isSaved: boolean, onSave: (recipeId: string, currentlySaved: boolean) => Promise<void> }) => {
   
   // supply onSave function -> makes save/delete Recipe calls
   // save/delete calls return updated user data (updated saved_recipes list)
+
+  const navigate = useNavigate();
   
   const ratingsArray : Rating[] = recipeData.rating || [];
   let avgRating : number;
@@ -19,14 +23,15 @@ const RecipeCard = ({ recipeData, isSaved, onSave }:
     avgRating = 0;
   }
 
-  const handleToggleSaved = async () => {
+  const handleToggleSaved = async (e: MouseEvent) => {
+    e.stopPropagation();
     await onSave(recipeData.id, isSaved);
   }
 
   return (
-    <article className="recipe-card-original">
+    <article className="recipe-card-original" onClick={(e: React.MouseEvent) => navigate(`/recipes/${recipeData.id}`)}>
       <div className="recipe-card__image-mask">
-        {<img className="recipe-card__image" src={recipeData.images ? recipeData.images[0] : ''} />}
+        {<img className="recipe-card__image" src={recipeData.imageUrls?.[0] ? recipeData.imageUrls?.[0] : ''} />}
       </div>
       <div className="recipe-card__top-row">
 

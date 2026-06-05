@@ -64,14 +64,6 @@ let recipeFilters: { value: string; items: string[] }[] = []
 //     value: "Dietary Restrictions",
 //     items: ["Vegetarian", "Vegan", "Gluten-free", "Dairy-free", "Nut-free"],
 //   },
-//   {
-//     value: "Cuisine",
-//     items: ["Italian", "Mexican", "Asian", "American", "Mediterranean", "Indian"],
-//   },
-//   {
-//     value: "Cooking Time",
-//     items: ["Under 15 min", "15–30 min", "30–60 min", "Over 1 hour"],
-//   },
 // ];
 
 export default function Recipes() {
@@ -98,6 +90,7 @@ export default function Recipes() {
     setLocalUserData(userData);
   }, [userData]);
 
+  if (!filteredRecipes) return <p>Loading...</p>
 
   // Fetch recipes on first load--------------------------------------
   useEffect(() => {
@@ -128,17 +121,60 @@ export default function Recipes() {
       }));
     };
 
+    // helper - grab a temporary viewing url for user uploaded images
+    const viewPhoto = async (fileKey : string) => {
+      try {
+        const { data } = await axios.post(`${API_URL}/aws/get-view-url`, { fileKey });
+        console.log(data.viewUrl);
+        return data.viewUrl;
+      } catch (error) {
+        console.error("Error loading image from S3:", error);
+      }
+    }
+
+    // plant AWS photo urls as needed
+    const plantPhotos = async (recipeList: Recipe[]): Promise<Recipe[]> => {
+      return Promise.all(
+        recipeList.map(async (recipe) => {
+          // not user generated - can use directly, are photo links
+          if (!recipe.user_generated) {
+            console.log('official recipe');
+            return {
+              ...recipe,
+              imageUrls: recipe.images,
+            };
+          }
+
+          console.log('loading user gen image');
+          // user generated - await the fetch for image links from AWS
+          const imageUrls = await Promise.all(
+            recipe.images.map((fileKey) =>
+              viewPhoto("recipes/1780519947700-Screenshot 2026-06-02 at 3.22.27 PM.png")
+              // fileKey ? viewPhoto(fileKey) : null
+            )
+          );
+          return {
+            ...recipe,
+            imageUrls,
+          };
+        })
+      );
+    };
+
     const fetchData = async () => {
       try {
         const response = await axios.get(`${API_URL}/test/recipes`);
         let data = response.data; // full, unfiltered list of recipes
         console.log("full recipe list", data);
 
+        data = await plantPhotos(data);
         setRecipes(data); // load full recipe list
+
+        console.log("full recipe list after planting photos", data);
+
         setRecipeTags(buildRecipeFilters(data));
         setTotalPages(Math.ceil(data.length/recipesPerPage));
-        setFilteredRecipes(data.slice(page - 1, page * recipesPerPage)); // load recipe list on **1st** page
-
+        setFilteredRecipes(data.slice(page - 1, page * recipesPerPage)); // load recipe list on **1st** page       
       }
       catch (err) {
         console.log(`An error occured Recipes.tsx while fetching recipe data: ${err}`)
