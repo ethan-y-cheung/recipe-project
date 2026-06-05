@@ -280,7 +280,7 @@ export default function RecipeDetail() {
         <header className="recipe-header">
           <section className="recipe-header-info">
             <div className="detail-header-row">
-              <h1>{recipe.title}</h1>
+              <h1 className="detail-title">{recipe.title}</h1>
               <div className="star-container">
                 <Star fill={avgRating >= 1 ? "#FFDF00" : "transparent"} className="header-icon"/>
                 <Star fill={avgRating >= 2 ? "#FFDF00" : "transparent"} className="header-icon"/>
