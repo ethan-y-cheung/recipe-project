@@ -8,7 +8,7 @@ import awsRouter from "./routes/aws.js";
 import commentRouter from "./routes/comments.js";
 import chatRouter from "./routes/openai.js";
 import userRecipesRouter from "./routes/userRecipes.js";
-import recipesRouter from "./routes/recipes.js";
+import recipesRouter from "./routes/recipe.js";
 
 
 const app = express();
