@@ -103,7 +103,7 @@ router.get("/mealdb/:id", async (req, res) => {
 });
 
 //Unified get recipe by id
-router.get("/single/:id", requireAuth, async (req, res): Promise<void> => {
+router.get("/single/:id", async (req, res): Promise<void> => {
     try {
         const { id } = req.params;
 
