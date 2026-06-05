@@ -179,7 +179,7 @@ export default function RecipeDetail() {
       if (bookmarked) {
         newSaved = [...userData.saved_recipes.filter(saved => saved.recipe_id !== recipe?.id)]
       } else {
-        newSaved = [...userData.saved_recipes, {recipe_id: recipe?.id || "", notes: ""}];
+        newSaved = [...userData.saved_recipes, {recipe_id: recipe?.id || "", notes: "", user_tags: []}];
       }
       const updatedBodyData = {
         ...userData,
