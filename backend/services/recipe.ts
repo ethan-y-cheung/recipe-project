@@ -13,7 +13,7 @@ export async function getRecipesTheMealDB(maxRecipes: number) : Promise<Recipe[]
         if(meal)
         {
             const convertedMeal = convertMealDBRecipe(meal);
-            console.log("Recipe type meal: " + convertedMeal);
+            // console.log("Recipe type meal: " + convertedMeal);
             recipes.push(convertedMeal);
         }
 

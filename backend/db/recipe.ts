@@ -4,7 +4,7 @@ export async function getRecipesFirebase() : Promise<Recipe[]>
 {
     const recipesCollection = db.collection("recipes");
     const snapshot = await recipesCollection.get();
-    console.log("shapshot" + snapshot);
+    // console.log("shapshot" + snapshot);
     const recipes : Recipe[]= snapshot.docs.map((d : any) => ({
         id: d.id,
         user_generated: true,
@@ -21,7 +21,7 @@ export async function getRecipesFirebase() : Promise<Recipe[]>
         servings: d.data().servings ?? null
         }
     ));
-    console.log("recipe" + recipes);
+    // console.log("recipe" + recipes);
     return recipes;
 }
 
@@ -29,7 +29,7 @@ export async function getRecipesFirebaseByID(id: string) : Promise<Recipe | null
 {
     const recipesDoc = db.collection("recipes").doc(id);
     const d = await recipesDoc.get();
-    console.log("shapshot" + d);
+    // console.log("shapshot" + d);
     if (!d.exists) return null;
     const data = d.data();
     if (!data) return null;
@@ -48,7 +48,7 @@ export async function getRecipesFirebaseByID(id: string) : Promise<Recipe | null
         total_time: data.total_time ?? null,
         servings: data.servings ?? null
         };
-    console.log("recipe" + recipe);
+    // console.log("recipe" + recipe);
     return recipe;
 }
 

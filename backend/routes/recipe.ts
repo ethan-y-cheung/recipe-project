@@ -1,5 +1,4 @@
 import express from "express";
-import db from "../firebase.js";
 
 import type {Recipe} from "../../shared/types/index.js"
 import { requireAuth } from '../middleware/auth.js';
@@ -52,8 +51,8 @@ router.get("/", requireAuth, async (req, res): Promise<void> => {
             getRecipesFirebase(),
             getRecipesTheMealDB(MAX_RECIPES_TMDB)
         ]);
-        console.log("firebaseRes", firebaseRes);
-        console.log("theMealDBRes", theMealDBRes)
+        // console.log("firebaseRes", firebaseRes);
+        // console.log("theMealDBRes", theMealDBRes)
         res.json([...firebaseRes, ...theMealDBRes]);
         
     } catch (err) {
@@ -84,7 +83,7 @@ router.get("/firebase/:id", requireAuth, async (req, res) => {
 
 //get by id just from mealdb (for testing)
 router.get("/mealdb/:id", async (req, res) => {
-    console.log("meal db by id route called");
+    // console.log("meal db by id route called");
     try {
         const { id } = req.params;
 
