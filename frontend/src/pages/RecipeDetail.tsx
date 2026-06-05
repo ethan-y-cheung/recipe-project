@@ -2,7 +2,7 @@ import { useParams } from 'react-router-dom'
 import { Star, Bookmark, MessageCircle} from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import type { Recipe, Comments, Rating } from "../../../shared/types/index.ts";
+import type { Recipe, Comments, Rating, UserRecipeNotes } from "../../../shared/types/index.ts";
 import Chatbot from '../components/RecipeDetail/Chatbot.tsx';
 import CommentForm from '../components/RecipeDetail/CommentForm.tsx';
 import Discussion from '../components/RecipeDetail/Discussion.tsx';
@@ -26,7 +26,7 @@ export default function RecipeDetail() {
   const [showChat, setShowChat] = useState<boolean>(false);
   // pull old rating if it exists
   const [rating, setRating] = useState<null | 1 | 2 | 3 | 4 | 5>(null);
-  const { currentUser, userData } = useAuth();
+  const { currentUser, userData, refreshUser } = useAuth();
 
   // grab a temporary viewing url for user uploaded images
   const viewPhoto = async (fileKey : string) => {
@@ -87,7 +87,7 @@ export default function RecipeDetail() {
           setRating(userRating?.value ?? null);
 
           // determine if this recipe is saved
-          setBookmarked(userData.saved_recipes.some(recipe => recipe.recipeID === data.id))
+          setBookmarked(userData.saved_recipes.some(recipe => recipe.recipe_id === data.id))
         } else {
           setRating(null);
         }
@@ -168,10 +168,39 @@ export default function RecipeDetail() {
     }
   }
 
-  const handleBookmark = () => {
+  const handleBookmark = async() => {
     // not logged in == no bookmarking
-    if (!userData) return;
+    if (!userData || !currentUser) return;
+    setBookmarked(prevState => !prevState); // optimistic update
 
+    try {
+      const token = await currentUser.getIdToken();
+      let newSaved : UserRecipeNotes[] = [];
+      if (bookmarked) {
+        newSaved = [...userData.saved_recipes.filter(saved => saved.recipe_id !== recipe?.id)]
+      } else {
+        newSaved = [...userData.saved_recipes, {recipe_id: recipe?.id || "", notes: ""}];
+      }
+      const updatedBodyData = {
+        ...userData,
+        saved_recipes: newSaved
+      };
+
+      const res = await axios.put(
+        `${BASE_URL}/users/me`, 
+        updatedBodyData, // Data payload
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+      return res.data;
+    } catch (error) {
+      setBookmarked(prevState => !prevState);
+      console.error("Unable to update user information:", error);
+      return null;
+    }
   }
 
   const updateComment = async (comment : Comments) => {
@@ -195,8 +224,8 @@ export default function RecipeDetail() {
     }
   }
 
-  const handleRating = (userRating : 1 | 2 | 3 | 4 | 5) => {
-    if (!userData) return;
+  const handleRating = async (userRating : 1 | 2 | 3 | 4 | 5) => {
+    if (!userData || !currentUser) return;
     setRating(userRating);
     let newRatings: Rating[];
 
@@ -213,9 +242,23 @@ export default function RecipeDetail() {
     ? newRatings.reduce((score, rating) => score + (rating.value ?? 0), 0) / newRatings.length 
     : 0)
 
+
+    const updatedRecipePayload = {...recipe,rating: newRatings,};
+
     try {
-      // database interaction here
-      console.log(userRating);
+      const token = await currentUser?.getIdToken();
+      // make endpoint request
+      await axios.put(
+          `${BASE_URL}/recipes`, 
+          { 
+            recipe: updatedRecipePayload, // This is the request body (req.body)
+          }, 
+          { 
+            headers: { 
+              Authorization: `Bearer ${token}`, 
+            }, 
+          }
+        );
     } catch (error) {
       console.error("unable to process rating: ", error);
     }

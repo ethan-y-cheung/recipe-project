@@ -1,7 +1,7 @@
 export interface UserRecipeNotes
 {
-    recipeID: string;
-    user_tags: string[];
+    recipe_id: string;
+    user_tags?: string[];
     notes:string;
 }
 export interface User{

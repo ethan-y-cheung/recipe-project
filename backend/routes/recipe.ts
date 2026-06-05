@@ -122,6 +122,35 @@ router.get("/single/:id", async (req, res): Promise<void> => {
     }
 });
 
+// save recipe rating in db / update recipe record
+router.put("/", requireAuth, async (req, res) => {
+  try {
+    const { recipe } = req.body;
+    // const updatedData = req.body; // The Recipe object passed into the request body
+
+    // Finds by ID, applies updates, and returns the modified document
+    const docRef = await db.collection("recipes").doc(recipe.id);
+    const docSnap = await docRef.get();
+
+    // 2. Check if the recipe exists before trying to update it
+    if (!docSnap.exists) {
+      return res.status(404).json({ error: "Recipe not found" });
+    }
+
+    // 3. Update the document with the new recipe data
+    await docRef.update(recipe);
+
+    // 4. Fetch the fresh, updated document data to send back
+    const updatedSnap = await docRef.get();
+    const updatedRecipe = { id: updatedSnap.id, ...updatedSnap.data() };
+
+    res.json(updatedRecipe);
+  } catch (err) {
+    console.error("Failed to update recipe:", err);
+    res.status(500).json({ error: "Failed to update recipe record" });
+  }
+});
+
 export async function getRecipeById(id: string): Promise<Recipe | null> {
     try {
         //try firebase first
