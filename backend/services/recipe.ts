@@ -3,23 +3,22 @@ import type { Recipe } from "../../shared/types/index.js"
 
 export async function getRecipesTheMealDB(maxRecipes: number) : Promise<Recipe[]>
 {
-    let recipes: Recipe[] = [];
-    for(let i = 0; i < maxRecipes; i++)
-    {
-        const response = await fetch("https://www.themealdb.com/api/json/v1/1/random.php");
-        const data : any = await response.json();
-        const meal = data.meals?.[0];
+    const results = await Promise.all(
+        Array.from({ length: maxRecipes }, (_, i) =>
+            fetch("https://www.themealdb.com/api/json/v1/1/random.php")
+                .then(res => res.json())
+                .then((data: any) => {
+                    const meal = data.meals?.[0];
+                    return meal ? convertMealDBRecipe(meal) : null;
+                })
+                .catch(err => {
+                    console.warn(`MealDB fetch ${i + 1}/${maxRecipes} failed, skipping:`, err);
+                    return null;
+                })
+        )
+    );
+    return results.filter((r): r is Recipe => r !== null);
 
-        if(meal)
-        {
-            const convertedMeal = convertMealDBRecipe(meal);
-            // console.log("Recipe type meal: " + convertedMeal);
-            recipes.push(convertedMeal);
-        }
-
-    }
-    return recipes;    
-    
 }
 
 export async function getRecipeMealDBById(id: string): Promise<Recipe | null> {

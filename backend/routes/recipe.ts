@@ -1,16 +1,17 @@
 import express, { Request, Response} from 'express';
 import { FieldValue } from "firebase-admin/firestore";
 
-import type {Recipe} from "../../shared/types/index.js"
+import type {Recipe} from "../../shared/types/index.ts"
 import { requireAuth } from '../middleware/auth.js';
 import { db } from "../firebase.ts";
 
-import { getRecipesFirebase, getRecipesFirebaseByID } from "../db/recipe.js";
-import { getRecipesTheMealDB, getRecipeMealDBById} from "../services/recipe.js"
+import { getRecipesFirebase, getRecipesFirebaseByID } from "../db/recipe.ts";
+import { getRecipesTheMealDB, getRecipeMealDBById} from "../services/recipe.ts"
 import type { Tag, User } from "../../shared/types/index.ts";
 const router = express.Router();
+console.log("[recipe.ts] router module loaded");
 
-const MAX_RECIPES_TMDB = 10;
+const MAX_RECIPES_TMDB = 20;
 
 
 
@@ -48,22 +49,40 @@ router.get("/mealdb", async (req, res) => {
     res.json(recipes);
 });
 // Unified get ALL Recipes
-router.get("/", requireAuth, async (req, res): Promise<void> => {
+// router.get("/", requireAuth, async (req, res): Promise<void> => {
+//     console.log("[GET /recipes] handler reached");
+//     // try {
+//     //     console.log("[GET /recipes] calling firebase + mealdb...");
+//     //     const [firebaseRes, theMealDBRes] = await Promise.all([
+//     //         getRecipesFirebase(),
+//     //         getRecipesTheMealDB(MAX_RECIPES_TMDB)
+//     //     ]);
+//     //     console.log(`[GET /recipes] got ${firebaseRes.length} firebase, ${theMealDBRes.length} mealdb`);
+//     //     res.json([...firebaseRes, ...theMealDBRes]);
+
+//     // } catch (err) {
+//     //     console.error("[GET /recipes] FAILED:", err);
+//     //     res.status(500).json({ error: "Failed to fetch recipes" });
+//     // }
+// });
+
+
+// Unified get ALL Recipes
+// note: removed auth - no auth needed to view recipes
+router.get("/", async (req, res): Promise<void> => {
     try {
         const [firebaseRes, theMealDBRes] = await Promise.all([
             getRecipesFirebase(),
             getRecipesTheMealDB(MAX_RECIPES_TMDB)
         ]);
-        // console.log("firebaseRes", firebaseRes);
-        // console.log("theMealDBRes", theMealDBRes)
+        console.log(`[GET /recipes] got ${firebaseRes.length} firebase, ${theMealDBRes.length} mealdb`);
+        console.log('returning from /recipes backend', [...firebaseRes, ...theMealDBRes])
         res.json([...firebaseRes, ...theMealDBRes]);
-        
+
     } catch (err) {
-        console.error("Failed to fetch recipes:", err);
         res.status(500).json({ error: "Failed to fetch recipes" });
     }
 });
-
 
 
 //get by id just from firebase (for testing)

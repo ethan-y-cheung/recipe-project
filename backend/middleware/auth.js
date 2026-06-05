@@ -31,7 +31,7 @@ export async function requireAuth(req, res, next) {
     const decoded = await admin.auth().verifyIdToken(token, true);
     req.user = decoded;
     next();
-  } catch {
+  } catch (err) {
     res.status(401).json({ error: 'Invalid or expired token' });
   }
 }

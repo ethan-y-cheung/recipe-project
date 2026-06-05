@@ -81,7 +81,7 @@ export default function Recipes() {
   const [recipeTags, setRecipeTags] = useState<{value: string, items: string[]}[]>([]);
   const [filteredRecipes, setFilteredRecipes] = useState<Recipe[]>([]);
 
-  const API_URL = import.meta.env.VITE_API_URL
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000"
 
   const { currentUser, userData, refreshUser } = useAuth(); // for: retrieving user auth token, laoding initial saved recipe list
   const [localUserData, setLocalUserData] = useState<AppUser | null>(userData);
@@ -95,28 +95,34 @@ export default function Recipes() {
 
     // helper - extracts and populates tag options for dropdown filter
     const buildRecipeFilters = (recipeList: Recipe[]) => {
-      const filterMap = new Map<string, Set<string>>(
-        recipeFilters.map((filter) => [
-          filter.value, // tag type
-          new Set(filter.items),  // set of tag names under that type
-        ])
-      );
+      console.log('calling .map and .forEach on: ', recipeList);
+      try {
+        const filterMap = new Map<string, Set<string>>(
+          recipeFilters.map((filter) => [
+            filter.value, // tag type
+            new Set(filter.items),  // set of tag names under that type
+          ])
+        );
 
-      // O(n^2)... for each recipe, for each tag in each recipe
-      recipeList.forEach((recipe) => {
-        recipe.tags.forEach(({ type, name }) => {
-          if (!filterMap.has(type)) {
-            filterMap.set(type, new Set());
-          }
+        // O(n^2)... for each recipe, for each tag in each recipe
+        recipeList.forEach((recipe) => {
+          recipe.tags.forEach(({ type, name }) => {
+            if (!filterMap.has(type)) {
+              filterMap.set(type, new Set());
+            }
 
-          filterMap.get(type)!.add(name);
+            filterMap.get(type)!.add(name);
+          });
         });
-      });
 
-      return Array.from(filterMap.entries()).map(([value, items]) => ({
-        value,
-        items: [...items],
-      }));
+        return Array.from(filterMap.entries()).map(([value, items]) => ({
+          value,
+          items: [...items],
+        }));
+      }
+      catch (err) {
+        console.log(`Error building recipe filters: ${err}`);
+      }
     };
 
     // helper - grab a temporary viewing url for user uploaded images
@@ -140,7 +146,6 @@ export default function Recipes() {
             console.log('official recipe');
             return {
               ...recipe,
-              id: recipe.recipe_ID,
               imageUrls: recipe.images,
             };
           }
@@ -155,30 +160,49 @@ export default function Recipes() {
           );
           return {
             ...recipe,
-            id: recipe.recipe_ID,
             imageUrls,
           };
         })
       );
     };
 
+    // use to randomize recipe order
+    const shuffleArray = async (array: Recipe[]) => {
+      const shuffled = [...array]; //copy
+      
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      
+      return shuffled;
+    }
+
     const fetchData = async () => {
       try {
-        const response = await axios.get(`${API_URL}/test/recipes`);
-        
-        // check that returned data is an Arryay
-        let data: Recipe[] = Array.isArray(response.data)
-          ? response.data
-          : (response.data?.recipes ?? []);
+
+        console.log('calling /recipes');
+
+        const response = await axios.get(`${API_URL}/recipes`, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        console.log('called /recipes in backend');
+
+        let data: Recipe[] = response.data
         console.log("full recipe list", data);
 
         data = await plantPhotos(data);
-        setRecipes(data); // load full recipe list
+        data = await shuffleArray(data);
 
         console.log("full recipe list after planting photos", data);
 
         setRecipeTags(buildRecipeFilters(data));
         setTotalPages(Math.ceil(data.length/recipesPerPage));
+
+        setRecipes(data); // load full recipe list
         setFilteredRecipes(data.slice(page - 1, page * recipesPerPage)); // load recipe list on **1st** page       
       }
       catch (err) {
@@ -187,7 +211,7 @@ export default function Recipes() {
     }
 
     fetchData();
-  }, [])
+  }, [currentUser])
 
 
 
@@ -304,7 +328,7 @@ export default function Recipes() {
     }
   }
 
-  console.log(currentUser, userData);
+  // console.log(currentUser, userData);
   const anchor = useComboboxAnchor() // for positioning tags dropdown filter
 
   return (
