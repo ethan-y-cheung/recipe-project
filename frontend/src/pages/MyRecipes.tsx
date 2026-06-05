@@ -555,23 +555,22 @@ export default function MyRecipes() {
                                                 </span>
                                             </div>
                                             <div className="recipe-meta-item">
-                                                <span className="meta-label">
-                                                    Created:
-                                                </span>
-                                                <span className="meta-value">
-                                                    {currentRecipe.created_at
-                                                        ? new Date(
-                                                              currentRecipe.created_at,
-                                                          ).toLocaleDateString(
-                                                              undefined,
-                                                              {
-                                                                  year: "numeric",
-                                                                  month: "short",
-                                                                  day: "numeric",
-                                                              },
-                                                          )
-                                                        : "N/A"}
-                                                </span>
+                                                {currentRecipe.user_generated ? (
+                                                    <>
+                                                        <span className="meta-label">
+                                                            Time:
+                                                        </span>
+                                                        <span className="meta-value">
+                                                            {
+                                                                currentRecipe.total_time
+                                                            }
+                                                        </span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <div> </div>
+                                                    </>
+                                                )}
                                             </div>
                                         </div>
 
