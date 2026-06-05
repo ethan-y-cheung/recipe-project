@@ -9,7 +9,7 @@ import commentRouter from "./routes/comments.js";
 import chatRouter from "./routes/openai.js";
 import userRecipesRouter from "./routes/userRecipes.js";
 import recipesRouter from "./routes/recipes.js";
-import recipeRouter from "./routes/recipe.js"
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -28,7 +28,6 @@ app.use("/comments", commentRouter);
 app.use("/chat", chatRouter);
 app.use("/userrecipe", userRecipesRouter);
 app.use("/recipes", recipesRouter);
-app.use("/recipes", recipeRouter);
 
 app.get("/health", (req, res) => {
     res.json({ status: "ok" });
