@@ -52,7 +52,7 @@ const RecipeCard = ({ recipeData, isSaved, onSave }:
         {!recipeData.user_generated && <div className="recipe-card-tag recipe-card-tag--official">
            <p className="recipe-card-tag__text">Official</p>
         </div>}
-        {recipeData.tags.slice(0, 1).map(tag => (
+        {recipeData.tags.slice(0, 3).map(tag => (
           <div key={tag.name} className="recipe-card-tag">
             <p className="recipe-card-tag__text">{tag.name}</p>
           </div>

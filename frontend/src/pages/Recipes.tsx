@@ -54,26 +54,25 @@ type RecipeFilter = (typeof FILTER_OPTIONS)[number]
 
 const recipesPerPage = 8 as const; // default # recipes shown per page
 
-let recipeFilters = [
-  {
-    value: "Meal Type",
-    items: [
-      "Breakfast",
-      "Lunch",
-      "Dinner"
-    ],
-  },
-  {
-    value: "Dietary Restrictions",
-    items: [
-      "Vegetarian",
-      "Vegan",
-      "Gluten-free"
-    ],
-  }
-] as const
-
-
+// any pre-populated filters -> can be pulled from firebase as desired
+let recipeFilters: { value: string; items: string[] }[] = []
+//   {
+//     value: "Meal Type",
+//     items: ["Breakfast", "Lunch", "Dinner", "Snack", "Dessert"],
+//   },
+//   {
+//     value: "Dietary Restrictions",
+//     items: ["Vegetarian", "Vegan", "Gluten-free", "Dairy-free", "Nut-free"],
+//   },
+//   {
+//     value: "Cuisine",
+//     items: ["Italian", "Mexican", "Asian", "American", "Mediterranean", "Indian"],
+//   },
+//   {
+//     value: "Cooking Time",
+//     items: ["Under 15 min", "15–30 min", "30–60 min", "Over 1 hour"],
+//   },
+// ];
 
 export default function Recipes() {
 
@@ -87,6 +86,7 @@ export default function Recipes() {
   const [tagFilter, setTagFilter] = useState<string[]>([]);
 
   const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [recipeTags, setRecipeTags] = useState<{value: string, items: string[]}[]>([]);
   const [filteredRecipes, setFilteredRecipes] = useState<Recipe[]>([]);
 
   const API_URL = import.meta.env.VITE_API_URL
@@ -103,11 +103,30 @@ export default function Recipes() {
   useEffect(() => {
 
     // helper - extracts and populates tag options for dropdown filter
-    const populateTags = (recipeList: Recipe[]) => {
-      recipeList.forEach(recipe => {
+    const buildRecipeFilters = (recipeList: Recipe[]) => {
+      const filterMap = new Map<string, Set<string>>(
+        recipeFilters.map((filter) => [
+          filter.value, // tag type
+          new Set(filter.items),  // set of tag names under that type
+        ])
+      );
 
-      })
-    }
+      // O(n^2)... for each recipe, for each tag in each recipe
+      recipeList.forEach((recipe) => {
+        recipe.tags.forEach(({ type, name }) => {
+          if (!filterMap.has(type)) {
+            filterMap.set(type, new Set());
+          }
+
+          filterMap.get(type)!.add(name);
+        });
+      });
+
+      return Array.from(filterMap.entries()).map(([value, items]) => ({
+        value,
+        items: [...items],
+      }));
+    };
 
     const fetchData = async () => {
       try {
@@ -116,7 +135,7 @@ export default function Recipes() {
         console.log("full recipe list", data);
 
         setRecipes(data); // load full recipe list
-        populateTags(data);
+        setRecipeTags(buildRecipeFilters(data));
         setTotalPages(Math.ceil(data.length/recipesPerPage));
         setFilteredRecipes(data.slice(page - 1, page * recipesPerPage)); // load recipe list on **1st** page
 
@@ -136,7 +155,6 @@ export default function Recipes() {
   useEffect(() => {
 
     let filteredRecipes = recipes;
-    let currentPage = page;
 
     // helper - filter by active page (ex. Official Recipes Only)
     const filterByActivePage = (recipeList: Recipe[], activeFilter: string) => {
@@ -160,6 +178,18 @@ export default function Recipes() {
       return filteredList;
     }
 
+    // helper - filter by selected tags
+    const filterByTags = (recipeList: Recipe[], tagFilter: string[]) => {
+      if(tagFilter.length < 1) return recipeList; // don't apply filter if no tags selected
+
+      const tagString = tagFilter.join('').replace(/\s/g, '').toLowerCase();
+      filteredRecipes = recipeList.filter(recipe => (
+        recipe.tags.some(tag => (tagString.includes(tag.name.toLowerCase().replace(/\s/g, ''))))
+      ));
+      console.log(tagFilter);
+      return filteredRecipes;
+    }
+
     // ----------------------------------------------
     // Call helper functions to perform filters - skip if not filters applyed
     const noFiltersApplied = activeFilter === 'All Recipes' && !searchFilter && tagFilter.length === 0;
@@ -167,15 +197,13 @@ export default function Recipes() {
 
       filteredRecipes = filterByActivePage(filteredRecipes, activeFilter);
       filteredRecipes = filterBySearchQuery(filteredRecipes, searchFilter);
-
-      // todo: get all tags
-      // .filter() by tags includes chosen tags...
+      filteredRecipes = filterByTags(filteredRecipes, tagFilter);
 
       setFilteredRecipes(filteredRecipes);
     }
 
     setTotalPages(Math.ceil(filteredRecipes.length/recipesPerPage));
-    const recipesOnCurrentPage = filteredRecipes.slice((currentPage - 1) * recipesPerPage, (currentPage * recipesPerPage))
+    const recipesOnCurrentPage = filteredRecipes.slice((page - 1) * recipesPerPage, (page * recipesPerPage))
     setFilteredRecipes(recipesOnCurrentPage);
 
   }, [activeFilter, searchFilter, tagFilter, page])
@@ -292,7 +320,7 @@ export default function Recipes() {
         </InputGroup>
 
         {/* Tags dropdown filter */}
-        <Combobox items={recipeFilters} value={tagFilter} onValueChange={(newValue: string[]) => {setTagFilter(newValue); setPage(1)}}
+        <Combobox items={recipeTags} value={tagFilter} onValueChange={(newValue: string[]) => {setTagFilter(newValue); setPage(1)}}
           multiple aria-label="Tag Filtering Dropdwon">
 
           {/* filter input trigger */}
