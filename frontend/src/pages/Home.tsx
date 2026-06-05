@@ -11,7 +11,7 @@ export default function Home() {
           <div className="hero-text">
             <p className="hero-eyebrow">Welcome to</p>
             <h1 className="hero-heading">
-              Recipe <span className="hero-pink">Website</span>
+              Open <span className="hero-pink">Table</span>
             </h1>
             <p className="hero-desc">
               Discover recipes, save your favorites,

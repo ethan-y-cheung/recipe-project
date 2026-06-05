@@ -4,6 +4,7 @@ import '../styles/CreateRecipe.css'
 
 import Dropdown from '../components/CreateRecipe/Dropdown'
 import EditableList from '../components/CreateRecipe/EditableList'
+import SortableEditableList from '../components/CreateRecipe/SortableEditableList'
 import TagPicker from '../components/CreateRecipe/TagPicker'
 
 // Defaults
@@ -95,6 +96,8 @@ export default function CreateRecipe() {
     if (input) input.value = ''
   }
   
+  const reorderDirections = (reordered: Direction[]) => setDirections(reordered)
+
   const removeDirection = (id: number) =>
     setDirections((p) => {
       const target = p.find((d) => d.id === id)
@@ -155,15 +158,16 @@ export default function CreateRecipe() {
 
   return (
     <div className="create-recipe">
-      <h1 className="create-recipe__title">Create Recipe</h1>
+      <h1 className="create-recipe__title">Create a Recipe</h1>
+      <p className="create-recipe__subtitle">Fill in the details below and hit Create when you're ready. Your recipe will be reviewed before it's published.</p>
 
       <div className="create-card">
-        {/* Title + cover + submit */}
+        {/* Title + cover image */}
         <div className="create-card__top">
           <input
             type="text"
             className="recipe-title-input"
-            placeholder="Recipe title"
+            placeholder="Give your recipe a name..."
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
@@ -186,9 +190,6 @@ export default function CreateRecipe() {
               ×
             </button>
           )}
-          <button type="button" className="create-button" onClick={() => setConfirmOpen(true)}>
-            Create
-          </button>
           <input
             ref={coverInputRef}
             type="file"
@@ -255,20 +256,21 @@ export default function CreateRecipe() {
             )}
           />
 
-          <EditableList
+          <SortableEditableList
             heading="Directions"
             items={directions}
             addLabel="+ Add Direction"
             onAdd={addDirection}
             onRemove={removeDirection}
+            onReorder={reorderDirections}
             renderRow={(dir, index) => (
               <>
                 <span className="direction-entry__number">{index + 1}</span>
-                <input
-                  type="text"
+                <textarea
                   className="direction-entry__input"
-                  placeholder="Start typing..."
+                  placeholder="Describe this step..."
                   value={dir.text}
+                  rows={1}
                   onChange={(e) => updateDirection(dir.id, e.target.value)}
                 />
                 <button
@@ -296,6 +298,15 @@ export default function CreateRecipe() {
               </>
             )}
           />
+        </div>
+
+
+        {/* Submit */}
+        <div className="create-card__bottom">
+          <p className="create-card__bottom-hint">Ready to share your recipe with the world?</p>
+          <button type="button" className="create-button" onClick={() => setConfirmOpen(true)}>
+            Create Recipe
+          </button>
         </div>
       </div>
 
