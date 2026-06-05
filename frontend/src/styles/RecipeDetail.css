@@ -152,7 +152,7 @@
 }
 
 .icon-button {
-  color: gray;
+  color: rgb(98, 98, 98);
   cursor: pointer;
 }
 
@@ -295,6 +295,19 @@
   padding-left: 1rem;
   margin: 0 1rem;
 }
+
+.step-image {
+  max-height: 20rem;
+  width: auto;
+  border-radius: 1rem;
+}
+
+.step-image-container {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
+
 .step::marker {
   font-weight: bold;
 }

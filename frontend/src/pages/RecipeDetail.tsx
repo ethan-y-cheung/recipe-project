@@ -1,8 +1,8 @@
-// import { useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { Star, Bookmark, MessageCircle} from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import type { Recipe, Comments, Rating } from "../../../shared/types/index.ts";
+import type { Recipe, Comments, Rating, UserRecipeNotes } from "../../../shared/types/index.ts";
 import Chatbot from '../components/RecipeDetail/Chatbot.tsx';
 import CommentForm from '../components/RecipeDetail/CommentForm.tsx';
 import Discussion from '../components/RecipeDetail/Discussion.tsx';
@@ -12,31 +12,11 @@ import { useAuth } from '@/contexts/AuthContext.tsx';
 import axios from 'axios';
 import "../styles/RecipeDetail.css";
 
-const recipeData: Recipe = {
-  id: "rec_001",
-  user_generated: false,
-  creator_ID: "Allison",
-  title : "generic ramen",
-  created_at: new Date(),
-  approved: true,
-  tags: [{name: "quick", type: "difficulty"}],
-  ingredients: [
-    {name: "ramen", quantity: "one package"}, 
-    {name: "water", quantity: "2 cups"},
-    {name: "salt", quantity: "1 teaspoon"},
-    {name: "siracha", quantity: "1 lb"}],
-  instructions: ["cook ramen", "eat ramen", "clean kitchen"],
-  images: [ "https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=800&auto=format&fit=crop&q=60"],
-  servings: 1,
-  total_time: "20 minutes",
-  rating: [{user_ID: "Kaitlyn", value: 5}, {user_ID: "Michael", value: 2}]
-};
-
 const BASE_URL = import.meta.env.VITE_API_URL;
 
 export default function RecipeDetail() {
   // used later when pulling data from firebase
-  // const { recipeId } = useParams<{recipeId: string}>();
+  const { recipeId } = useParams<{recipeId: string}>();
   const [allPosts, setAllPosts] = useState<Comments[]>([]);
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [done, setDone] = useState<boolean[] | null>(null);
@@ -46,7 +26,7 @@ export default function RecipeDetail() {
   const [showChat, setShowChat] = useState<boolean>(false);
   // pull old rating if it exists
   const [rating, setRating] = useState<null | 1 | 2 | 3 | 4 | 5>(null);
-  const { currentUser, userData } = useAuth();
+  const { currentUser, userData, refreshUser } = useAuth();
 
   // grab a temporary viewing url for user uploaded images
   const viewPhoto = async (fileKey : string) => {
@@ -64,57 +44,53 @@ export default function RecipeDetail() {
     const fetchRecipeData = async() => {
       setIsLoading(true);
       try {
-        if (!currentUser || !userData) return;
         // database or api call here
-        const token = await currentUser.getIdToken();
-        const { data } = await axios.get(`${BASE_URL}/recipes/single/${recipeData.id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        console.log(data);
-        setRecipe(recipeData);
+        const { data } = await axios.get(`${BASE_URL}/recipes/single/${recipeId}`);
+        // data.created_at = new Date(data.created_at.seconds * 1000)
+        data.created_at = new Date();
+        setRecipe(data);
 
         // requires aws calls
-        if (recipeData.user_generated) {
+        if (data.user_generated) {
           // grabs viewing urls for recipe images
           // Creates an array of promises by marking the map callback as async
-          const imagePromises = recipeData.images.map(async (fileKey) => {
+          const imagePromises = data.images.map(async (fileKey : string) => {
             if (fileKey) {
-              return await viewPhoto("recipes/1780519947700-Screenshot 2026-06-02 at 3.22.27 PM.png"); // Added 'await'
+              return await viewPhoto(fileKey); // Added 'await'
             } else {
               return null;
             }
           });
-          recipeData.imageUrls = await Promise.all(imagePromises);
+          data.imageUrls = await Promise.all(imagePromises);
         } else {
-          recipeData.imageUrls = recipeData.images;
+          data.imageUrls = data.images;
         }
 
         const response = await axios.get(`${BASE_URL}/comments`, {
-          params: { recipe_ID: recipeData.id},
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          params: { recipe_ID: data.id},
         });
         setAllPosts(response.data);
-        setDone(new Array(recipeData.ingredients.length).fill(false));
+        setDone(new Array(data.ingredients.length).fill(false));
         
         // determine average rating
-        const ratingsArray = recipeData.rating || [];
+        const ratingsArray = data.rating || [];
         if (ratingsArray.length > 0) {
-          const total = ratingsArray.reduce((score, r) => score + (r.value ?? 0), 0);
+          const total = ratingsArray.reduce((score : number, r : Rating) => score + (r.value ?? 0), 0);
           setAverageRating(total / ratingsArray.length);
         } else {
           setAverageRating(0);
         }
 
         // determine if the user rated this recipe previously
-        const userRating = ratingsArray.find(r => r.user_ID === userData.username);
-        setRating(userRating?.value ?? null);
+        if (userData) {
+          const userRating = ratingsArray.find((r : Rating)=> r.user_ID === userData.username);
+          setRating(userRating?.value ?? null);
 
-        // determine if this recipe is saved
-        setBookmarked(userData.saved_recipes.some(recipe => recipe.recipeID === recipeData.id))
+          // determine if this recipe is saved
+          setBookmarked(userData.saved_recipes.some(recipe => recipe.recipe_id === data.id))
+        } else {
+          setRating(null);
+        }
 
       } catch (error) {
         console.error("unable to fetch recipe data:", error);
@@ -123,9 +99,12 @@ export default function RecipeDetail() {
       }
     }
     fetchRecipeData();
-  }, [currentUser, userData])
+  }, [recipeId, userData])
 
   const handleComment = async (newComment:Comments, parent_id : string) => {
+    // no commenting if not logged in
+    if (!currentUser) return;
+
     try {
       const token = await currentUser?.getIdToken();
       const response = await axios.post(
@@ -189,8 +168,64 @@ export default function RecipeDetail() {
     }
   }
 
-  const handleRating = (userRating : 1 | 2 | 3 | 4 | 5) => {
-    if (!userData) return;
+  const handleBookmark = async() => {
+    // not logged in == no bookmarking
+    if (!userData || !currentUser) return;
+    setBookmarked(prevState => !prevState); // optimistic update
+
+    try {
+      const token = await currentUser.getIdToken();
+      let newSaved : UserRecipeNotes[] = [];
+      if (bookmarked) {
+        newSaved = [...userData.saved_recipes.filter(saved => saved.recipe_id !== recipe?.id)]
+      } else {
+        newSaved = [...userData.saved_recipes, {recipe_id: recipe?.id || "", notes: "", user_tags: []}];
+      }
+      const updatedBodyData = {
+        ...userData,
+        saved_recipes: newSaved
+      };
+
+      const res = await axios.put(
+        `${BASE_URL}/users/me`, 
+        updatedBodyData, // Data payload
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+      return res.data;
+    } catch (error) {
+      setBookmarked(prevState => !prevState);
+      console.error("Unable to update user information:", error);
+      return null;
+    }
+  }
+
+  const updateComment = async (comment : Comments) => {
+    try {
+      const token = await currentUser?.getIdToken();
+      // update comment
+      await axios.put(
+        `${BASE_URL}/comments`, 
+        { 
+          comment: comment, 
+        }, 
+        { 
+          headers: { 
+            Authorization: `Bearer ${token}`, 
+          }, 
+        }
+      );
+
+    } catch (error) {
+      console.error("error updating comment: ", error);
+    }
+  }
+
+  const handleRating = async (userRating : 1 | 2 | 3 | 4 | 5) => {
+    if (!userData || !currentUser) return;
     setRating(userRating);
     let newRatings: Rating[];
 
@@ -207,9 +242,23 @@ export default function RecipeDetail() {
     ? newRatings.reduce((score, rating) => score + (rating.value ?? 0), 0) / newRatings.length 
     : 0)
 
+
+    const updatedRecipePayload = {...recipe,rating: newRatings,};
+
     try {
-      // database interaction here
-      console.log(userRating);
+      const token = await currentUser?.getIdToken();
+      // make endpoint request
+      await axios.put(
+          `${BASE_URL}/recipes`, 
+          { 
+            recipe: updatedRecipePayload, // This is the request body (req.body)
+          }, 
+          { 
+            headers: { 
+              Authorization: `Bearer ${token}`, 
+            }, 
+          }
+        );
     } catch (error) {
       console.error("unable to process rating: ", error);
     }
@@ -220,7 +269,7 @@ export default function RecipeDetail() {
   }
 
   // guard clause
-  if (!recipe || !userData) {
+  if (!recipe) {
     return <></>;
   }
 
@@ -247,7 +296,7 @@ export default function RecipeDetail() {
             </div>
             
             <div className="detail-header-row">
-              <Bookmark fill={bookmarked ? "#FFDF00" : "transparent"} className="header-icon" onClick={() => setBookmarked(prevState => !prevState)}/> 
+              <Bookmark fill={bookmarked ? "#FFDF00" : "transparent"} className="header-icon" onClick={() => handleBookmark()}/> 
               <div className="star-container">
                 {recipe.tags.map((tag, index) => (
                   <div key={index} className="tag"> {`${tag.type} : ${tag.name}`}</div>
@@ -266,7 +315,6 @@ export default function RecipeDetail() {
               src={recipe.imageUrls?.[0] ?? undefined}
               alt={`image of ${recipe.title}`}
           />
-          
         </header>
           
         <section className="detail-page">
@@ -300,7 +348,13 @@ export default function RecipeDetail() {
               <h2 className="section-title">Instructions</h2>
               <ol className="ingredients-container">
                 {recipe.instructions.map((step, index) => (
-                  <li className="step" key={index}>{step}</li>
+                  <li className="step" key={index}>
+                    {step}
+                    {recipe.imageUrls?.[index+1]? 
+                    <div className="step-image-container">
+                      <img src={recipe.imageUrls?.[index+1]??""}  alt={"instruction image"}/>
+                    </div> : null}
+                  </li>
                 ))}
               </ol>
             </section>
@@ -318,11 +372,11 @@ export default function RecipeDetail() {
                   <Star fill={(rating ? rating : 0) >= 5 ? "#FFDF00" : "transparent"} onClick={() => handleRating(5)} className="header-icon"/>
                 </div>
               </div>
-              <CommentForm recipe_ID={recipe.id} username={userData.username} createComment={handleComment}/>
+              <CommentForm recipe_ID={recipe.id} username={userData?.username??""} createComment={handleComment}/>
             </section>
 
             {/* Discussion Section */}
-            <Discussion createComment={handleComment} handleDelete={handleDelete} recipe_ID = {recipe.id} username={userData.username} comments={allPosts}/>
+            <Discussion updateComment={updateComment} createComment={handleComment} handleDelete={handleDelete} recipe_ID = {recipe.id} username={userData?.username??""} comments={allPosts}/>
           </div>
       
           {/* similar recipe section */}
