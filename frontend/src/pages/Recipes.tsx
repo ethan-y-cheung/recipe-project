@@ -83,14 +83,12 @@ export default function Recipes() {
 
   const API_URL = import.meta.env.VITE_API_URL
 
-  const { currentUser, userData } = useAuth(); // for: retrieving user auth token, laoding initial saved recipe list
+  const { currentUser, userData, refreshUser } = useAuth(); // for: retrieving user auth token, laoding initial saved recipe list
   const [localUserData, setLocalUserData] = useState<AppUser | null>(userData);
 
   useEffect(() => {
     setLocalUserData(userData);
   }, [userData]);
-
-  if (!filteredRecipes) return <p>Loading...</p>
 
   // Fetch recipes on first load--------------------------------------
   useEffect(() => {
@@ -209,7 +207,7 @@ export default function Recipes() {
     // helper - filter by search string
     const filterBySearchQuery = (recipeList: Recipe[], searchFilter: string) => {
       const filteredList = recipeList.filter(recipe => (
-        [recipe.creator_ID, recipe.title].join('').replace(/\s/g, '').toLowerCase().includes(searchFilter.toLowerCase())
+        [recipe.creator_ID, recipe.title].join('').replace(/\s/g, '').toLowerCase().includes(searchFilter.replace(/\s/g, '').toLowerCase())
       ));
       return filteredList;
     }
@@ -290,6 +288,7 @@ export default function Recipes() {
       }
       const updatedUser = await response.json();
       setLocalUserData(updatedUser);
+      refreshUser();
     } catch (err) {
       console.error('Save toggle failed:', err);
     }
