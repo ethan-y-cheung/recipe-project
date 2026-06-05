@@ -13,7 +13,7 @@ import axios from 'axios';
 import "../styles/RecipeDetail.css";
 
 const recipeData: Recipe = {
-  id: "123",
+  id: "rec_001",
   user_generated: false,
   creator_ID: "Allison",
   title : "generic ramen",
@@ -66,8 +66,13 @@ export default function RecipeDetail() {
       try {
         if (!currentUser || !userData) return;
         // database or api call here
-        // const {data} = await axios.get(`${BASE_URL}comments`, {params: {recipe_ID: fakeData.id}}); // This becomes req.query.recipe_ID on the server
         const token = await currentUser.getIdToken();
+        const { data } = await axios.get(`${BASE_URL}/recipes/single/${recipeData.id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        console.log(data);
         setRecipe(recipeData);
 
         // requires aws calls
