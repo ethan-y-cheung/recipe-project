@@ -197,7 +197,7 @@ const Discussion = ( {createComment, handleDelete, updateComment, recipe_ID, use
                     <ThumbsUp 
                     fill={(username !== "" ? reply.likes.includes(username) : false) ? 'rgb(189, 189, 189)' : "transparent"}
                     onClick={() => handleLike(reply)} className="icon-button" />
-                    <button className="reply-button"> <Reply/>reply </button>
+                    {/* <button className="reply-button"> <Reply/>reply </button> */}
                     {username === reply.creator_ID ? 
                     <>
                       {/* <SquarePen className="icon-button"/> */}
